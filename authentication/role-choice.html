@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Select Role</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="role-choice-container">
+      <h2>How do you want to use the site?</h2>
+      <button id="asCustomer" class="role-btn">Continue as Customer</button>
+      <button id="asEmployee" class="role-btn">Continue as Employee</button>
+      <br />
+      <button id="backBtn" class="role-btn back-btn">Back</button>
+    </div>
+    <script>
+      // Clear any old choice in session (safety)
+      sessionStorage.removeItem("currentRole");
+
+      document.getElementById("asCustomer").onclick = function () {
+        sessionStorage.setItem("currentRole", "customer");
+        window.location.href = "/customer/home.html";
+      };
+      document.getElementById("asEmployee").onclick = function () {
+        sessionStorage.setItem("currentRole", "employee");
+        window.location.href = "/employee/employee-portal.html";
+      };
+      document.getElementById("backBtn").onclick = function () {
+        window.location.href = "login.html";
+      };
+    </script>
+  </body>
+</html>

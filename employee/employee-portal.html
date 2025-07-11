@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Employee Portal – Maduwa Paint World</title>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="employee-portal.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Employee Portal</h1>
+      <div id="welcome"></div>
+      <button id="logoutBtn" style="float: right">Logout</button>
+    </header>
+
+    <section>
+      <h2>Your Dashboards</h2>
+      <div id="dashboardLinks"></div>
+    </section>
+
+    <section id="adminToolsSection" style="display: none">
+      <h2>Admin Tools</h2>
+      <a href="role-assign.html" class="role-btn">Assign/Manage Roles</a>
+      <a href="/projects/index.html" class="role-btn" id="projectsBtn"
+        >View All Projects</a
+      >
+    </section>
+
+    <script type="module" src="./employee-portal.js"></script>
+  </body>
+</html>

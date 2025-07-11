@@ -1,0 +1,10 @@
+# Ignore environment variable files
+.env
+.env.local
+
+# Ignore your Firebase config if you move it out of the source
+firebase-config.js
+
+
+projects/js/firebase-config.js
+authentication/config.js

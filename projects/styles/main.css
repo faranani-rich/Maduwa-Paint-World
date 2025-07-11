@@ -1,0 +1,138 @@
+/* styles/main.css */
+
+/* ───────────────────────────────────────────────────────────────────────────
+   Base & Reset
+─────────────────────────────────────────────────────────────────────────── */
+body {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 1rem;
+}
+
+h1, h2 {
+  margin: 0 0 0.5rem;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  background: #f9f9f9;
+  border-radius: 0.25rem;
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   Dashboard (index.html)
+─────────────────────────────────────────────────────────────────────────── */
+header h1 {
+  margin-bottom: 1rem;
+}
+
+#new-project-btn {
+  margin-bottom: 1rem;
+}
+
+.project-card {
+  position: relative;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.project-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.delete-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: transparent;
+  border: none;
+  font-size: 1.1rem;
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   Editor (project.html)
+─────────────────────────────────────────────────────────────────────────── */
+#project-form {
+  max-width: 800px;
+  margin: auto;
+}
+
+#project-form section {
+  margin-bottom: 1.5rem;
+}
+
+#project-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+#project-form input {
+  width: 100%;
+  padding: 0.4rem;
+  margin-top: 0.25rem;
+  box-sizing: border-box;
+}
+
+#project-form table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0.5rem;
+}
+
+#project-form th,
+#project-form td {
+  border: 1px solid #ddd;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+#totals p {
+  margin: 0.25rem 0;
+  font-weight: bold;
+}
+
+#save-msg {
+  color: green;
+  margin-bottom: 0.5rem;
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   Print modes
+─────────────────────────────────────────────────────────────────────────── */
+/* Default print = customer view: hide private/internal details */
+@media print {
+  /* hide all buttons */
+  button {
+    display: none !important;
+  }
+  /* hide any element you mark as internal-only */
+  .internal-only {
+    display: none !important;
+  }
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   Print modes
+─────────────────────────────────────────────────────────────────────────── */
+/* Default print = customer view: hide buttons & internal-only details */
+@media print {
+  /* hide all buttons */
+  button {
+    display: none !important;
+  }
+  /* hide anything marked internal-only */
+  .internal-only {
+    display: none !important;
+  }
+  /* but when <body class="company"> is set, show internal-only cells */
+  body.company .internal-only {
+    display: table-cell !important;
+  }
+}
+

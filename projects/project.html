@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Edit Project – Maduwa Paint World</title>
+    <link rel="stylesheet" href="styles/main.css" />
+    <link rel="stylesheet" href="styles/print.css" media="print" />
+    <style>
+      main {
+        max-width: 920px;
+        margin: 2.5em auto;
+        background: #fff;
+        padding: 2em 2em 1.5em 2em;
+        border-radius: 18px;
+        box-shadow: 0 6px 32px #005a8d14;
+      }
+      h2 {
+        margin-top: 2em;
+        color: #005a8d;
+      }
+      .actions {
+        display: flex;
+        gap: 1.1em;
+        margin: 2em 0 0 0;
+        flex-wrap: wrap;
+      }
+      .actions button {
+        font-size: 1.1em;
+      }
+      section {
+        margin-bottom: 1.6em;
+        padding-bottom: 1.3em;
+        border-bottom: 1px solid #eef1f3;
+      }
+      label {
+        display: block;
+        margin: 0.9em 0 1em 0;
+      }
+      input,
+      select,
+      textarea {
+        display: block;
+        width: 100%;
+        max-width: 350px;
+        font-size: 1em;
+        padding: 0.6em 0.8em;
+        margin-top: 0.4em;
+        border-radius: 7px;
+        border: 1px solid #bbb;
+        background: #fafbfc;
+      }
+      textarea[name="internal-notes"] {
+        background: #fdf5e6;
+        color: #7d5b08;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1em;
+      }
+      th,
+      td {
+        border: 1px solid #c3e2f5;
+        padding: 7px 9px;
+        text-align: left;
+      }
+      th.internal-only,
+      td.internal-only {
+        background: #fff7de;
+        color: #a0760a;
+        font-style: italic;
+      }
+      #totals p {
+        margin: 0.4em 0;
+      }
+      @media (max-width: 700px) {
+        main {
+          padding: 1.2em 0.4em;
+        }
+        input,
+        select,
+        textarea {
+          max-width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Edit Project</h1>
+      <button id="back-btn">← Back to Dashboard</button>
+    </header>
+
+    <main>
+      <form id="project-form">
+        <!-- Project Info + Status -->
+        <section>
+          <h2>Project Info</h2>
+          <label>
+            Name
+            <input type="text" name="name" required />
+          </label>
+          <label>
+            Location
+            <input type="text" name="location" />
+          </label>
+          <label>
+            Status
+            <select name="status">
+              <option value="quotation">Quotation</option>
+              <option value="approved">Approved</option>
+              <option value="in-progress">In Progress</option>
+              <option value="completed">Completed</option>
+            </select>
+          </label>
+          <label>
+            Project Manager Name
+            <input type="text" name="pm-name" />
+          </label>
+          <label>
+            Project Manager Email
+            <input type="email" name="pm-email" />
+          </label>
+          <label>
+            Customer Name
+            <input type="text" name="cust-name" />
+          </label>
+          <label>
+            Customer Email
+            <input type="email" name="cust-email" />
+          </label>
+        </section>
+
+        <!-- Progress -->
+        <section>
+          <h2>Progress</h2>
+          <label>
+            Percent Complete (%)
+            <input type="number" name="progress" min="0" max="100" step="1" />
+          </label>
+          <label>
+            Progress Notes
+            <textarea
+              name="progress-comment"
+              rows="2"
+              placeholder="E.g., Finished undercoat, waiting for client…"
+            ></textarea>
+          </label>
+        </section>
+
+        <!-- Employees -->
+        <section>
+          <h2>Employees</h2>
+          <table id="employees-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Hours</th>
+                <th class="internal-only">Rate/hr</th>
+                <th class="internal-only">Overtime</th>
+                <th class="internal-only">Bonus</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <button type="button" id="add-employee-btn">+ Add Employee</button>
+        </section>
+
+        <!-- Paints -->
+        <section>
+          <h2>Paints</h2>
+          <table id="paints-table">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Color</th>
+                <th>Buckets</th>
+                <th class="internal-only">Cost/Bucket</th>
+                <th>Supplier</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <button type="button" id="add-paint-btn">+ Add Paint</button>
+        </section>
+
+        <!-- Materials -->
+        <section>
+          <h2>Materials</h2>
+          <table id="materials-table">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th class="internal-only">Unit Cost</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <button type="button" id="add-material-btn">+ Add Material</button>
+        </section>
+
+        <!-- Vehicles/Trips -->
+        <section>
+          <h2>Vehicles & Trips</h2>
+          <table id="vehicles-table">
+            <thead>
+              <tr>
+                <th>Driver</th>
+                <th>Car</th>
+                <th>Purpose</th>
+                <th>KM</th>
+                <th class="internal-only">Petrol</th>
+                <th class="internal-only">Tolls</th>
+                <th>Destination</th>
+                <th>Date</th>
+                <th>Notes</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <button type="button" id="add-vehicle-btn">+ Add Vehicle/Trip</button>
+        </section>
+
+        <!-- Other Expenses -->
+        <section>
+          <h2>Other Expenses</h2>
+          <table id="expenses-table">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Notes</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <button type="button" id="add-expense-btn">+ Add Expense</button>
+        </section>
+
+        <!-- Profit & Totals -->
+        <section>
+          <h2>Profit &amp; Totals</h2>
+          <label class="internal-only">
+            Markup %
+            <input type="number" name="markupPct" min="0" />
+          </label>
+          <div id="totals">
+            <!-- JS: <p class="internal-only">Cost: R...</p>
+                       <p class="internal-only">Profit: R...</p>
+                       <p>Price: R...</p> -->
+          </div>
+        </section>
+
+        <!-- Notes / Instructions -->
+        <section>
+          <h2>Notes / Instructions</h2>
+          <textarea
+            name="notes"
+            rows="3"
+            placeholder="Site-specific notes, client requests, etc…"
+          ></textarea>
+        </section>
+
+        <!-- Internal Notes (private to company/owner) -->
+        <section class="internal-only">
+          <h2>Internal Notes</h2>
+          <textarea
+            name="internal-notes"
+            rows="2"
+            placeholder="Private notes (not shown to customer/printout)"
+          ></textarea>
+        </section>
+
+        <!-- Signature Pad -->
+        <section>
+          <h2>Digital Signature</h2>
+          <canvas
+            id="sig-canvas"
+            width="340"
+            height="110"
+            style="border: 1px solid #ccc; margin-bottom: 0.7em"
+          ></canvas>
+          <button type="button" id="clear-signature">Clear Signature</button>
+        </section>
+
+        <!-- Feedback QR Code -->
+        <section>
+          <h2>Customer Feedback</h2>
+          <a id="feedback-link" href="feedback.html" target="_blank">
+            <canvas id="qr-canvas"></canvas>
+            <div style="font-size: 0.9em; margin-top: 0.6em; color: #888">
+              Scan or tap to give feedback
+            </div>
+          </a>
+        </section>
+
+        <!-- Actions: Save + Print Copies -->
+        <div class="actions">
+          <button type="submit">Save</button>
+          <button type="button" id="print-customer">Print Customer Copy</button>
+          <button type="button" id="print-internal">Print Internal Copy</button>
+        </div>
+      </form>
+    </main>
+
+    <!-- Signature Pad library -->
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+    <!-- QRCode library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
+    <!-- Your app logic -->
+    <script type="module" src="js/project.js"></script>
+    <script>
+      document.getElementById("back-btn").onclick = function () {
+        window.location.href = "index.html";
+      };
+    </script>
+  </body>
+</html>

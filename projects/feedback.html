@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Project Feedback – Maduwa Paint World</title>
+    <link rel="stylesheet" href="styles/main.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Project Feedback</h1>
+      <form id="feedback-form">
+        <label>
+          Rating (1–5)
+          <input type="number" name="rating" min="1" max="5" required />
+        </label>
+        <label>
+          Comments
+          <textarea
+            name="comments"
+            rows="4"
+            placeholder="Your feedback…"
+          ></textarea>
+        </label>
+        <button type="submit">Submit Feedback</button>
+      </form>
+      <div id="thanks" style="display: none">
+        <h2>Thanks for your feedback!</h2>
+      </div>
+    </main>
+    <script type="module" src="js/feedback.js"></script>
+  </body>
+</html>

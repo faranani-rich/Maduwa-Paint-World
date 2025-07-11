@@ -1,0 +1,61 @@
+/* --- print.css: Professional Print Styles --- */
+
+/* Always use a white background for print */
+@media print {
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  header, nav, .no-print, #back-btn, .print-btns {
+    display: none !important;
+  }
+  .project-link, a {
+    color: #000 !important;
+    text-decoration: none !important;
+  }
+  /* Hide all form controls (inputs/buttons) by default for print */
+  input, select, textarea, button, .form-control, .action-btn {
+    display: none !important;
+  }
+  /* Hide feedback/QR by default (unless you want for customer) */
+  #feedback-link, #qr-canvas {
+    display: none !important;
+  }
+  /* Hide signature pad controls, only show the image if present */
+  #clear-signature, #sig-canvas:not(.signed) {
+    display: none !important;
+  }
+  /* Hide internal-only fields UNLESS .company class is set on body */
+  .internal-only {
+    display: none !important;
+  }
+  body.company .internal-only {
+    display: table-cell !important;
+  }
+  /* For tables: force visible grid and full width */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 11pt;
+  }
+  th, td {
+    border: 1px solid #222 !important;
+    padding: 5px 8px !important;
+  }
+  /* No page breaks in tables */
+  tr, td, th {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  /* Page footer/numbering (optional, needs extra markup) */
+  /* .footer-print { position: fixed; bottom: 0; width: 100%; } */
+}
+
+/* --- On screen: Hide company print markup --- */
+@media screen {
+  body.company .internal-only {
+    background: #fff9dd !important;
+    color: #c97b00 !important;
+    font-style: italic;
+  }
+}

@@ -1,0 +1,137 @@
+/* style.css
+   Shared styles for signup, login, role-select, dashboard, admin pages */
+
+/* Global */
+body {
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    background-color: #f9f9f9;
+    color: #333;
+  }
+  
+  h1, h2 {
+    margin: 1rem 0;
+  }
+  
+  /* Form elements */
+  input,
+  select,
+  button,
+  textarea {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    font-size: 1rem;
+  }
+  
+  button {
+    cursor: pointer;
+    background-color: #0066cc;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+  }
+  
+  button:hover {
+    background-color: #005bb5;
+  }
+  
+  /* Links */
+  a {
+    color: #0066cc;
+    text-decoration: none;
+  }
+  
+  a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Horizontal rule */
+  hr {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 2rem 0;
+  }
+  
+  /* Tables (for admin.html) */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+  }
+  
+  th,
+  td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  thead {
+    background-color: #f2f2f2;
+  }
+  
+  /* Header (dashboard) */
+  header {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #ddd;
+    background-color: #fff;
+  }
+  
+  /* Utility */
+  .hidden {
+    display: none !important;
+  }
+  
+  /* Responsive */
+  @media (min-width: 600px) {
+    form,
+    .container {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+  }
+  
+
+  /* Role Choice Page (role-choice.html) */
+.role-choice-container {
+  max-width: 400px;
+  margin: 60px auto;
+  padding: 2em;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px #bbb;
+  background: #fff;
+  text-align: center;
+}
+.role-btn {
+  margin: 1em 1em 0 1em;
+  padding: 0.8em 1.8em;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #3498db;
+  background: #3498db;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: auto; /* override global button width */
+  display: inline-block;
+}
+.role-btn:hover {
+  background: #217dbb;
+}
+.back-btn {
+  margin-top: 2em;
+  background: #eee;
+  color: #333;
+  border: 1px solid #ccc;
+}
+.back-btn:hover {
+  background: #ddd;
+}
