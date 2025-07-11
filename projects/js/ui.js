@@ -19,12 +19,23 @@ export async function renderProjectList() {
   }
 
   projects.forEach((p) => {
+    // Handle customer info smartly
+    const customerName =
+      typeof p.customer === 'string'
+        ? p.customer
+        : (p.customer && (p.customer.name || p.customer.fullName || p.customer.email)) || '—';
+
+    const customerEmail =
+      p.customer && p.customer.email && typeof p.customer.email === "string"
+        ? p.customer.email
+        : null;
+
     const card = document.createElement('div');
     card.className = 'project-card';
     card.innerHTML = `
       <a class="project-link" href="project.html?id=${p.id}">
         <h2>${p.name || 'Untitled'}</h2>
-        <p>Customer: ${p.customer || '—'}</p>
+        <p>Customer: ${customerName}${customerEmail && customerName !== customerEmail ? `<br><small>${customerEmail}</small>` : ''}</p>
         <p>Location: ${p.location || '—'}</p>
       </a>
       <button class="delete-btn" data-id="${p.id}" title="Delete project">🗑️</button>

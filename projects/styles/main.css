@@ -103,36 +103,72 @@ header h1 {
 }
 
 /* ───────────────────────────────────────────────────────────────────────────
-   Print modes
+   Scrollable Table Wrapper (General)
 ─────────────────────────────────────────────────────────────────────────── */
-/* Default print = customer view: hide private/internal details */
-@media print {
-  /* hide all buttons */
-  button {
-    display: none !important;
+
+/* Use .table-scroll around any table to allow horizontal scroll if needed */
+.table-scroll {
+  overflow-x: auto;
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 1rem;
+}
+
+/* Prevent table columns from squishing too much */
+.table-scroll table {
+  min-width: 1100px; /* Adjust as needed for your columns */
+  width: max-content;
+}
+
+/* Table headers sticky (optional, looks good when scrolling horizontally) */
+.table-scroll th {
+  background: #fcfcfc;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+/* Vehicles Table Specific Tweaks */
+#vehicles-table th, #vehicles-table td {
+  min-width: 120px;
+  padding: 10px 8px;
+}
+#vehicles-table th.wider-km, #vehicles-table td.wider-km {
+  min-width: 90px;
+  max-width: 160px;
+}
+#vehicles-table th, #vehicles-table td.wider-notes {
+  min-width: 160px;
+}
+.wider-notes input {
+  min-width: 160px;
+}
+
+/* Responsive: Enable horizontal scroll on smaller screens */
+@media (max-width: 1100px) {
+  .table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    min-height: 1px;
   }
-  /* hide any element you mark as internal-only */
-  .internal-only {
-    display: none !important;
+  .table-scroll table {
+    min-width: 900px;
+    width: max-content;
   }
 }
 
 /* ───────────────────────────────────────────────────────────────────────────
    Print modes
 ─────────────────────────────────────────────────────────────────────────── */
-/* Default print = customer view: hide buttons & internal-only details */
 @media print {
-  /* hide all buttons */
   button {
     display: none !important;
   }
-  /* hide anything marked internal-only */
   .internal-only {
     display: none !important;
   }
-  /* but when <body class="company"> is set, show internal-only cells */
   body.company .internal-only {
     display: table-cell !important;
   }
 }
-

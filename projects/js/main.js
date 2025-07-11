@@ -8,8 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initAuthListener(async ({ user, profile }) => {
     if (!user) {
       alert('You must be signed in to view or manage projects.');
-      // Optionally redirect to login
-      // window.location.href = '/authentication/login.html';
       return;
     }
 
@@ -20,26 +18,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const newProjectBtn = document.getElementById('new-project-btn');
     if (newProjectBtn) {
       newProjectBtn.addEventListener('click', async () => {
-        // 1. Create a fully structured empty project
+        // 1. Create a fully structured empty project (with a unique id!)
         const newProj = emptyProject();
 
         // 2. Fill in default fields
         newProj.name = 'Untitled';
         newProj.createdAt = new Date().toISOString();
-        newProj.ownerId = user.uid; // Auth user's ID
-
-        // Optionally, use signed-in user as default project manager
+        newProj.ownerId = user.uid;
         newProj.projectManager = {
           name: profile?.displayName || user.displayName || '',
           email: profile?.email || user.email || ''
         };
 
-        // If you want to record who created the project (could also add createdBy field)
-        // newProj.createdBy = { uid: user.uid, name: user.displayName, email: user.email };
-
         // 3. Save to Firestore
         await saveProject(newProj);
+
+        // 4. Rerender or redirect
         renderProjectList();
+        // Optionally, redirect to the new project page:
+        // window.location.href = `project.html?id=${newProj.id}`;
       });
     }
   });

@@ -1,61 +1,60 @@
 // js/calc.js
 
 /**
- * Calculates totals for all cost areas: labour, paints, materials, vehicles, expenses.
- * Supports both quotation and actual costs.
+ * Calculate per-employee total pay and other project totals.
  * @param {Object} project – full project object
- * @param {string} which – "actual" or "quotation" ("actual" by default)
- * @returns {Object} – { labour, paint, materials, vehicles, expenses, cost, profit, price, breakdown }
+ * @returns {Object} – { labour, paint, materials, vehicles, expenses, cost, profit, price, breakdown, employeePays }
  */
 export function projectTotals(project, which = "actual") {
   const sum = arr => arr.reduce((t, x) => t + x, 0);
 
-  // Employees: (hours * rate) + overtime + bonus
+  // --- Employees (with detailed pay) ---
   const employees = project.lines.employees || [];
-  const labour = sum(employees.map(e =>
-    (Number(e.hours) || 0) * (Number(e.rate) || 0) +
-    (Number(e.overtime) || 0) +
-    (Number(e.bonus) || 0)
-  ));
+  const employeePays = employees.map(e => {
+    // Use your field names!
+    const hours         = Number(e.hours) || 0;
+    const overtimeHours = Number(e.overtimeHours) || 0;
+    const normalRate    = Number(e.normalRate) || 0;
+    const overtimeRate  = Number(e.overtimeRate) || 0;
+    const bonus         = Number(e.bonus) || 0;
+    // fallback: if overtimeRate is blank, fallback to normalRate
+    const totalPay = (hours * normalRate) + (overtimeHours * (overtimeRate || normalRate)) + bonus;
+    return { ...e, totalPay };
+  });
 
-  // Paints: buckets * cost per bucket
+  const labour = sum(employeePays.map(e => e.totalPay));
+
+  // --- Paints ---
   const paints = project.lines.paints || [];
   const paint = sum(paints.map(p =>
     (Number(p.buckets) || 0) * (Number(p.costPerBucket) || 0)
   ));
 
-  // Materials: quantity * unitCost
+  // --- Materials ---
   const materialsArr = project.lines.materials || [];
   const materials = sum(materialsArr.map(m =>
     (Number(m.quantity) || 0) * (Number(m.unitCost) || 0)
   ));
 
-  // Vehicles: (km * petrol) + tolls + extra (if needed)
+  // --- Vehicles ---
   const vehicles = project.lines.vehicles || [];
+  // Use: (km * petrol) + tolls (matches your previous logic)
   const vehiclesTotal = sum(vehicles.map(v =>
     ((Number(v.km) || 0) * (Number(v.petrol) || 0)) +
     (Number(v.tolls) || 0)
   ));
 
-  // Other expenses: sum all expense.amount
+  // --- Expenses ---
   const expensesArr = project.lines.expenses || [];
   const expenses = sum(expensesArr.map(e => Number(e.amount) || 0));
 
-  // Total cost
+  // --- Total cost, profit, price ---
   const cost = labour + paint + materials + vehiclesTotal + expenses;
-
-  // Markup/profit logic (supports both quotation/actual)
-  let markupPct = 0;
-  if (which === "quotation" && project.quotation && typeof project.quotation.price === "number") {
-    markupPct = project.quotation.price && project.quotation.cost ? 
-      ((project.quotation.price - project.quotation.cost) / project.quotation.cost) * 100 : (project.markupPct || 0);
-  } else if (typeof project.markupPct === "number") {
-    markupPct = project.markupPct;
-  }
+  let markupPct = typeof project.markupPct === "number" ? project.markupPct : Number(project.markupPct) || 0;
   const profit = cost * (markupPct / 100);
   const price  = cost + profit;
 
-  // Return detailed breakdown for UI
+  // --- Return breakdown with pays
   return {
     labour,
     paint,
@@ -65,12 +64,37 @@ export function projectTotals(project, which = "actual") {
     cost,
     profit,
     price,
+    employeePays, // array of { ...employee, totalPay }
     breakdown: {
-      employees,
+      employees: employeePays,
       paints,
       materials: materialsArr,
       vehicles,
       expenses: expensesArr
     }
   };
+}
+
+/**
+ * Calculate progress % from estimatedDuration and hoursWorked.
+ * Accepts duration in hours (number or text like "1 week, 2 days").
+ */
+export function calculateProgressPercent(estimatedDuration, hoursWorked) {
+  // Convert string to hours
+  let totalHours = 0;
+  if (typeof estimatedDuration === "string") {
+    // Parse for "xx hour", "xx day", "xx week" etc
+    const hrMatch = estimatedDuration.match(/(\d+)\s*hour/);
+    const dayMatch = estimatedDuration.match(/(\d+)\s*day/);
+    const weekMatch = estimatedDuration.match(/(\d+)\s*week/);
+    totalHours += hrMatch ? parseInt(hrMatch[1], 10) : 0;
+    totalHours += dayMatch ? parseInt(dayMatch[1], 10) * 8 : 0;
+    totalHours += weekMatch ? parseInt(weekMatch[1], 10) * 40 : 0;
+    // If just a number, treat as hours
+    if (!isNaN(Number(estimatedDuration))) totalHours = Number(estimatedDuration);
+  } else if (typeof estimatedDuration === "number") {
+    totalHours = estimatedDuration;
+  }
+  hoursWorked = Number(hoursWorked) || 0;
+  return totalHours > 0 ? Math.round((hoursWorked / totalHours) * 100) : 0;
 }

@@ -1,18 +1,16 @@
 // js/storage.js
 
-// Import Firestore dependencies & your Firebase config
-import { db } from './firebase-config.js'; // Export db from your config file!
+import { db } from './firebase-config.js';
 import {
   collection,
   getDocs,
-  addDoc,
+  setDoc,
   updateDoc,
   deleteDoc,
   doc,
   getDoc
 } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
 
-// The Firestore collection for your projects
 const PROJECTS_COLLECTION = "projects";
 
 // Get all projects from Firestore
@@ -21,11 +19,12 @@ export async function loadProjects() {
   return querySnapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
 }
 
-// Add a new project to Firestore
+// Add a new project with your own ID
 export async function saveProject(project) {
-  const docRef = await addDoc(collection(db, PROJECTS_COLLECTION), project);
-  // Return new project with assigned Firestore id
-  return { id: docRef.id, ...project };
+  if (!project.id) throw new Error("Project must have a unique id");
+  const docRef = doc(db, PROJECTS_COLLECTION, project.id);
+  await setDoc(docRef, project); // setDoc uses your own id!
+  return { ...project };
 }
 
 // Fetch a single project by ID from Firestore

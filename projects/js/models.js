@@ -1,11 +1,9 @@
-// js/models.js
-
 /**
  * Returns a brand-new, empty project object with all required fields.
  */
 export function emptyProject() {
   return {
-    id: '',
+    id: 'prj-' + Date.now() + '-' + Math.floor(Math.random() * 10000), // Unique, e.g. "prj-1720682187666-3842"
     name: '',
     location: '',
     status: 'quotation', // "quotation", "in-progress", "completed", etc.
@@ -26,7 +24,7 @@ export function emptyProject() {
       updatedAt: ''
     },
     ownerId: '', // user id of project owner/creator
-    createdAt: '', // date string
+    createdAt: new Date().toISOString(), // set creation time
     projectManager: {
       name: '',
       email: ''
@@ -36,22 +34,11 @@ export function emptyProject() {
       email: ''
     },
     lines: {
-      employees: [
-        // { name, role, hours, rate, overtime, bonus }
-      ],
-      paints: [
-        // { type, color, buckets, costPerBucket, supplier }
-      ],
-      materials: [
-        // { description, quantity, unitCost }
-      ],
-      vehicles: [
-        // { driver, car, purpose, km, petrol, tolls, location, date, notes }
-      ],
-      expenses: [
-        // { type, amount, notes }
-        // e.g., { type: 'airtime', amount: 0, notes: '' }
-      ]
+      employees: [],
+      paints: [],
+      materials: [],
+      vehicles: [],
+      expenses: []
     },
     feedback: {
       rating: 0,
@@ -60,9 +47,7 @@ export function emptyProject() {
       customerEmail: ''
     },
     signatureData: '', // digital signature (base64 image or similar)
-    reassignments: [
-      // { employeeName, fromRole, toRole, date, notes }
-    ],
+    reassignments: [],
     internalNotes: ''
   };
 }

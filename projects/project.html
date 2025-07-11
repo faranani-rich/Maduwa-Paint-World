@@ -7,8 +7,9 @@
     <link rel="stylesheet" href="styles/main.css" />
     <link rel="stylesheet" href="styles/print.css" media="print" />
     <style>
+      /* ...[Your existing <style> block unchanged]... */
       main {
-        max-width: 920px;
+        max-width: 1100px;
         margin: 2.5em auto;
         background: #fff;
         padding: 2em 2em 1.5em 2em;
@@ -19,14 +20,15 @@
         margin-top: 2em;
         color: #005a8d;
       }
-      .actions {
-        display: flex;
-        gap: 1.1em;
-        margin: 2em 0 0 0;
-        flex-wrap: wrap;
+      .grid-2col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2em;
       }
-      .actions button {
-        font-size: 1.1em;
+      @media (max-width: 900px) {
+        .grid-2col {
+          grid-template-columns: 1fr;
+        }
       }
       section {
         margin-bottom: 1.6em;
@@ -50,9 +52,19 @@
         border: 1px solid #bbb;
         background: #fafbfc;
       }
-      textarea[name="internal-notes"] {
-        background: #fdf5e6;
-        color: #7d5b08;
+      .flex {
+        display: flex;
+        gap: 2em;
+        flex-wrap: wrap;
+      }
+      .actions {
+        display: flex;
+        gap: 1.1em;
+        margin: 2em 0 0 0;
+        flex-wrap: wrap;
+      }
+      .actions button {
+        font-size: 1.1em;
       }
       table {
         width: 100%;
@@ -71,8 +83,44 @@
         color: #a0760a;
         font-style: italic;
       }
+      .scrollable-cell {
+        max-height: 48px;
+        overflow-y: auto;
+        min-width: 90px;
+      }
+      .wider-km {
+        min-width: 80px;
+        max-width: 180px;
+      }
+      .progress-bar-bg {
+        background: #eee;
+        border-radius: 10px;
+        height: 22px;
+        width: 100%;
+        margin: 0.7em 0;
+      }
+      .progress-bar {
+        background: #005a8d;
+        height: 100%;
+        border-radius: 10px;
+        color: #fff;
+        padding-left: 8px;
+        font-weight: bold;
+        font-size: 1em;
+        transition: width 0.4s;
+      }
       #totals p {
         margin: 0.4em 0;
+      }
+      .table-scroll {
+        overflow-x: auto;
+        width: 100%;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 1em;
+      }
+      .table-scroll table {
+        min-width: 1100px;
+        width: max-content;
       }
       @media (max-width: 700px) {
         main {
@@ -82,6 +130,9 @@
         select,
         textarea {
           max-width: 100%;
+        }
+        .table-scroll table {
+          min-width: 900px;
         }
       }
     </style>
@@ -94,73 +145,99 @@
 
     <main>
       <form id="project-form">
-        <!-- Project Info + Status -->
-        <section>
-          <h2>Project Info</h2>
-          <label>
-            Name
-            <input type="text" name="name" required />
-          </label>
-          <label>
-            Location
-            <input type="text" name="location" />
-          </label>
-          <label>
-            Status
-            <select name="status">
-              <option value="quotation">Quotation</option>
-              <option value="approved">Approved</option>
-              <option value="in-progress">In Progress</option>
-              <option value="completed">Completed</option>
-            </select>
-          </label>
-          <label>
-            Project Manager Name
-            <input type="text" name="pm-name" />
-          </label>
-          <label>
-            Project Manager Email
-            <input type="email" name="pm-email" />
-          </label>
-          <label>
-            Customer Name
-            <input type="text" name="cust-name" />
-          </label>
-          <label>
-            Customer Email
-            <input type="email" name="cust-email" />
-          </label>
-        </section>
-
-        <!-- Progress -->
-        <section>
-          <h2>Progress</h2>
-          <label>
-            Percent Complete (%)
-            <input type="number" name="progress" min="0" max="100" step="1" />
-          </label>
-          <label>
-            Progress Notes
-            <textarea
-              name="progress-comment"
-              rows="2"
-              placeholder="E.g., Finished undercoat, waiting for client…"
-            ></textarea>
-          </label>
+        <!-- Project Info + Progress (2-column grid) -->
+        <section class="grid-2col">
+          <div>
+            <h2>Project Info</h2>
+            <label>
+              Name
+              <input type="text" name="name" required />
+            </label>
+            <label>
+              Location
+              <input type="text" name="location" />
+            </label>
+            <label>
+              Status
+              <select name="status">
+                <option value="quotation">Quotation</option>
+                <option value="approved">Approved</option>
+                <option value="in-progress">In Progress</option>
+                <option value="completed">Completed</option>
+              </select>
+            </label>
+            <label>
+              Project Manager Name
+              <input type="text" name="pm-name" />
+            </label>
+            <label>
+              Project Manager Email
+              <input type="email" name="pm-email" />
+            </label>
+            <label>
+              Customer Name
+              <input type="text" name="cust-name" />
+            </label>
+            <label>
+              Customer Email
+              <input type="email" name="cust-email" />
+            </label>
+          </div>
+          <div>
+            <h2>Progress & Estimation</h2>
+            <label>
+              Estimated Duration
+              <input
+                type="text"
+                name="estimated-duration"
+                placeholder="E.g. 40 hours or 1 week, 2 days"
+              />
+            </label>
+            <label>
+              Hours Worked
+              <input type="number" name="hours-worked" min="0" />
+            </label>
+            <label>
+              Percent Complete (%)
+              <input
+                type="number"
+                name="progress"
+                min="0"
+                max="100"
+                step="1"
+                readonly
+              />
+            </label>
+            <div class="progress-bar-bg">
+              <div class="progress-bar" id="progress-bar" style="width: 0%">
+                0%
+              </div>
+            </div>
+            <label>
+              Progress Notes
+              <textarea
+                name="progress-comment"
+                rows="2"
+                placeholder="E.g., Finished undercoat, waiting for client…"
+              ></textarea>
+            </label>
+          </div>
         </section>
 
         <!-- Employees -->
         <section>
-          <h2>Employees</h2>
+          <h2>Employees Assigned</h2>
           <table id="employees-table">
             <thead>
               <tr>
                 <th>Name</th>
                 <th>Role</th>
-                <th>Hours</th>
-                <th class="internal-only">Rate/hr</th>
-                <th class="internal-only">Overtime</th>
+                <th class="internal-only">Hours</th>
+                <th class="internal-only">Overtime Hours</th>
+                <th class="internal-only">Normal Rate/hr</th>
+                <th class="internal-only">Overtime Rate</th>
                 <th class="internal-only">Bonus</th>
+                <th class="internal-only">Total Pay</th>
                 <th></th>
               </tr>
             </thead>
@@ -171,15 +248,16 @@
 
         <!-- Paints -->
         <section>
-          <h2>Paints</h2>
+          <h2>Paints Used</h2>
           <table id="paints-table">
             <thead>
               <tr>
                 <th>Type</th>
                 <th>Color</th>
                 <th>Buckets</th>
-                <th class="internal-only">Cost/Bucket</th>
                 <th>Supplier</th>
+                <th>Date Bought</th>
+                <th class="internal-only">Cost/Bucket</th>
                 <th></th>
               </tr>
             </thead>
@@ -205,31 +283,35 @@
           <button type="button" id="add-material-btn">+ Add Material</button>
         </section>
 
-        <!-- Vehicles/Trips -->
-        <section>
+        <!-- Vehicles/Trips (INTERNAL ONLY) -->
+        <section class="internal-only">
           <h2>Vehicles & Trips</h2>
-          <table id="vehicles-table">
-            <thead>
-              <tr>
-                <th>Driver</th>
-                <th>Car</th>
-                <th>Purpose</th>
-                <th>KM</th>
-                <th class="internal-only">Petrol</th>
-                <th class="internal-only">Tolls</th>
-                <th>Destination</th>
-                <th>Date</th>
-                <th>Notes</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
+          <div class="table-scroll">
+            <table id="vehicles-table">
+              <thead>
+                <tr>
+                  <th>Driver</th>
+                  <th>Car</th>
+                  <th>Purpose</th>
+                  <th class="wider-km">KM</th>
+                  <th class="internal-only">Petrol</th>
+                  <th class="internal-only">Tolls</th>
+                  <th>Destination</th>
+                  <th>Date</th>
+                  <th>Notes</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Rendered by JS, use <input type="date"> for Date fields in rows! -->
+              </tbody>
+            </table>
+          </div>
           <button type="button" id="add-vehicle-btn">+ Add Vehicle/Trip</button>
         </section>
 
-        <!-- Other Expenses -->
-        <section>
+        <!-- Other Expenses (INTERNAL ONLY) -->
+        <section class="internal-only">
           <h2>Other Expenses</h2>
           <table id="expenses-table">
             <thead>
@@ -253,9 +335,11 @@
             <input type="number" name="markupPct" min="0" />
           </label>
           <div id="totals">
-            <!-- JS: <p class="internal-only">Cost: R...</p>
-                       <p class="internal-only">Profit: R...</p>
-                       <p>Price: R...</p> -->
+            <!--
+              <p class="internal-only">Cost: R...</p>
+              <p class="internal-only">Profit: R...</p>
+              <p>Price: R...</p>
+            -->
           </div>
         </section>
 
@@ -269,7 +353,7 @@
           ></textarea>
         </section>
 
-        <!-- Internal Notes (private to company/owner) -->
+        <!-- Internal Notes (private to company/owner) (INTERNAL ONLY) -->
         <section class="internal-only">
           <h2>Internal Notes</h2>
           <textarea
@@ -277,29 +361,6 @@
             rows="2"
             placeholder="Private notes (not shown to customer/printout)"
           ></textarea>
-        </section>
-
-        <!-- Signature Pad -->
-        <section>
-          <h2>Digital Signature</h2>
-          <canvas
-            id="sig-canvas"
-            width="340"
-            height="110"
-            style="border: 1px solid #ccc; margin-bottom: 0.7em"
-          ></canvas>
-          <button type="button" id="clear-signature">Clear Signature</button>
-        </section>
-
-        <!-- Feedback QR Code -->
-        <section>
-          <h2>Customer Feedback</h2>
-          <a id="feedback-link" href="feedback.html" target="_blank">
-            <canvas id="qr-canvas"></canvas>
-            <div style="font-size: 0.9em; margin-top: 0.6em; color: #888">
-              Scan or tap to give feedback
-            </div>
-          </a>
         </section>
 
         <!-- Actions: Save + Print Copies -->
@@ -311,16 +372,9 @@
       </form>
     </main>
 
-    <!-- Signature Pad library -->
-    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
-    <!-- QRCode library -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
-    <!-- Your app logic -->
+    <!-- App logic -->
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
     <script type="module" src="js/project.js"></script>
-    <script>
-      document.getElementById("back-btn").onclick = function () {
-        window.location.href = "index.html";
-      };
-    </script>
+    <script type="module" src="js/project-enhancements.js"></script>
   </body>
 </html>
