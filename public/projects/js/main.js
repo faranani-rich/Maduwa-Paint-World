@@ -5,7 +5,7 @@ import { emptyProject } from './models.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   // Wait for authentication before interacting with Firestore
-  initAuthListener(async ({ user, profile }) => {
+  initAuthListener(async ({ user /*, profile*/ }) => {
     if (!user) {
       alert('You must be signed in to view or manage projects.');
       return;
@@ -14,28 +14,27 @@ document.addEventListener('DOMContentLoaded', () => {
     // Render the current list of projects
     renderProjectList();
 
-    // Handle "New Project" button
+    // Handle “New Project” button
     const newProjectBtn = document.getElementById('new-project-btn');
     if (newProjectBtn) {
       newProjectBtn.addEventListener('click', async () => {
-        // 1. Create a fully structured empty project (with a unique id!)
+        // 1. Create a fully structured empty project (with a unique id)
         const newProj = emptyProject();
 
-        // 2. Fill in default fields
-        newProj.name = 'Untitled';
-        newProj.createdAt = new Date().toISOString();
-        newProj.ownerId = user.uid;
+        // 2. Essential defaults only — leave manager fields blank
+        newProj.name       = 'Untitled';
+        newProj.createdAt  = new Date().toISOString();
+        newProj.ownerId    = user.uid;
         newProj.projectManager = {
-          name: profile?.displayName || user.displayName || '',
-          email: profile?.email || user.email || ''
+          name:  '',   // user will fill in manually
+          email: ''    // user will fill in manually
         };
 
         // 3. Save to Firestore
         await saveProject(newProj);
 
-        // 4. Rerender or redirect
+        // 4. Rerender or redirect as you prefer
         renderProjectList();
-        // Optionally, redirect to the new project page:
         // window.location.href = `project.html?id=${newProj.id}`;
       });
     }
