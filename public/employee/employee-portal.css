@@ -3,65 +3,69 @@
    ========================================================= */
 
 /* ---------- Base ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;        /* prevent overflow side-effects */
+}
+
 body {
-  font-family: 'Segoe UI', Arial, sans-serif;
+  font-family: "Segoe UI", Arial, sans-serif;
   background: #f5f8fa;
   margin: 0;
   padding: 0;
+  overflow-x: hidden;            /* final safety net */
 }
 
 /* ---------- Header ---------- */
 header {
   background: #335070;
   color: #fff;
-  padding: 32px 0 40px;
+  padding: 2rem 1rem 2.5rem;
   text-align: center;
   position: relative;
 }
-
 #welcome {
-  margin-top: 24px;
+  margin-top: 1.2rem;
   background: #fff;
   color: #1b2940;
   display: inline-block;
   font-size: 2rem;
-  padding: 28px 60px 14px;
+  padding: 1.4rem 3.2rem 0.8rem;
   border-radius: 24px;
-  box-shadow: 0 6px 20px 0 #334a7044;
+  box-shadow: 0 6px 20px #334a7044;
   font-weight: bold;
+  max-width: 90%;
+  word-wrap: break-word;
 }
-
 #logoutBtn {
   position: absolute;
-  right: 28px;
-  top: 28px;
+  right: 1.8rem;
+  top: 1.8rem;
   background: #e74c3c;
   color: #fff;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   border: none;
   border-radius: 10px;
-  padding: 10px 24px;
+  padding: 0.55rem 1.3rem;
   cursor: pointer;
   box-shadow: 0 2px 8px #0001;
   transition: background 0.2s;
 }
-#logoutBtn:hover {
-  background: #b32d1a;
-}
+#logoutBtn:hover { background: #b32d1a; }
 
 /* ---------- Sections ---------- */
 section {
   max-width: 1100px;
-  margin: 48px auto 0;
+  margin: 3rem auto 0;
   background: #fff;
   border-radius: 22px;
   box-shadow: 0 3px 22px #334a7014;
-  padding: 38px;
+  padding: 2.2rem;
 }
-
 h2 {
-  font-size: 2.1rem;
-  margin-bottom: 18px;
+  font-size: 2rem;
+  margin-bottom: 1.1rem;
   color: #233355;
 }
 
@@ -69,8 +73,8 @@ h2 {
 #dashboardLinks {
   display: flex;
   flex-wrap: wrap;
-  gap: 28px;
-  margin-bottom: 18px;
+  gap: clamp(0.8rem, 4vw, 1.75rem);
+  margin-bottom: 1.2rem;
 }
 
 /* shared tile style */
@@ -79,21 +83,22 @@ h2 {
 #dashboardLinks > button {
   background: #2772e6;
   color: #fff;
-  font-size: 1.45rem;
+  font-size: 1.4rem;
   font-weight: 600;
-  padding: 28px 36px;
+  padding: 1.4rem 2.2rem;
   border-radius: 18px;
   border: none;
   box-shadow: 0 2px 8px #2270d022;
   text-decoration: none;
   cursor: pointer;
-  white-space: nowrap;
   transition: background 0.18s, transform 0.12s;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
+  max-width: 100%;           /* mobile: never exceed viewport */
+  white-space: normal;       /* let text wrap */
+  text-align: center;
 }
-
 .dashboard-btn:hover,
 #dashboardLinks > a:hover,
 #dashboardLinks > button:hover {
@@ -101,30 +106,33 @@ h2 {
   transform: translateY(-2px) scale(1.03);
 }
 
-/* optional util if you switch to grid */
+/* optional util if you switch to CSS grid (desktop) */
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 28px;
+  gap: clamp(1rem, 4vw, 1.75rem);
 }
 
 /* ---------- Admin tools ---------- */
 #adminToolsSection {
-  margin-top: 32px;
+  margin-top: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(0.8rem, 3vw, 1.4rem);
 }
 #adminToolsSection > a,
 #adminToolsSection > button {
   background: #1951aa;
   color: #fff;
   font-size: 1.25rem;
-  padding: 20px 38px;
+  padding: 1rem 2.1rem;
   border-radius: 14px;
-  margin-right: 22px;
-  margin-bottom: 18px;
   text-decoration: none;
   font-weight: 500;
-  display: inline-block;
   transition: background 0.2s, transform 0.11s;
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
 }
 #adminToolsSection > a:hover,
 #adminToolsSection > button:hover {
@@ -134,21 +142,36 @@ h2 {
 
 /* ---------- Responsive tweaks ---------- */
 @media (max-width: 800px) {
-  #dashboardLinks {
-    flex-direction: column;
-    gap: 14px;
-  }
+  section { padding: 1.8rem 1.2rem; }
+  header  { padding: 1.6rem 1rem 2rem; }
 
-  section {
-    padding: 16px 8px;
-  }
-
-  header {
-    padding-bottom: 22px;
-  }
+  #dashboardLinks { flex-direction: column; }
 
   #logoutBtn {
-    right: 8px;
-    top: 8px;
+    right: 0.9rem;
+    top: 0.9rem;
+    font-size: 0.95rem;
+    padding: 0.45rem 1rem;
+  }
+  #welcome {
+    font-size: 1.55rem;
+    padding: 1.2rem 1.8rem 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  header { padding-bottom: 1.5rem; }
+  #logoutBtn {
+    right: 0.6rem;
+    top: 0.6rem;
+    padding: 0.35rem 0.9rem;
+  }
+  .dashboard-btn,
+  #dashboardLinks > a,
+  #dashboardLinks > button,
+  #adminToolsSection > a,
+  #adminToolsSection > button {
+    font-size: 1.1rem;
+    padding: 1rem 1.4rem;
   }
 }
