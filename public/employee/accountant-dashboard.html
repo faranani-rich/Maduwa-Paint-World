@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Accountant Dashboard</title>
+    <link rel="stylesheet" href="employee-portal.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Accountant Dashboard</h1>
+      <div class="nav-buttons">
+        <button onclick="location.href='employee-portal.html'">
+          ← Back to Portal
+        </button>
+        <button onclick="location.href='../projects/index.html'">
+          Projects
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <!-- Quick Actions -->
+      <section class="actions">
+        <h2>Quick Actions</h2>
+        <ul>
+          <li>
+            <button onclick="location.href='financial-reports.html'">
+              View Financial Reports
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='invoices.html'">
+              Manage Invoices
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='expenses.html'">
+              Review Expenses
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='budgets.html'">Set Budgets</button>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Snapshot Overview -->
+      <section class="overview">
+        <h2>Overview</h2>
+        <div class="card">
+          <strong>Monthly Revenue:</strong> <span>$–––</span>
+        </div>
+        <div class="card">
+          <strong>Outstanding Invoices:</strong> <span>–––</span>
+        </div>
+        <div class="card">
+          <strong>Upcoming Payments:</strong> <span>–––</span>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

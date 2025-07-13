@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Factory Dashboard</title>
+    <link rel="stylesheet" href="employee-portal.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Factory Dashboard</h1>
+      <div class="nav-buttons">
+        <button onclick="location.href='employee-portal.html'">
+          ← Back to Portal
+        </button>
+        <button onclick="location.href='../projects/index.html'">
+          Projects
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <!-- Quick Actions -->
+      <section class="actions">
+        <h2>Quick Actions</h2>
+        <ul>
+          <li>
+            <button onclick="location.href='production-schedule.html'">
+              View Production Schedule
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='machinery-management.html'">
+              Manage Machinery
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='supply-orders.html'">
+              Create Supply Order
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='safety-reports.html'">
+              Submit Safety Report
+            </button>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Snapshot Overview -->
+      <section class="overview">
+        <h2>Overview</h2>
+        <div class="card">
+          <strong>Pending Orders:</strong> <span>–––</span>
+        </div>
+        <div class="card">
+          <strong>Machine Downtime:</strong> <span>–––</span>
+        </div>
+        <div class="card">
+          <strong>Today's Output:</strong> <span>–––</span>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

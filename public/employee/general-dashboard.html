@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>General Dashboard</title>
+    <link rel="stylesheet" href="employee-portal.css" />
+  </head>
+  <body>
+    <header>
+      <h1>General Dashboard</h1>
+      <div class="nav-buttons">
+        <button onclick="location.href='employee-portal.html'">
+          ← Back to Portal
+        </button>
+        <button onclick="location.href='../projects/index.html'">
+          Projects
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <!-- Quick Actions -->
+      <section class="actions">
+        <h2>Quick Actions</h2>
+        <ul>
+          <li>
+            <button onclick="location.href='profile.html'">View Profile</button>
+          </li>
+          <li>
+            <button onclick="location.href='notifications.html'">
+              Notifications
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='help-support.html'">
+              Help & Support
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='tasks.html'">My Tasks</button>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Snapshot Overview -->
+      <section class="overview">
+        <h2>Overview</h2>
+        <div class="card"><strong>Open Tasks:</strong> <span>–––</span></div>
+        <div class="card">
+          <strong>Unread Messages:</strong> <span>–––</span>
+        </div>
+        <div class="card">
+          <strong>Company Announcements:</strong> <span>–––</span>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

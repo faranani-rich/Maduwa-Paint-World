@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Owner Dashboard</title>
+    <link rel="stylesheet" href="employee-portal.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Owner Dashboard</h1>
+      <div class="nav-buttons">
+        <button onclick="location.href='employee-portal.html'">
+          ← Back to Portal
+        </button>
+        <button onclick="location.href='../projects/index.html'">
+          Projects
+        </button>
+        <!-- New Role Management button -->
+        <button onclick="location.href='role-assign.html'">
+          Role Management
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <!-- Quick Actions -->
+      <section class="actions">
+        <h2>Quick Actions</h2>
+        <ul>
+          <li>
+            <button onclick="location.href='business-metrics.html'">
+              View Business Metrics
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='employee-management.html'">
+              Manage Employees
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='financial-overview.html'">
+              Financial Overview
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='settings.html'">
+              Company Settings
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='role-assign.html'">
+              Role Management
+            </button>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Snapshot Overview -->
+      <section class="overview">
+        <h2>Overview</h2>
+        <div class="card">
+          <strong>Total Revenue:</strong> <span>$–––</span>
+        </div>
+        <div class="card">
+          <strong>Active Projects:</strong> <span>–––</span>
+        </div>
+        <div class="card"><strong>Team Size:</strong> <span>–––</span></div>
+      </section>
+    </main>
+  </body>
+</html>

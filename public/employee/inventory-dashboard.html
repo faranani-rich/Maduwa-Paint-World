@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Inventory Dashboard</title>
+    <link rel="stylesheet" href="employee-portal.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Inventory Dashboard</h1>
+      <div class="nav-buttons">
+        <button onclick="location.href='employee-portal.html'">
+          ← Back to Portal
+        </button>
+        <button onclick="location.href='../projects/index.html'">
+          Projects
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <!-- Quick Actions -->
+      <section class="actions">
+        <h2>Quick Actions</h2>
+        <ul>
+          <li>
+            <button onclick="location.href='view-stock.html'">
+              View Stock Levels
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='add-stock.html'">
+              Add New Stock
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='stock-audit.html'">
+              Conduct Stock Audit
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='reorder-report.html'">
+              Reorder Report
+            </button>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Snapshot Overview -->
+      <section class="overview">
+        <h2>Overview</h2>
+        <div class="card"><strong>Total SKUs:</strong> <span>–––</span></div>
+        <div class="card">
+          <strong>Low-Stock Items:</strong> <span>–––</span>
+        </div>
+        <div class="card">
+          <strong>Inventory Value:</strong> <span>–––</span>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

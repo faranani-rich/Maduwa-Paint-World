@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Driver Dashboard</title>
+    <link rel="stylesheet" href="employee-portal.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Driver Dashboard</h1>
+      <div class="nav-buttons">
+        <button onclick="location.href='employee-portal.html'">
+          ← Back to Portal
+        </button>
+        <button onclick="location.href='../projects/index.html'">
+          Projects
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <!-- Quick Actions -->
+      <section class="actions">
+        <h2>Quick Actions</h2>
+        <ul>
+          <li>
+            <button onclick="location.href='my-routes.html'">
+              View My Routes
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='delivery-log.html'">
+              Log a Delivery
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='vehicle-status.html'">
+              Update Vehicle Status
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='fuel-log.html'">
+              Record Fuel Usage
+            </button>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Snapshot Overview -->
+      <section class="overview">
+        <h2>Overview</h2>
+        <div class="card">
+          <strong>Today's Deliveries:</strong> <span>–––</span>
+        </div>
+        <div class="card">
+          <strong>Next Maintenance:</strong> <span>–––</span>
+        </div>
+        <div class="card">
+          <strong>Total KM This Week:</strong> <span>–––</span>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

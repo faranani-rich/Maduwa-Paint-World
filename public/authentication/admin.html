@@ -1,0 +1,164 @@
+<!-- /authentication/admin.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Staff Management – Maduwa Paint World</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <h1>Staff Management</h1>
+    <div id="adminInfo" style="margin-bottom: 1rem"></div>
+
+    <table id="usersTable" style="width: 100%; border-collapse: collapse">
+      <thead>
+        <tr>
+          <th
+            style="
+              border-bottom: 1px solid #ccc;
+              text-align: left;
+              padding: 8px;
+            "
+          >
+            Email
+          </th>
+          <th
+            style="
+              border-bottom: 1px solid #ccc;
+              text-align: left;
+              padding: 8px;
+            "
+          >
+            Side
+          </th>
+          <th
+            style="
+              border-bottom: 1px solid #ccc;
+              text-align: left;
+              padding: 8px;
+            "
+          >
+            Job
+          </th>
+          <th
+            style="
+              border-bottom: 1px solid #ccc;
+              text-align: left;
+              padding: 8px;
+            "
+          >
+            Action
+          </th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <button id="backBtn" style="margin-top: 1rem">← Back to Dashboard</button>
+
+    <script type="module">
+      import { initAuthListener, updateRole } from "./auth.js";
+      import { db } from "./config.js";
+      import {
+        collection,
+        getDocs,
+        doc,
+      } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
+
+      const adminInfo = document.getElementById("adminInfo");
+      const usersTableBody = document.querySelector("#usersTable tbody");
+      const backBtn = document.getElementById("backBtn");
+
+      backBtn.addEventListener("click", () => {
+        window.location.href = "dashboard.html";
+      });
+
+      initAuthListener(async (state) => {
+        // Only allow signed-in admins
+        if (!state || !state.user || !state.profile?.isAdmin) {
+          window.location.href = "dashboard.html";
+          return;
+        }
+
+        // Show current admin’s email
+        adminInfo.textContent = `Signed in as admin: ${state.user.email}`;
+
+        // Fetch all users
+        const snap = await getDocs(collection(db, "users"));
+        usersTableBody.innerHTML = "";
+
+        snap.forEach((docSnap) => {
+          const uid = docSnap.id;
+          const u = docSnap.data();
+
+          const tr = document.createElement("tr");
+
+          // Email
+          const emailTd = document.createElement("td");
+          emailTd.textContent = u.email || "[no email]";
+          emailTd.style.padding = "8px";
+
+          // Side (customer vs employee)
+          const sideTd = document.createElement("td");
+          sideTd.style.padding = "8px";
+          const sideSelect = document.createElement("select");
+          sideSelect.innerHTML = `
+            <option value="customer">Customer</option>
+            <option value="employee">Employee</option>
+          `;
+          sideSelect.value = u.currentRole;
+          sideTd.appendChild(sideSelect);
+
+          // Job
+          const jobTd = document.createElement("td");
+          jobTd.style.padding = "8px";
+          const jobSelect = document.createElement("select");
+          jobSelect.innerHTML = `
+            <option value="">— none —</option>
+            <option value="painter">Painter</option>
+            <option value="driver">Driver</option>
+            <option value="mixer">Paint Mixer</option>
+            <option value="accountant">Accountant</option>
+            <option value="sales">Sales</option>
+            <option value="manager">Manager</option>
+            <option value="owner">Owner</option>
+          `;
+          jobSelect.value = u.employeeType || "";
+          jobSelect.style.display =
+            sideSelect.value === "employee" ? "inline-block" : "none";
+          sideSelect.addEventListener("change", () => {
+            jobSelect.style.display =
+              sideSelect.value === "employee" ? "inline-block" : "none";
+          });
+          jobTd.appendChild(jobSelect);
+
+          // Action
+          const actionTd = document.createElement("td");
+          actionTd.style.padding = "8px";
+          const saveBtn = document.createElement("button");
+          saveBtn.textContent = "Save";
+          saveBtn.addEventListener("click", async () => {
+            const newRole = sideSelect.value;
+            const newType =
+              newRole === "employee" ? jobSelect.value || null : null;
+            try {
+              await updateRole(uid, newRole, newType);
+              alert(
+                `Updated ${u.email}'s role to ${newRole}${
+                  newType ? " / " + newType : ""
+                }.`
+              );
+            } catch (err) {
+              alert("Error updating role:\n" + err.message);
+            }
+          });
+          actionTd.appendChild(saveBtn);
+
+          tr.append(emailTd, sideTd, jobTd, actionTd);
+          usersTableBody.appendChild(tr);
+        });
+      });
+    </script>
+  </body>
+</html>

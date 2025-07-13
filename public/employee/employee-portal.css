@@ -1,0 +1,154 @@
+/* =========================================================
+   employee-portal.css
+   ========================================================= */
+
+/* ---------- Base ---------- */
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #f5f8fa;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---------- Header ---------- */
+header {
+  background: #335070;
+  color: #fff;
+  padding: 32px 0 40px;
+  text-align: center;
+  position: relative;
+}
+
+#welcome {
+  margin-top: 24px;
+  background: #fff;
+  color: #1b2940;
+  display: inline-block;
+  font-size: 2rem;
+  padding: 28px 60px 14px;
+  border-radius: 24px;
+  box-shadow: 0 6px 20px 0 #334a7044;
+  font-weight: bold;
+}
+
+#logoutBtn {
+  position: absolute;
+  right: 28px;
+  top: 28px;
+  background: #e74c3c;
+  color: #fff;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 24px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #0001;
+  transition: background 0.2s;
+}
+#logoutBtn:hover {
+  background: #b32d1a;
+}
+
+/* ---------- Sections ---------- */
+section {
+  max-width: 1100px;
+  margin: 48px auto 0;
+  background: #fff;
+  border-radius: 22px;
+  box-shadow: 0 3px 22px #334a7014;
+  padding: 38px;
+}
+
+h2 {
+  font-size: 2.1rem;
+  margin-bottom: 18px;
+  color: #233355;
+}
+
+/* ---------- Dashboard Links ---------- */
+#dashboardLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  margin-bottom: 18px;
+}
+
+/* shared tile style */
+.dashboard-btn,
+#dashboardLinks > a,
+#dashboardLinks > button {
+  background: #2772e6;
+  color: #fff;
+  font-size: 1.45rem;
+  font-weight: 600;
+  padding: 28px 36px;
+  border-radius: 18px;
+  border: none;
+  box-shadow: 0 2px 8px #2270d022;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.18s, transform 0.12s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboard-btn:hover,
+#dashboardLinks > a:hover,
+#dashboardLinks > button:hover {
+  background: #1856b4;
+  transform: translateY(-2px) scale(1.03);
+}
+
+/* optional util if you switch to grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 28px;
+}
+
+/* ---------- Admin tools ---------- */
+#adminToolsSection {
+  margin-top: 32px;
+}
+#adminToolsSection > a,
+#adminToolsSection > button {
+  background: #1951aa;
+  color: #fff;
+  font-size: 1.25rem;
+  padding: 20px 38px;
+  border-radius: 14px;
+  margin-right: 22px;
+  margin-bottom: 18px;
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-block;
+  transition: background 0.2s, transform 0.11s;
+}
+#adminToolsSection > a:hover,
+#adminToolsSection > button:hover {
+  background: #11336d;
+  transform: translateY(-1px) scale(1.04);
+}
+
+/* ---------- Responsive tweaks ---------- */
+@media (max-width: 800px) {
+  #dashboardLinks {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  section {
+    padding: 16px 8px;
+  }
+
+  header {
+    padding-bottom: 22px;
+  }
+
+  #logoutBtn {
+    right: 8px;
+    top: 8px;
+  }
+}

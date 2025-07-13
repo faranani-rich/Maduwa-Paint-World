@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Painter Dashboard</title>
+    <link rel="stylesheet" href="employee-portal.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Painter Dashboard</h1>
+      <div class="nav-buttons">
+        <button onclick="location.href='employee-portal.html'">
+          ← Back to Portal
+        </button>
+        <button onclick="location.href='../projects/index.html'">
+          Projects
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <!-- Quick Actions -->
+      <section class="actions">
+        <h2>Quick Actions</h2>
+        <ul>
+          <li>
+            <button onclick="location.href='my-assignments.html'">
+              View My Assignments
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='update-status.html'">
+              Update Job Status
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='request-materials.html'">
+              Request Materials
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='submit-timesheet.html'">
+              Submit Timesheet
+            </button>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Snapshot Overview -->
+      <section class="overview">
+        <h2>Overview</h2>
+        <div class="card"><strong>Today's Jobs:</strong> <span>–––</span></div>
+        <div class="card">
+          <strong>Materials Pending:</strong> <span>–––</span>
+        </div>
+        <div class="card">
+          <strong>Completed Projects:</strong> <span>–––</span>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

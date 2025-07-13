@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="employee-portal.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Admin Dashboard</h1>
+      <div class="nav-buttons">
+        <button onclick="location.href='employee-portal.html'">
+          ← Back to Portal
+        </button>
+        <button onclick="location.href='../projects/index.html'">
+          Projects
+        </button>
+        <!-- New Role Management button -->
+        <button onclick="location.href='role-assign.html'">
+          Role Management
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <!-- Quick Actions -->
+      <section class="actions">
+        <h2>Quick Actions</h2>
+        <ul>
+          <li>
+            <button onclick="location.href='user-management.html'">
+              Manage Users
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='role-assign.html'">
+              Assign Roles
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='settings.html'">
+              System Settings
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='audits.html'">
+              View Audit Logs
+            </button>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Snapshot Overview -->
+      <section class="overview">
+        <h2>Overview</h2>
+        <div class="card"><strong>Total Users:</strong> <span>–––</span></div>
+        <div class="card">
+          <strong>Active Sessions:</strong> <span>–––</span>
+        </div>
+        <div class="card">
+          <strong>Recent Changes:</strong> <span>–––</span>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

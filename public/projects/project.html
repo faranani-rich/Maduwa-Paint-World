@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- MOBILE-FIRST -->
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+    <title>Edit Project – Maduwa Paint World</title>
+
+    <!-- Global + print styles -->
+    <link rel="stylesheet" href="styles/main.css" />
+    <link rel="stylesheet" href="styles/print.css" media="print" />
+
+    <style>
+      /********  LAYOUT ********/
+      :root {
+        --brand: #005a8d;
+        --border: #c3e2f5;
+        --bg: #fff;
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, sans-serif;
+        background: #f2f6f8;
+        color: #222;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 1.5rem;
+        background: var(--brand);
+        color: #fff;
+      }
+      header h1 {
+        margin: 0;
+        font-size: 1.4rem;
+        flex: 1;
+      }
+      header button {
+        background: #fff;
+        color: var(--brand);
+        border: none;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.95rem;
+      }
+
+      main {
+        max-width: 1100px;
+        margin: 2rem auto;
+        background: var(--bg);
+        padding: 2rem 2rem 1.5rem;
+        border-radius: 18px;
+        box-shadow: 0 6px 32px #005a8d14;
+      }
+      @media (max-width: 700px) {
+        main {
+          padding: 1.2rem 0.6rem;
+          margin: 1rem 0.5rem;
+        }
+      }
+
+      h2 {
+        margin-top: 2rem;
+        color: var(--brand);
+        font-size: 1.1rem;
+      }
+
+      /* two-column grid that collapses */
+      .grid-2col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+      }
+      @media (max-width: 900px) {
+        .grid-2col {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      section {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.2rem;
+        border-bottom: 1px solid #eef1f3;
+      }
+
+      label {
+        display: block;
+        margin: 0.9rem 0 1rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+      input,
+      select,
+      textarea {
+        display: block;
+        width: 100%;
+        max-width: 350px;
+        font-size: 0.95rem;
+        padding: 0.55rem 0.8rem;
+        margin-top: 0.4rem;
+        border-radius: 7px;
+        border: 1px solid #bbb;
+        background: #fafbfc;
+      }
+      @media (max-width: 700px) {
+        input,
+        select,
+        textarea {
+          max-width: 100%;
+        }
+      }
+
+      .flex {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+      }
+
+      .actions {
+        display: flex;
+        gap: 1rem;
+        margin: 2rem 0 0;
+        flex-wrap: wrap;
+      }
+      .actions button {
+        font-size: 1rem;
+        padding: 0.6rem 0.9rem;
+        border-radius: 6px;
+      }
+
+      /********  TABLES ********/
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        border: 1px solid var(--border);
+        padding: 6px 8px;
+        text-align: left;
+        font-size: 0.85rem;
+      }
+      th.internal-only,
+      td.internal-only {
+        background: #fff7de;
+        color: #a0760a;
+        font-style: italic;
+      }
+
+      .scrollable-cell {
+        max-height: 48px;
+        overflow-y: auto;
+        min-width: 90px;
+      }
+      .wider-km {
+        min-width: 80px;
+        max-width: 180px;
+      }
+
+      /* keep tables inside scroll box on small screens */
+      .table-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 1rem;
+      }
+      .table-scroll table {
+        min-width: 1100px; /* allows horizontal scroll */
+        width: max-content;
+      }
+      @media (max-width: 700px) {
+        .table-scroll table {
+          min-width: 900px;
+        }
+      }
+
+      /********  PROGRESS BAR ********/
+      .progress-bar-bg {
+        background: #eee;
+        border-radius: 10px;
+        height: 22px;
+        width: 100%;
+        margin: 0.7rem 0;
+      }
+      .progress-bar {
+        background: var(--brand);
+        height: 100%;
+        border-radius: 10px;
+        color: #fff;
+        padding-left: 8px;
+        font-weight: bold;
+        font-size: 0.9rem;
+        transition: width 0.4s;
+      }
+
+      #totals p {
+        margin: 0.35rem 0;
+      }
+
+      /** print helper visible only in print **/
+      .print-value {
+        display: none;
+      }
+      @media print {
+        .print-value {
+          display: inline-block !important;
+          margin-left: 0.3rem;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <h1>Edit Project</h1>
+      <button id="back-btn">← Back to Dashboard</button>
+    </header>
+
+    <main>
+      <div id="print-view">
+        <form id="project-form">
+          <!-- ===  GRID INFO  === -->
+          <section class="grid-2col">
+            <!-- left -->
+            <div>
+              <h2>Project Info</h2>
+
+              <label>
+                Name
+                <input type="text" name="name" required />
+              </label>
+
+              <label>
+                Location
+                <input type="text" name="location" />
+              </label>
+
+              <label>
+                Status
+                <select name="status">
+                  <option value="quotation">Quotation</option>
+                  <option value="approved">Approved</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </label>
+
+              <label>
+                Project Manager Name
+                <input type="text" name="pm-name" />
+              </label>
+
+              <label>
+                Project Manager Email
+                <input type="email" name="pm-email" />
+              </label>
+
+              <label>
+                Customer Name
+                <input type="text" name="cust-name" />
+              </label>
+
+              <label>
+                Customer Email
+                <input type="email" name="cust-email" />
+              </label>
+            </div>
+
+            <!-- right -->
+            <div>
+              <h2>Progress & Estimation</h2>
+
+              <label>
+                Estimated Duration
+                <input
+                  type="text"
+                  name="estimated-duration"
+                  placeholder="E.g. 40 h or 1 week"
+                />
+              </label>
+
+              <label>
+                Hours Worked
+                <input type="number" name="hours-worked" min="0" />
+              </label>
+
+              <label>
+                Percent Complete (%)
+                <input
+                  type="number"
+                  name="progress"
+                  min="0"
+                  max="100"
+                  step="1"
+                  readonly
+                />
+              </label>
+
+              <div class="progress-bar-bg">
+                <div class="progress-bar" id="progress-bar" style="width: 0%">
+                  0%
+                </div>
+              </div>
+
+              <label>
+                Progress Notes
+                <textarea
+                  name="progress-comment"
+                  rows="2"
+                  placeholder="E.g., Finished undercoat, waiting for client…"
+                ></textarea>
+              </label>
+            </div>
+          </section>
+
+          <!-- === EMPLOYEES === -->
+          <section>
+            <h2>Employees Assigned</h2>
+            <div class="table-scroll">
+              <table id="employees-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th class="internal-only">Hours</th>
+                    <th class="internal-only">Overtime Hours</th>
+                    <th class="internal-only">Normal Rate/hr</th>
+                    <th class="internal-only">Overtime Rate</th>
+                    <th class="internal-only">Bonus</th>
+                    <th class="internal-only">Total Pay</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <button type="button" id="add-employee-btn">+ Add Employee</button>
+          </section>
+
+          <!-- === PAINTS === -->
+          <section>
+            <h2>Paints Used</h2>
+            <div class="table-scroll">
+              <table id="paints-table">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Color</th>
+                    <th>Buckets</th>
+                    <th>Supplier</th>
+                    <th>Date Bought</th>
+                    <th class="internal-only">Cost/Bucket</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <button type="button" id="add-paint-btn">+ Add Paint</button>
+          </section>
+
+          <!-- === MATERIALS === -->
+          <section>
+            <h2>Materials</h2>
+            <div class="table-scroll">
+              <table id="materials-table">
+                <thead>
+                  <tr>
+                    <th>Description</th>
+                    <th>Quantity</th>
+                    <th class="internal-only">Unit Cost</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <button type="button" id="add-material-btn">+ Add Material</button>
+          </section>
+
+          <!-- === VEHICLES (internal) === -->
+          <section class="internal-only">
+            <h2>Vehicles & Trips</h2>
+            <div class="table-scroll">
+              <table id="vehicles-table">
+                <thead>
+                  <tr>
+                    <th>Driver</th>
+                    <th>Car</th>
+                    <th>Purpose</th>
+                    <th class="wider-km">KM</th>
+                    <th class="internal-only">Petrol</th>
+                    <th class="internal-only">Tolls</th>
+                    <th>Destination</th>
+                    <th>Date</th>
+                    <th>Notes</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <button type="button" id="add-vehicle-btn">
+              + Add Vehicle/Trip
+            </button>
+          </section>
+
+          <!-- === EXPENSES (internal) === -->
+          <section class="internal-only">
+            <h2>Other Expenses</h2>
+            <div class="table-scroll">
+              <table id="expenses-table">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Notes</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <button type="button" id="add-expense-btn">+ Add Expense</button>
+          </section>
+
+          <!-- === TOTALS === -->
+          <section>
+            <h2>Profit &amp; Totals</h2>
+            <label class="internal-only">
+              Markup %
+              <input type="number" name="markupPct" min="0" />
+            </label>
+            <div id="totals"></div>
+          </section>
+
+          <!-- === NOTES === -->
+          <section>
+            <h2>Notes / Instructions</h2>
+            <textarea
+              name="notes"
+              rows="3"
+              placeholder="Site-specific notes, client requests, etc…"
+            ></textarea>
+          </section>
+
+          <!-- internal notes -->
+          <section class="internal-only">
+            <h2>Internal Notes</h2>
+            <textarea
+              name="internal-notes"
+              rows="2"
+              placeholder="Private notes (not shown to customer/printout)"
+            ></textarea>
+          </section>
+
+          <!-- ACTIONS -->
+          <div class="actions">
+            <button type="submit">Save</button>
+            <button type="button" id="print-customer-btn">
+              Print Customer Copy
+            </button>
+            <button type="button" id="print-internal-btn">
+              Print Internal Copy
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+
+    <!-- EmailJS & app logic -->
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+    <script type="module" src="js/project.js"></script>
+    <script type="module" src="js/project-enhancements.js"></script>
+
+    <!-- *******  PRINT-VALUE SYNCER ******* -->
+    <script>
+      /**
+       * For every form control inside #project-form we create a hidden
+       * <span class="print-value"> that mirrors its value. Because the span
+       * exists from DOMContentLoaded, every browser (desktop & mobile) will
+       * include the data in its print preview even if JS can't run at
+       * beforeprint time on some mobile engines.
+       */
+      document.addEventListener("DOMContentLoaded", () => {
+        const form = document.getElementById("project-form");
+        const controls = form.querySelectorAll("input, textarea, select");
+
+        controls.forEach((el) => {
+          const span = document.createElement("span");
+          span.className = "print-value";
+          span.textContent = getValue(el);
+          el.insertAdjacentElement("afterend", span);
+
+          // keep it in sync
+          el.addEventListener("input", () => {
+            span.textContent = getValue(el);
+          });
+          if (el.tagName === "SELECT") {
+            el.addEventListener("change", () => {
+              span.textContent = getValue(el);
+            });
+          }
+        });
+
+        function getValue(el) {
+          if (el.tagName === "SELECT") {
+            return el.options[el.selectedIndex]?.text || "";
+          }
+          return el.value;
+        }
+      });
+    </script>
+  </body>
+</html>

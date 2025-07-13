@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Employee Portal – Maduwa Paint World</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+    <!-- Inter font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="employee-portal.css" />
+  </head>
+
+  <body>
+    <!-- ╔══════════ Header ══════════╗ -->
+    <header>
+      <h1>Employee Portal</h1>
+      <div id="welcome"></div>
+      <button id="logoutBtn" style="float: right">Logout</button>
+    </header>
+
+    <!-- ╔══════════ Dashboards ══════════╗ -->
+    <section>
+      <h2>Your Dashboards</h2>
+
+      <!-- JS-generated employee dashboards -->
+      <div id="dashboardLinks" class="dashboard-grid"></div>
+
+      <!-- Always-visible shortcut -->
+      <a
+        href="../projects/index.html"
+        class="dashboard-btn"
+        id="projectsPortalBtn"
+      >
+        Projects Portal
+      </a>
+    </section>
+
+    <!-- ╔══════════ Admin / Owner tools ══════════╗ -->
+    <section id="adminToolsSection" style="display: none">
+      <h2>Admin Tools</h2>
+      <!-- owner / admin only -->
+      <a href="role-assign.html" class="dashboard-btn" id="manageRolesBtn">
+        Assign / Manage Roles
+      </a>
+    </section>
+
+    <script type="module" src="./employee-portal.js"></script>
+  </body>
+</html>

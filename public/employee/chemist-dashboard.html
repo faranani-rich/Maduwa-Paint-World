@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chemist Dashboard</title>
+    <link rel="stylesheet" href="employee-portal.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Chemist Dashboard</h1>
+      <div class="nav-buttons">
+        <button onclick="location.href='employee-portal.html'">
+          ← Back to Portal
+        </button>
+        <button onclick="location.href='../projects/index.html'">
+          Projects
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <!-- Quick Actions -->
+      <section class="actions">
+        <h2>Quick Actions</h2>
+        <ul>
+          <li>
+            <button onclick="location.href='formulations.html'">
+              View Formulations
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='lab-tests.html'">
+              Manage Lab Tests
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='inventory-check.html'">
+              Check Inventory
+            </button>
+          </li>
+          <li>
+            <button onclick="location.href='order-supplies.html'">
+              Order Supplies
+            </button>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Snapshot Overview -->
+      <section class="overview">
+        <h2>Overview</h2>
+        <div class="card">
+          <strong>Pending QC Tests:</strong> <span>–––</span>
+        </div>
+        <div class="card">
+          <strong>Critical Stock Items:</strong> <span>–––</span>
+        </div>
+        <div class="card">
+          <strong>Upcoming Experiments:</strong> <span>–––</span>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

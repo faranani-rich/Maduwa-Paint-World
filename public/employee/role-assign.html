@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1"
+    />
+    <title>Role Management – Maduwa Paint World</title>
+
+    <!-- Google Font: Inter -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Component styles & logic -->
+    <link rel="stylesheet" href="role-assign.css" />
+    <script type="module" src="role-assign.js"></script>
+  </head>
+
+  <body>
+    <!-- ╔════════════════════════════════╗
+         ║            HEADER             ║
+         ╚════════════════════════════════╝ -->
+    <header class="page-header">
+      <h1 class="page-title">Role Management</h1>
+      <button
+        class="btn back-btn"
+        onclick="location.href='employee-portal.html'"
+      >
+        ← Back&nbsp;to&nbsp;Portal
+      </button>
+    </header>
+
+    <!-- ╔════════════════════════════════╗
+         ║          USER TABLE           ║
+         ╚════════════════════════════════╝ -->
+    <main class="container">
+      <section class="card">
+        <div class="table-wrapper">
+          <table class="role-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Roles / Employee&nbsp;Types</th>
+                <th class="min-col">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="users-table-body">
+              <!-- populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <!-- ╔════════════════════════════════╗
+         ║            MODAL              ║
+         ╚════════════════════════════════╝ -->
+    <dialog id="edit-modal" class="modal">
+      <form method="dialog" id="edit-form" class="modal-content">
+        <h2>Edit Roles</h2>
+
+        <!-- Read-only identity -->
+        <div class="field-row">
+          <label>Name</label>
+          <input type="text" id="edit-name" readonly />
+        </div>
+        <div class="field-row">
+          <label>Email</label>
+          <input type="text" id="edit-email" readonly />
+        </div>
+
+        <!-- 1️⃣ General role -->
+        <fieldset>
+          <legend>General role</legend>
+          <div class="checkbox-grid">
+            <label>
+              <input type="checkbox" id="chk-employee" />
+              <span>Employee</span>
+            </label>
+          </div>
+          <p class="hint">
+            Every account is always a customer. Tick “Employee” to grant staff
+            access.
+          </p>
+        </fieldset>
+
+        <!-- 2️⃣ Employee-type checklist -->
+        <fieldset id="emp-types-wrapper" disabled>
+          <legend>Employee types</legend>
+          <div class="checkbox-grid" id="emp-types-checkboxes">
+            <!-- checkboxes injected by role-assign.js -->
+          </div>
+        </fieldset>
+
+        <!-- Modal actions -->
+        <div class="modal-actions">
+          <button type="submit" class="btn primary">Save</button>
+          <button type="button" class="btn" data-close>Cancel</button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>
