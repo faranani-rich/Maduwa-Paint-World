@@ -1,60 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Welcome - Maduwa Paint World</title>
+    <title>Welcome – Maduwa Paint World</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="home.css" />
   </head>
   <body>
     <header>
       <h1>Maduwa Paint World</h1>
+      <button id="logoutBtn">Logout</button>
     </header>
 
-    <!-- Controls -->
-    <div style="text-align: right; margin: 1em 0">
-      <button id="logoutBtn">Logout</button>
+    <main>
+      <section>
+        <h2>Welcome!</h2>
+        <p>
+          We are a proudly South African paint manufacturer and service company
+          based in Pretoria.<br />
+          <strong>Quality paint, friendly service, affordable prices.</strong>
+        </p>
+        <ul>
+          <li>Paint for homes, industries, and commercial buildings</li>
+          <li>Professional painting services – interior & exterior</li>
+          <li>Custom colours mixed to order</li>
+          <li>Branches in Gauteng and Limpopo</li>
+        </ul>
+      </section>
+
+      <section id="projectsButton" style="display: none">
+        <a href="dashboard.html" class="btn">View My Projects</a>
+      </section>
+
+      <section>
+        <h2>Our Stores</h2>
+        <div class="store-grid">
+          <div class="store-card">
+            <h3>Pretoria Factory</h3>
+            <p>Topaz Park<br />72 Topaas Street<br />Rosslyn 0182</p>
+            <p>
+              <a
+                href="https://www.google.com/maps/place/72+Topaas+St,+Rosslyn,+Pretoria,+0182"
+                target="_blank"
+                >📍 Open in Maps</a
+              >
+            </p>
+            <p>📞 <a href="tel:+27615241624">061 524 1624</a></p>
+          </div>
+          <div class="store-card">
+            <h3>Witbank Shop</h3>
+            <p>1 Rhodes Street<br />Bambino Centre</p>
+            <p>
+              <a
+                href="https://www.google.com/maps/place/1+Rhodes+St,+Witbank,+Mpumalanga"
+                target="_blank"
+                >📍 Open in Maps</a
+              >
+            </p>
+            <p>📞 <a href="tel:+27790439864">079 043 9864</a></p>
+          </div>
+          <div class="store-card">
+            <h3>Malamulele Shop</h3>
+            <p>
+              Kutsakeni Quick Save<br />Shop 6 Stand# 925<br />Malamulele
+              Section A
+            </p>
+            <p>
+              <a
+                href="https://www.google.com/maps/place/Kutsakeni+Quick+Save,+Shop+6,+Malamulele"
+                target="_blank"
+                >📍 Open in Maps</a
+              >
+            </p>
+            <p>📞 <a href="tel:+27714122695">071 412 2695</a></p>
+          </div>
+          <div class="store-card">
+            <h3>Makhado Shop</h3>
+            <p>10 Songozwi Street<br />Louistrich</p>
+            <p>
+              <a
+                href="https://www.google.com/maps/place/10+Songozwi+St,+Louis+Trichardt"
+                target="_blank"
+                >📍 Open in Maps</a
+              >
+            </p>
+            <p>📞 <a href="tel:+27792932290">079 293 2290</a></p>
+          </div>
+          <div class="store-card">
+            <h3>Atteridgeville</h3>
+            <p>Atlyn Mall Traffic Circle<br />Opposite FNB</p>
+            <p>
+              <a
+                href="https://www.google.com/maps/place/FNB+Atlyn+Mall,+Atteridgeville,+Pretoria"
+                target="_blank"
+                >📍 Open in Maps</a
+              >
+            </p>
+            <p>
+              📞 <a href="tel:+27120655835">012 065 5835</a><br />📞
+              <a href="tel:+27615241624">061 524 1624</a>
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>&copy; 2025 Maduwa Paint World (Pty) Ltd</footer>
+
+    <!-- WhatsApp Icon (Floating) -->
+    <div class="whatsapp-btn">
+      <a
+        href="https://wa.me/27794071053"
+        target="_blank"
+        title="Message Uncle Mbangi"
+      >
+        <img src="../assets/whatsapp-icon.png" alt="WhatsApp" />
+      </a>
     </div>
 
-    <section>
-      <h2>Welcome to Maduwa Paint World!</h2>
-      <p>
-        We are a proudly South African paint manufacturer and services company
-        based in Pretoria.<br />
-        <b>Quality paint, friendly service, affordable prices.</b>
-      </p>
-      <ul>
-        <li>Wide range of paints for home, industrial and commercial use</li>
-        <li>Professional painting services – interior & exterior</li>
-        <li>Custom colours mixed to order</li>
-        <li>Branches in Pretoria, Gauteng, and Limpopo</li>
-      </ul>
-      <hr />
-      <h3>Contact Us</h3>
-      <p>
-        <b>Address:</b> 71 Topaas St, Rosslyn, Pretoria, 0122<br />
-        <b>Phone:</b> <a href="tel:0120555603">012 055 5603</a><br />
-        <b>Email:</b>
-        <a href="mailto:fortunatemaduwa@gmail.com">fortunatemaduwa@gmail.com</a
-        ><br />
-        <b>Hours:</b> 7am – 5pm, Mon-Fri
-      </p>
-      <a href="https://goo.gl/maps/9MuHQQozD3pYG7cu5" target="_blank">
-        Find us on Google Maps
-      </a>
-    </section>
-
-    <footer>&copy; 2024 Maduwa Paint World (Pty) Ltd</footer>
-    <script type="module">
-      import { logout } from "../authentication/auth.js";
-      document.getElementById("logoutBtn").onclick = async function () {
-        try {
-          await logout();
-          window.location.href = "../authentication/login.html";
-        } catch (err) {
-          alert("Logout failed:\n" + err.message);
-        }
-      };
-    </script>
+    <script type="module" src="./home.js"></script>
   </body>
 </html>

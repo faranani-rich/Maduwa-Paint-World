@@ -1,0 +1,138 @@
+/* ================================
+   home.css – Customer Homepage
+   ================================ */
+
+/* Base Reset + Layout */
+body {
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f8fa;
+  color: #1b2940;
+}
+
+header {
+  background-color: #335070;
+  color: white;
+  padding: 24px 16px;
+  text-align: center;
+  position: relative;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+#logoutBtn {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  padding: 8px 16px;
+  font-size: 0.95rem;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Main Section */
+main {
+  padding: 24px;
+}
+
+h2 {
+  color: #335070;
+  margin-bottom: 10px;
+}
+
+ul {
+  padding-left: 20px;
+  margin-top: 8px;
+}
+
+ul li {
+  margin-bottom: 6px;
+}
+
+section {
+  margin-bottom: 32px;
+}
+
+/* Button */
+.btn {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #335070;
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+  background-color: #223b52;
+}
+
+/* Store Cards */
+.store-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.store-card {
+  background-color: white;
+  border: 2px solid #e1e6ed;
+  border-left: 6px solid #335070;
+  padding: 16px;
+  border-radius: 8px;
+  width: 280px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.store-card h3 {
+  margin-top: 0;
+  color: #335070;
+}
+
+.store-card a {
+  color: #1b2940;
+  text-decoration: none;
+}
+
+.store-card a:hover {
+  text-decoration: underline;
+}
+
+/* WhatsApp Floating Button */
+.whatsapp-btn {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 999;
+}
+
+.whatsapp-btn img {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s ease;
+}
+
+.whatsapp-btn img:hover {
+  transform: scale(1.05);
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 16px;
+  background-color: #f0f3f8;
+  color: #6b7c93;
+  font-size: 0.9rem;
+  margin-top: 40px;
+}

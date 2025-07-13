@@ -1,4 +1,3 @@
-// public/projects/js/storage.js
 /* eslint-env browser */
 
 import { db } from "./firebase-config.js";
@@ -10,7 +9,9 @@ import {
   updateDoc,
   deleteDoc,
   doc,
-  getDoc
+  getDoc,
+  query,
+  where
 } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
 
 const PROJECTS_COLLECTION = "projects";
@@ -18,7 +19,8 @@ const PROJECTS_COLLECTION = "projects";
 /* -------------------------------------------------------------- *
  *  READ helpers                                                  *
  * -------------------------------------------------------------- */
-// Load every project in the collection
+
+// Load every project in the collection (for admin/employee use only)
 export async function loadProjects() {
   const qs = await getDocs(collection(db, PROJECTS_COLLECTION));
   return qs.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -31,15 +33,22 @@ export async function getProjectById(id) {
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 
+// Fetch all projects for a customer by email (customer.email field)
+export async function getProjectsByCustomerEmail(email) {
+  if (!email) return [];
+  const normalizedEmail = email.trim().toLowerCase();
+  const q = query(
+    collection(db, PROJECTS_COLLECTION),
+    where("customer.email", "==", normalizedEmail)
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+}
+
 /* -------------------------------------------------------------- *
  *  CREATE helpers                                                *
  * -------------------------------------------------------------- */
 
-/**
- * Add a new project with an **auto-generated id**.
- * Returns the id string (so callers can redirect to `project.html?id=…`).
- * Shows a friendly alert if Firestore blocks the write.
- */
 export async function addProject(project) {
   try {
     const docRef = await addDoc(collection(db, PROJECTS_COLLECTION), project);
@@ -52,22 +61,16 @@ export async function addProject(project) {
     ) {
       alert("Server blocked project creation – you don’t have permission.");
     }
-    throw err;            // let callers handle the rest
+    throw err;
   }
 }
 
-/**
- * Save (create or overwrite) a project when **you already have an id**.
- * • If `project.id` exists → behaves like an upsert with that id.  
- * • If `project.id` is missing → falls back to `addProject(project)`.
- */
 export async function saveProject(project) {
   if (!project || typeof project !== "object") {
     throw new Error("saveProject: project object required");
   }
 
   if (!project.id) {
-    // no id supplied → create via addProject()
     return await addProject(project);
   }
 
@@ -90,6 +93,7 @@ export async function saveProject(project) {
 /* -------------------------------------------------------------- *
  *  UPDATE & DELETE helpers                                       *
  * -------------------------------------------------------------- */
+
 export async function updateProject(id, updates) {
   if (!id) throw new Error("Project ID required for update");
   await updateDoc(doc(db, PROJECTS_COLLECTION, id), updates);

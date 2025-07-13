@@ -1,0 +1,124 @@
+/* ================================
+   project-view.css – Read-Only View
+   ================================ */
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f8fa;
+  color: #1b2940;
+}
+
+/* Header */
+header {
+  background-color: #335070;
+  color: white;
+  padding: 24px 16px;
+  text-align: center;
+  position: relative;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+#backBtn {
+  position: absolute;
+  left: 16px;
+  top: 20px;
+  padding: 8px 16px;
+  font-size: 0.95rem;
+  background-color: #223b52;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Main layout */
+main {
+  padding: 24px;
+}
+
+#statusMessage {
+  text-align: center;
+  color: #666;
+  padding: 20px;
+}
+
+/* Project Details */
+#projectName {
+  font-size: 1.6rem;
+  margin-bottom: 16px;
+  color: #335070;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.info-grid p {
+  margin: 0;
+  background: #fff;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* Summary Box */
+.summary-box {
+  background-color: #fff;
+  padding: 16px 20px;
+  border-left: 6px solid #335070;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  margin-bottom: 24px;
+}
+
+.summary-box h3 {
+  margin-top: 0;
+  color: #335070;
+}
+
+.summary-box p {
+  margin: 8px 0;
+  font-weight: 500;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.btn {
+  background-color: #335070;
+  color: white;
+  padding: 10px 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.btn:hover {
+  background-color: #223b52;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 16px;
+  background-color: #f0f3f8;
+  color: #6b7c93;
+  font-size: 0.9rem;
+  margin-top: 40px;
+}

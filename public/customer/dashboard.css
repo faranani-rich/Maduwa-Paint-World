@@ -1,0 +1,165 @@
+/* ================================
+   dashboard.css – Customer Projects
+   ================================ */
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f8fa;
+  color: #1b2940;
+}
+
+/* Header */
+header {
+  background-color: #335070;
+  color: white;
+  padding: 24px 16px;
+  text-align: center;
+  position: relative;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+#logoutBtn {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  padding: 8px 16px;
+  font-size: 0.95rem;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#logoutBtn:hover {
+  background-color: #c0392b;
+}
+
+/* Main Layout */
+main {
+  padding: 24px;
+}
+
+/* Top Bar: Back + Welcome */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.welcome {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #335070;
+  margin-top: 8px;
+}
+
+/* Filter Bar */
+.filter-bar {
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Buttons */
+.btn {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #335070;
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn:hover {
+  background-color: #223b52;
+}
+
+/* Project Cards */
+.project-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.project-card {
+  background-color: white;
+  border-left: 6px solid #335070;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.project-card h3 {
+  margin: 0 0 8px;
+  color: #335070;
+}
+
+.project-card p {
+  margin: 4px 0;
+  line-height: 1.5;
+}
+
+/* Card Buttons Group */
+.card-buttons {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Status Message and No Projects */
+#statusMessage,
+#noProjectsSection {
+  text-align: center;
+  padding: 20px;
+  color: #888;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 16px;
+  background-color: #f0f3f8;
+  color: #6b7c93;
+  font-size: 0.9rem;
+  margin-top: 40px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .top-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .filter-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .card-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

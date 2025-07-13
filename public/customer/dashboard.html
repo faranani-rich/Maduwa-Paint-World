@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Your Dashboard – Maduwa Paint World</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="dashboard.css" />
+  </head>
+  <body id="dashboardPage">
+    <header>
+      <h1>Your Dashboard</h1>
+      <button id="logoutBtn" class="btn logout-btn">Logout</button>
+    </header>
+
+    <main>
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <button id="backBtn" class="btn">&larr; Back to Home</button>
+        <div id="welcomeMessage" class="welcome"></div>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <label for="statusFilter"><strong>Filter by status:</strong></label>
+        <select id="statusFilter" class="btn">
+          <option value="all">All</option>
+          <option value="in progress">In Progress</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+
+      <!-- Status Info -->
+      <section id="statusMessage">
+        <p>Checking your project status...</p>
+      </section>
+
+      <!-- Project Results -->
+      <section id="projectsSection" style="display: none">
+        <h2>Projects Linked to Your Account</h2>
+        <div id="projectList" class="project-list"></div>
+      </section>
+
+      <!-- Empty State -->
+      <section id="noProjectsSection" style="display: none">
+        <h3>No projects found for your account.</h3>
+        <p>You can still browse our products or visit one of our branches.</p>
+        <a href="home.html" class="btn">Back to Home</a>
+      </section>
+    </main>
+
+    <footer>&copy; 2025 Maduwa Paint World (Pty) Ltd</footer>
+
+    <script type="module" src="./dashboard.js"></script>
+  </body>
+</html>

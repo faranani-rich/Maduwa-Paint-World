@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>View Project – Maduwa Paint World</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="project-view.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Project Overview</h1>
+      <button id="backBtn" class="btn">&larr; Back to Dashboard</button>
+    </header>
+
+    <main>
+      <section id="statusMessage">
+        <p>Loading project details...</p>
+      </section>
+
+      <section id="projectDetails" style="display: none">
+        <h2 id="projectName">Project Name</h2>
+
+        <!-- Basic Info -->
+        <div class="info-grid">
+          <p><strong>Location:</strong> <span id="location"></span></p>
+          <p><strong>Status:</strong> <span id="status"></span></p>
+          <p><strong>Start Date:</strong> <span id="startDate"></span></p>
+          <p><strong>End Date:</strong> <span id="endDate"></span></p>
+          <p><strong>Customer Name:</strong> <span id="customerName"></span></p>
+          <p><strong>Customer Email:</strong> <span id="email"></span></p>
+        </div>
+
+        <!-- Line Items -->
+        <div class="section-block">
+          <h3>Employees</h3>
+          <table class="read-only-table" id="employeesTable">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Hours</th>
+                <th>Overtime</th>
+                <th>Rate</th>
+                <th>Overtime Rate</th>
+                <th>Bonus</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="section-block">
+          <h3>Paints</h3>
+          <table class="read-only-table" id="paintsTable">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="section-block">
+          <h3>Vehicles</h3>
+          <table class="read-only-table" id="vehiclesTable">
+            <thead>
+              <tr>
+                <th>Vehicle</th>
+                <th>Rate</th>
+                <th>Trips</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="section-block">
+          <h3>Overheads</h3>
+          <table class="read-only-table" id="overheadsTable">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <!-- Totals -->
+        <div id="totalsSummary" class="summary-box">
+          <h3>Project Totals</h3>
+          <p><strong>Employees:</strong> R<span id="employeeTotal">0</span></p>
+          <p><strong>Paints:</strong> R<span id="paintTotal">0</span></p>
+          <p><strong>Vehicles:</strong> R<span id="vehicleTotal">0</span></p>
+          <p><strong>Overheads:</strong> R<span id="overheadTotal">0</span></p>
+          <p><strong>Markup %:</strong> <span id="markup">0%</span></p>
+          <p>
+            <strong>Final Total:</strong>
+            <strong>R<span id="grandTotal">0</span></strong>
+          </p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <button class="btn" id="printBtn">🖨️ Print</button>
+          <button class="btn" id="whatsappBtn">📱 Share via WhatsApp</button>
+          <button class="btn" id="pdfBtn">📄 Export PDF</button>
+        </div>
+      </section>
+    </main>
+
+    <footer>&copy; 2025 Maduwa Paint World (Pty) Ltd</footer>
+
+    <script type="module" src="./project-view.js"></script>
+  </body>
+</html>
