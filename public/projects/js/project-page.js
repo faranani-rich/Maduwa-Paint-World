@@ -1,199 +1,291 @@
 /* project-page.js
-   ----------------------------------------------------------------
+   ---------------------------------------------------------------
    Orchestrates the entire Project detail page
-   ---------------------------------------------------------------- */
+   --------------------------------------------------------------- */
 import { initAuthListener } from "../../authentication/auth.js";
 import { getProjectById, updateProject } from "./storage.js";
 import { projectTotals, calculateProgressPercent } from "./calc.js";
 import { canEditProject } from "./permissions.js";
 
-import { EMPLOYEE_FIELDS, cacheDom, attachPrintMirror } from "./project-dom.js";
+import {
+  EMPLOYEE_FIELDS,
+  cacheDom,
+  attachPrintMirror
+} from "./project-dom.js";
 import { renderTable, setupAddHandler } from "./project-tables.js";
 
-/* ---------- Main ---------- */
+// 🔍 Detect if this is a customer view (PDF mode)
+const isCustomerMode = new URLSearchParams(location.search).get("mode") === "customer";
+
 document.addEventListener("DOMContentLoaded", () => {
+  const dom = cacheDom();
+
+  // Wire print buttons
+  dom.printCustBtn?.addEventListener("click", () => {
+    document.body.classList.add("print-customer-mode");
+    window.print();
+    document.body.classList.remove("print-customer-mode");
+  });
+
+  dom.printIntBtn?.addEventListener("click", () => {
+    document.body.classList.add("company");
+    window.print();
+    document.body.classList.remove("company");
+  });
+
+  // Auth check
   initAuthListener(async ({ user, profile }) => {
-    if (!user || !profile) {
-      window.location.href = "../authentication/login.html";
+    if (!user) {
+      location.href = "../authentication/login.html";
       return;
     }
 
-    /* load project doc */
-    const id = new URLSearchParams(window.location.search).get("id");
+    if (profile.roles?.includes("customer") && !profile.roles?.includes("employee")) {
+    document.body.innerHTML = "<p>You do not have access to this page.</p>";
+    return;
+  }
+
+
+    const id = new URLSearchParams(location.search).get("id");
     const project = id ? await getProjectById(id) : null;
     if (!project) {
       document.body.innerHTML = "<p>Project not found.</p>";
       return;
     }
 
-    /* perms & DOM refs */
-    const canEdit = canEditProject(project, profile);
-    const dom     = cacheDom();
+    const canEdit = !isCustomerMode && canEditProject(project, profile);
 
-    /* ensure arrays */
-    project.lines ??= { employees:[], paints:[], vehicles:[], materials:[], expenses:[] };
-    Object.keys(project.lines).forEach(k => {
-      if (!Array.isArray(project.lines[k])) project.lines[k] = [];
+    // Setup defaults
+    project.lines ??= {};
+    project.lines.employees ??= [];
+    project.lines.bucketLabour ??= [];
+    project.lines.paints ??= [];
+    project.lines.vehicles ??= [];
+    project.lines.expenses ??= [];
+
+    // Back button
+    dom.backBtn.addEventListener("click", () => {
+      if (isCustomerMode) window.location.href = "../customer/dashboard.html";
+      else window.location.href = "index.html";
     });
 
-    /* lock UI if view-only */
+    // Disable editing for readonly or customer mode
     if (!canEdit) {
       dom.form.querySelectorAll("input,select,textarea,button[type='submit']")
-              .forEach(el => { if (el.type==="submit") el.style.display="none"; else el.disabled=true; });
-      [dom.addEmpBtn,dom.addPaintBtn,dom.addMatBtn,dom.addVehBtn,dom.addExpBtn]
-        .forEach(btn => btn && (btn.style.display="none"));
+        .forEach(el => el.disabled = true);
+      [dom.addEmpBtn, dom.addBucketBtn, dom.addPaintBtn, dom.addVehBtn, dom.addExpBtn]
+        .forEach(btn => btn && (btn.disabled = true));
     }
 
-    /* -----  Populate static inputs  ----- */
+    // Fill form
     const {
-      nameInput, locationInput, statusSelect, notesInput, markupInput,
+      nameInput, locationInput, statusSelect, notesInput,
       pmNameInput, pmEmailInput, custNameInput, custEmailInput,
       estDurationInput, hoursWorkedInput, progressInput, progressComment,
-      internalNotes
+      internalNotes, quotedPriceInput, customerPaidInput,
+      budgetHourlyInput, budgetBucketInput, budgetPaintsInput,
+      budgetVehiclesInput, budgetOtherInput,
+      usedHourlyDisplay, remainingHourlyDisplay,
+      usedBucketDisplay, remainingBucketDisplay,
+      usedPaintsDisplay, remainingPaintsDisplay,
+      usedVehiclesDisplay, remainingVehiclesDisplay,
+      usedOtherDisplay, remainingOtherDisplay,
+      expensesDisplay, profitDisplay, remainingPaymentDisplay
     } = dom;
 
-    nameInput.value        = project.name          ?? "";
-    locationInput.value    = project.location      ?? "";
-    statusSelect.value     = project.status        ?? "quotation";
-    notesInput.value       = project.notes         ?? "";
-    markupInput.value      = project.markupPct     ?? 0;
-    pmNameInput.value      = project.projectManager?.name  ?? "";
-    pmEmailInput.value     = project.projectManager?.email ?? "";
-    custNameInput.value    = project.customer?.name        ?? "";
-    custEmailInput.value   = project.customer?.email       ?? "";
-    estDurationInput.value = project.estimatedDuration     ?? "";
-    hoursWorkedInput.value = project.hoursWorked           ?? "";
-    progressInput.value    = project.progress?.percent     ?? 0;
-    progressComment.value  = project.progress?.comment     ?? "";
-    internalNotes.value    = project.internalNotes         ?? "";
+    nameInput.value         = project.name           || "";
+    locationInput.value     = project.location       || "";
+    statusSelect.value      = project.status         || "quotation";
+    notesInput.value        = project.notes          || "";
+    pmNameInput.value       = project.projectManager?.name  || "";
+    pmEmailInput.value      = project.projectManager?.email || "";
+    custNameInput.value     = project.customer?.name        || "";
+    custEmailInput.value    = project.customer?.email       || "";
+    estDurationInput.value  = project.estimatedDuration     || "";
+    hoursWorkedInput.value  = project.hoursWorked           || 0;
+    progressInput.value     = project.progress?.percent     || 0;
+    progressComment.value   = project.progress?.comment     || "";
+    internalNotes.value     = project.internalNotes         || "";
+    quotedPriceInput.value  = project.quotedPrice           || 0;
+    customerPaidInput.value = project.customer?.paid        || 0;
 
-    dom.form.querySelectorAll("input, select, textarea")
-             .forEach(el => attachPrintMirror(el));
+    // Budgets
+    budgetHourlyInput.value   = project.budgets?.hourly   || 0;
+    budgetBucketInput.value   = project.budgets?.bucket   || 0;
+    budgetPaintsInput.value   = project.budgets?.paints   || 0;
+    budgetVehiclesInput.value = project.budgets?.vehicles || 0;
+    budgetOtherInput.value    = project.budgets?.other    || 0;
 
-    /* -----  Tables  ----- */
+    dom.form.querySelectorAll("input,select,textarea").forEach(attachPrintMirror);
+
+    // Section rendering
     function initSection(section, tableId, fields, types, addBtn) {
       renderTable({ project, section, tableId, fields, types, canEdit });
-      setupAddHandler({ project, section, tableId, fields, addBtn, types, canEdit });
+      setupAddHandler({ project, section, tableId, fields, types, addBtn, canEdit });
     }
 
-    initSection("employees","employees-table",EMPLOYEE_FIELDS,
-                { hours:"number",overtimeHours:"number",
-                  normalRate:"number",overtimeRate:"number",bonus:"number" }, dom.addEmpBtn);
+    initSection("employees", "employees-table", [
+      ...EMPLOYEE_FIELDS, "totalPay"
+    ], {
+      hours: "number", overtimeHours: "number",
+      normalRate: "number", overtimeRate: "number", bonus: "number"
+    }, dom.addEmpBtn);
 
-    initSection("paints","paints-table",
-                ["type","color","buckets","supplier","dateBought","costPerBucket"],
-                { buckets:"number",costPerBucket:"number",dateBought:"date" }, dom.addPaintBtn);
+    initSection("bucketLabour", "bucket-table", [
+      "name", "buckets", "ratePerBucket", "totalCost"
+    ], {
+      buckets: "number", ratePerBucket: "number"
+    }, dom.addBucketBtn);
 
-    initSection("materials","materials-table",
-                ["description","quantity","unitCost"],
-                { quantity:"number",unitCost:"number" }, dom.addMatBtn);
+    initSection("paints", "paints-table", [
+      "type", "color", "buckets", "dateBought", "costPerBucket", "totalCost"
+    ], {
+      buckets: "number", costPerBucket: "number", dateBought: "date"
+    }, dom.addPaintBtn);
 
-    initSection("vehicles","vehicles-table",
-                ["driver","car","purpose","km","petrol","tolls",
-                 "destination","date","notes"],
-                { km:"number",petrol:"number",tolls:"number",date:"date" }, dom.addVehBtn);
+    initSection("vehicles", "vehicles-table", [
+      "driver", "car", "purpose", "km", "petrol", "tolls", "totalCost", "destination", "date", "notes"
+    ], {
+      km: "number", petrol: "number", tolls: "number", date: "date"
+    }, dom.addVehBtn);
 
-    initSection("expenses","expenses-table",
-                ["type","amount","notes"],
-                { amount:"number" }, dom.addExpBtn);
+    initSection("expenses", "expenses-table", [
+      "type", "amount", "totalCost", "notes"
+    ], {
+      amount: "number"
+    }, dom.addExpBtn);
 
-    /* -----  Totals & progress helpers  ----- */
+    // Totals
     function updateTotals() {
       const t = projectTotals(project);
-      dom.totalsEl.innerHTML = `
-        <p class="internal-only">Cost: R${t.cost.toFixed(2)}</p>
-        <p class="internal-only">Profit: R${t.profit.toFixed(2)}</p>
-        <p>Total to be paid: R${t.price.toFixed(2)}</p>`;
-      dom.totalsEl.querySelectorAll("p").forEach(p => attachPrintMirror(p));
-      renderTable({ project, section:"employees", tableId:"employees-table",
-                    fields:EMPLOYEE_FIELDS,
-                    types:{ hours:"number",overtimeHours:"number",
-                            normalRate:"number",overtimeRate:"number",bonus:"number" },
-                    canEdit });
+
+      expensesDisplay.textContent = t.totalCost.toFixed(2);
+      profitDisplay.textContent = t.profit.toFixed(2);
+      remainingPaymentDisplay.textContent = 
+        (project.quotedPrice - (project.customer?.paid || 0)).toFixed(2);
+
+      [
+        ["hourly", t.labour, budgetHourlyInput, usedHourlyDisplay, remainingHourlyDisplay],
+        ["bucket", t.bucketLabour, budgetBucketInput, usedBucketDisplay, remainingBucketDisplay],
+        ["paints", t.paints, budgetPaintsInput, usedPaintsDisplay, remainingPaintsDisplay],
+        ["vehicles", t.vehicles, budgetVehiclesInput, usedVehiclesDisplay, remainingVehiclesDisplay],
+        ["other", t.otherExpenses, budgetOtherInput, usedOtherDisplay, remainingOtherDisplay]
+      ].forEach(([key, usedAmt, budInp, usedSp, remSp]) => {
+        const bud = Number(budInp.value) || 0;
+        const rem = bud - usedAmt;
+        usedSp.textContent = usedAmt.toFixed(2);
+        remSp.textContent = rem.toFixed(2);
+        remSp.classList.toggle("over-budget", rem < 0);
+      });
+
+      const warningEl = document.getElementById("budget-warning");
+      if (t.profit < 0) {
+        warningEl.textContent = `⚠️ Over-budget by R${Math.abs(t.profit).toFixed(2)} — this project is running at a loss.`;
+        warningEl.classList.add("warning");
+      } else {
+        warningEl.textContent = "";
+        warningEl.classList.remove("warning");
+      }
     }
+
     function updateProgress() {
-      const pct = calculateProgressPercent(estDurationInput.value, hoursWorkedInput.value);
+      const pct = calculateProgressPercent(
+        estDurationInput.value,
+        hoursWorkedInput.value
+      );
       progressInput.value = pct;
       const bar = document.getElementById("progress-bar");
-      if (bar) { bar.style.width = pct+"%"; bar.innerText = pct+"%"; }
-      statusSelect.value = pct >= 100 ? "completed" :
-                           pct > 0    ? "in-progress" :
-                           project.status !== "quotation" ? "quotation" : statusSelect.value;
+      if (bar) {
+        bar.style.width = `${pct}%`;
+        bar.innerText = `${pct}%`;
+      }
+      if (pct >= 100) statusSelect.value = "completed";
+      else if (pct > 0) statusSelect.value = "in-progress";
     }
+
     estDurationInput.addEventListener("input", updateProgress);
-    hoursWorkedInput .addEventListener("input", updateProgress);
+    hoursWorkedInput.addEventListener("input", updateProgress);
+    document.addEventListener("section-updated", updateTotals);
 
-    /* -----  SAVE  ----- */
-    dom.form.addEventListener("submit", async ev => {
+    dom.form.onsubmit = async ev => {
       ev.preventDefault();
-      if (!canEdit) return alert("You do not have permission to save changes.");
+      if (!canEdit) return alert("No permission to save.");
 
-      /* copy inputs back to project obj */
-      project.name             = nameInput.value;
-      project.location         = locationInput.value;
-      project.status           = statusSelect.value;
-      project.notes            = notesInput.value;
-      project.markupPct        = parseFloat(markupInput.value) || 0;
-      project.projectManager   = { name: pmNameInput.value,  email: pmEmailInput.value  };
-      project.customer         = { name: custNameInput.value, email: custEmailInput.value };
-      project.estimatedDuration= estDurationInput.value;
-      project.hoursWorked      = hoursWorkedInput.value;
-      project.progress         = {
-        percent  : parseFloat(progressInput.value) || 0,
-        comment  : progressComment.value,
-        updatedAt: new Date().toISOString()
+      // Sync fields
+      project.name = nameInput.value;
+      project.location = locationInput.value;
+      project.status = statusSelect.value;
+      project.notes = notesInput.value;
+      project.projectManager = {
+        name: pmNameInput.value,
+        email: pmEmailInput.value
       };
-      project.internalNotes    = internalNotes.value;
+      project.customer = project.customer || {};
+      project.customer.name = custNameInput.value;
+      project.customer.email = custEmailInput.value;
+      project.customer.paid = +customerPaidInput.value || 0;
+      project.quotedPrice = +quotedPriceInput.value || 0;
+      project.estimatedDuration = estDurationInput.value;
+      project.hoursWorked = +hoursWorkedInput.value || 0;
+      project.progress = {
+        percent: +progressInput.value || 0,
+        comment: progressComment.value
+      };
+      project.internalNotes = internalNotes.value;
 
-      /* tables → project.lines */
-      const sections = [
-        {sec:"employees",fields:EMPLOYEE_FIELDS},
-        {sec:"paints",fields:["type","color","buckets","supplier","dateBought","costPerBucket"]},
-        {sec:"materials",fields:["description","quantity","unitCost"]},
-        {sec:"vehicles",fields:["driver","car","purpose","km","petrol","tolls","destination","date","notes"]},
-        {sec:"expenses",fields:["type","amount","notes"]}
-      ];
-      sections.forEach(({sec,fields}) => {
-        const tb = document.querySelector(`#${sec}-table tbody`);
-        project.lines[sec] = Array.from(tb.children).map(tr => {
-          const inputs = tr.querySelectorAll("input");
+      [
+        { sec: "employees", tbl: "employees-table", flds: EMPLOYEE_FIELDS },
+        { sec: "bucketLabour", tbl: "bucket-table", flds: ["name", "buckets", "ratePerBucket"] },
+        { sec: "paints", tbl: "paints-table", flds: ["type", "color", "buckets", "dateBought", "costPerBucket"] },
+        { sec: "vehicles", tbl: "vehicles-table", flds: ["driver", "car", "purpose", "km", "petrol", "tolls", "destination", "date", "notes"] },
+        { sec: "expenses", tbl: "expenses-table", flds: ["type", "amount", "notes"] }
+      ].forEach(({ sec, tbl, flds }) => {
+        project.lines[sec] = Array.from(
+          document.querySelectorAll(`#${tbl} tbody tr`)
+        ).map(tr => {
           const obj = {};
-          fields.forEach((f,i) => {
-            obj[f] = inputs[i].type==="number"
-              ? parseFloat(inputs[i].value)||0
-              : inputs[i].value;
+          flds.forEach(f => {
+            const inp = tr.querySelector(`input[name="${f}"]`);
+            obj[f] = inp
+              ? inp.type === "number"
+                ? +inp.value || 0
+                : inp.value
+              : "";
           });
           return obj;
         });
       });
 
-      await updateProject(project.id, project);
-      updateTotals();
-      showToast();
-    });
+      try {
+        await updateProject(project.id, project);
+        updateTotals();
+        showToast();
+      } catch (err) {
+        console.error("Save error", err);
+        alert("Failed to save—see console");
+      }
+    };
 
-    /* -----  Print buttons  ----- */
-    dom.printCustBtn?.addEventListener("click", () => {
-      document.body.classList.add("print-customer-mode");
-      document.body.classList.remove("company");
-      setTimeout(()=>{ window.print(); document.body.classList.remove("print-customer-mode"); },150);
-    });
-    dom.printIntBtn?.addEventListener("click", () => {
-      document.body.classList.add("company");
-      document.body.classList.remove("print-customer-mode");
-      window.print();
-      setTimeout(()=> document.body.classList.remove("company"),300);
-    });
-
-    /* init */
     updateTotals();
     updateProgress();
+
+    // If accessed as customer, trigger print version automatically
+    if (isCustomerMode) {
+      document.body.classList.add("print-customer-mode");
+      setTimeout(() => window.print(), 600);
+    }
   });
 });
 
-/* small toast helper */
+// Toast on save
 function showToast() {
   let t = document.getElementById("save-toast");
-  if (!t) { t = document.createElement("div"); t.id="save-toast"; t.textContent="✔️ Saved!"; document.body.appendChild(t); }
-  t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2000);
+  if (!t) {
+    t = document.createElement("div");
+    t.id = "save-toast";
+    t.textContent = "✔️ Saved!";
+    document.body.appendChild(t);
+  }
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2000);
 }

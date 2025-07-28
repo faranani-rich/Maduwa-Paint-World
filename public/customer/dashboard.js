@@ -1,9 +1,9 @@
-// customer/dashboard.js
+// /public/customer/dashboard.js
 
 import { logout, initAuthListener } from "../authentication/auth.js";
 import { getProjectsByCustomerEmail } from "../projects/js/storage.js";
 
-// --- Buttons ---
+// Logout button
 document.getElementById("logoutBtn").onclick = async () => {
   try {
     await logout();
@@ -13,6 +13,7 @@ document.getElementById("logoutBtn").onclick = async () => {
   }
 };
 
+// Back to home
 document.getElementById("backBtn").onclick = () => {
   window.location.href = "home.html";
 };
@@ -25,7 +26,7 @@ initAuthListener(async ({ user, profile }) => {
   const noProjectsSection = document.getElementById("noProjectsSection");
   const projectList = document.getElementById("projectList");
 
-  if (!user) {
+  if (!user || !user.email) {
     statusEl.innerHTML = "<p>Please sign in to view your dashboard.</p>";
     return;
   }
@@ -49,7 +50,7 @@ initAuthListener(async ({ user, profile }) => {
     return;
   }
 
-  // --- Filter projects by status
+  // Setup filter logic
   statusFilter.onchange = () => renderProjects();
   renderProjects();
 
@@ -59,53 +60,32 @@ initAuthListener(async ({ user, profile }) => {
 
     const filtered = selectedStatus === "all"
       ? allProjects
-      : allProjects.filter(p => (p.status || "").toLowerCase() === selectedStatus.toLowerCase());
+      : allProjects.filter(p =>
+          (p.status || "").toLowerCase() === selectedStatus.toLowerCase()
+        );
 
     filtered.forEach(project => {
-      const card = document.createElement("div");
-      card.className = "project-card";
-
       const name = project.name || "Unnamed Project";
       const location = project.location || "—";
       const status = project.status || "—";
-      const startDate = project.startDate || "—";
-      const email = project.customer?.email || "—";
       const projectId = project.id;
+
+      const card = document.createElement("div");
+      card.className = "project-card";
 
       card.innerHTML = `
         <h3>${name}</h3>
         <p><strong>Location:</strong> ${location}</p>
         <p><strong>Status:</strong> ${status}</p>
-        <p><strong>Start Date:</strong> ${startDate}</p>
-        <p><strong>Customer Email:</strong> ${email}</p>
+
         <div class="card-buttons">
-          <button class="btn view-btn" data-id="${projectId}">View</button>
-          <button class="btn print-btn">Print</button>
-          <button class="btn whatsapp-btn">Share via WhatsApp</button>
-          <button class="btn pdf-btn">Export PDF</button>
+          <button class="btn view-btn" data-id="${projectId}">View Summary</button>
         </div>
       `;
 
-      // View handler
+      // View Summary → same tab
       card.querySelector(".view-btn").onclick = () => {
         window.location.href = `project-view.html?id=${projectId}`;
-      };
-
-      // Print handler
-      card.querySelector(".print-btn").onclick = () => {
-        window.print();
-      };
-
-      // WhatsApp Share
-      card.querySelector(".whatsapp-btn").onclick = () => {
-        const msg = `Maduwa Paint Project:\n${name}\nStatus: ${status}\nLocation: ${location}\nStart: ${startDate}`;
-        const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
-        window.open(url, "_blank");
-      };
-
-      // Export PDF placeholder
-      card.querySelector(".pdf-btn").onclick = () => {
-        alert("PDF export coming soon! 📄");
       };
 
       projectList.appendChild(card);

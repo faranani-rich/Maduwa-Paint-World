@@ -1,4 +1,4 @@
-// authentication/auth.js
+// authentication/auth.js 
 import { auth, db } from "./config.js";
 import {
   GoogleAuthProvider,
@@ -8,6 +8,7 @@ import {
   signOut,
   signInAnonymously,
   deleteUser,
+  signInWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js";
 import {
   doc,
@@ -17,24 +18,25 @@ import {
   updateDoc,
   collection,
   getDocs,
-  serverTimestamp,
+  query,
+  where,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
-// If you ever need to delete arbitrary Auth users via Cloud Functions:
-// import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-functions.js";
 
 /* ------------------------------------------------------------------
    Auto-create a Firestore profile if it was deleted but the Auth user
    still exists (e.g. removed via Role-Assign).
    ------------------------------------------------------------------ */
 export async function ensureProfileExists(user) {
-  if (!user || user.isAnonymous) return;          // guests don’t get profiles
-  const ref  = doc(db, "users", user.uid);
+  if (!user || user.isAnonymous) return; // guests don’t get profiles
+  const ref = doc(db, "users", user.uid);
   const snap = await getDoc(ref);
   if (!snap.exists()) {
     await setDoc(ref, {
-      email: user.email,
-      name:  user.displayName || user.email.split("@")[0],
-      roles: ["customer"],          // every account is always a customer
+      email: user.email || null,
+      phone: user.phoneNumber || null,
+      name: user.displayName || user.email?.split("@")[0] || "Unknown",
+      roles: ["customer"],
       employeeTypes: [],
       isAdmin: false,
       isOwner: false,
@@ -53,10 +55,8 @@ export function initAuthListener(onChange) {
       return;
     }
 
-    // Re-seed minimal profile if missing
     await ensureProfileExists(user);
 
-    // Fetch up-to-date profile data
     let profile = null;
     if (!user.isAnonymous) {
       const snap = await getDoc(doc(db, "users", user.uid));
@@ -82,11 +82,42 @@ export async function appleLogin() {
 }
 
 export function guestBrowse() {
-  return signInAnonymously(auth);   // anonymous guest
+  return signInAnonymously(auth);
 }
 
 export function logout() {
   return signOut(auth);
+}
+
+/* ✅ NEW: Email + Password login */
+export async function emailLogin(email, password) {
+  const credential = await signInWithEmailAndPassword(auth, email, password);
+  await ensureProfileExists(credential.user);
+  return credential.user;
+}
+
+/* ✅ NEW: Phone + Password login (requires email lookup) */
+export async function phoneLogin(phone, password) {
+  // Step 1: Query Firestore for email matching the phone number
+  const usersRef = collection(db, "users");
+  const q = query(usersRef, where("phone", "==", phone));
+  const snap = await getDocs(q);
+
+  if (snap.empty) {
+    throw new Error("No account found with that phone number.");
+  }
+
+  const userDoc = snap.docs[0];
+  const userData = userDoc.data();
+
+  if (!userData.email) {
+    throw new Error("This phone number is not linked to an email/password account.");
+  }
+
+  // Step 2: Use found email to sign in
+  const credential = await signInWithEmailAndPassword(auth, userData.email, password);
+  await ensureProfileExists(credential.user);
+  return credential.user;
 }
 
 /* =========================================================
@@ -96,15 +127,14 @@ export async function deleteAccount() {
   const user = auth.currentUser;
   if (!user) throw new Error("No user is signed in");
 
-  await deleteDoc(doc(db, "users", user.uid));   // profile
-  await deleteUser(user);                        // auth user
+  await deleteDoc(doc(db, "users", user.uid)); // profile
+  await deleteUser(user);                      // auth user
 }
 
 /* =========================================================
    4.  Admin / owner utilities
    ========================================================= */
 export async function updateUserProfile(uid, updates) {
-  // normalise employeeTypes
   if ("employeeTypes" in updates) {
     if (typeof updates.employeeTypes === "string") {
       updates.employeeTypes = [updates.employeeTypes];
@@ -116,7 +146,6 @@ export async function updateUserProfile(uid, updates) {
   return updateDoc(doc(db, "users", uid), updates);
 }
 
-/* Basic fetch helpers */
 export async function getUserProfile(uid) {
   const snap = await getDoc(doc(db, "users", uid));
   return snap.exists() ? snap.data() : null;
@@ -127,15 +156,12 @@ export async function getAllUsers() {
   return snap.docs.map((d) => ({ uid: d.id, ...d.data() }));
 }
 
-/* Legacy: update roles array only */
 export async function setUserRoles(uid, roles) {
   return updateDoc(doc(db, "users", uid), { roles });
 }
 
-/* Remove Firestore + (via Cloud Fn) Auth account */
 export async function removeUser(uid) {
   await deleteDoc(doc(db, "users", uid));
-  // Then call your secure Cloud Function if needed.
 }
 
 /* =========================================================

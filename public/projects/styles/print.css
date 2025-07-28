@@ -3,19 +3,31 @@
    ------------------------------------------------------------------ */
 @media print {
 
+  /* 0 — Hide sections/columns marked for customer only */
+  body.print-customer-mode .no-customer-print {
+    display: none !important;
+  }
+
+  /* 1 — Per-copy visibility: hide internal-only columns & action buttons */
+  body.print-customer-mode th.internal-only,
+  body.print-customer-mode td.internal-only,
+  body.print-customer-mode .actions {
+    display: none !important;
+  }
+
   /* Always use landscape so wide tables fit */
   @page {
     size: A4 landscape;
     margin: 12mm;
   }
 
-  /* 1 — Page colours & background */
+  /* 2 — Page colours & background */
   body {
     background: #fff !important;
     color: #000 !important;
   }
 
-  /* 2 — Strip site chrome */
+  /* 3 — Strip site chrome */
   header,
   nav,
   .no-print,
@@ -24,15 +36,14 @@
     display: none !important;
   }
 
-  /* 3 — Links */
+  /* 4 — Links */
   .project-link,
   a {
     color: #000 !important;
     text-decoration: none !important;
   }
 
-  /* 4 — Live controls vs print values ------------------------- */
-  /* hide active controls … */
+  /* 5 — Live controls vs print values */
   input:not([readonly]),
   select:not([readonly]),
   textarea:not([readonly]),
@@ -42,8 +53,13 @@
     display: none !important;
   }
 
-  /* …show print-value spans */
-  .print-value {
+  .print-value,
+  #remaining-payment,
+  #profitDisplay,
+  #expensesDisplay,
+  .progress-bar,
+  .budget-info span,
+  .totals-summary span {
     display: inline-block !important;
     white-space: pre-wrap;
     color: #000 !important;
@@ -52,7 +68,6 @@
     margin: 0 !important;
   }
 
-  /* …and show readonly fields as plain text for mobile fallback */
   input[readonly],
   select[readonly],
   textarea[readonly] {
@@ -64,40 +79,20 @@
     padding: 0 !important;
   }
 
-  /* 5 — Per-copy visibility */
-  body.print-customer-mode .internal-only,
-  body.print-customer-mode .actions {
-    display: none !important;
-  }
-
-  body.company .internal-only {
-    display: table-cell !important;
-  }
-  body.company section.internal-only,
-  body.company .internal-only:not(td):not(th) {
-    display: block !important;
-  }
-  body.company #feedback-link,
-  body.company #qr-canvas {
-    display: none !important;
-  }
-
-  /* 6 — Signature pad */
+  /* 6 — Signature pad */
   #clear-signature,
   #sig-canvas:not(.signed) {
     display: none !important;
   }
 
-  /* 7 — Tables & layout */
+  /* 7 — Tables & layout */
   .table-scroll {
-    overflow: visible !important;  /* unwrap */
+    overflow: visible !important;
   }
 
   .table-scroll table,
   table {
     width: 100% !important;
-    min-width: 0 !important;
-    max-width: none !important;    /* never shrink */
     border-collapse: collapse !important;
     font-size: 11pt;
   }
@@ -116,7 +111,7 @@
     break-inside: avoid !important;
   }
 
-  /* 8 — Remove shadows / padding on <main> */
+  /* 8 — Remove shadows / padding on <main> */
   main {
     box-shadow: none !important;
     margin: 0 !important;
@@ -139,3 +134,10 @@
     color: #eee !important;
   }
 }
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+

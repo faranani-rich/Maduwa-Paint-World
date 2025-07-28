@@ -1,33 +1,20 @@
-/* =========================================================
-   /employee/role-assign.js  – Role / Employee-type manager
-   ========================================================= */
+// /employee/role-assign.js – Role / Employee-type manager
 
-import { initAuthListener } from "../authentication/auth.js";
+import { initAuthListener, logout } from "../authentication/auth.js";
 import {
   listAllUsers,
   updateUserEmployeeTypes,
-  deleteUserAccount,
+  deleteUserAccount
 } from "../services/userService.js";
 
-
-
-/* ---------- 1.  Config ---------- */
-/* All recognised employee-level types (drives modal checklist). */
+/* ---------- 1. Config ---------- */
 const EMP_TYPES = [
-  "owner",
-  "admin",
-  "accountant",
-  "project-manager",
-  "inventory",
-  "sales",
-  "factory",
-  "chemist",
-  "driver",
-  "painter",
-  "general-employee",
+  "owner", "admin", "accountant", "project-manager",
+  "inventory", "sales", "factory", "chemist",
+  "driver", "painter", "general-employee"
 ];
 
-/* ---------- 2.  DOM refs ---------- */
+/* ---------- 2. DOM refs ---------- */
 const tbody       = document.getElementById("users-table-body");
 const dlg         = document.getElementById("edit-modal");
 const form        = document.getElementById("edit-form");
@@ -37,63 +24,66 @@ const empWrapper  = document.getElementById("emp-types-wrapper");
 const nameInput   = document.getElementById("edit-name");
 const emailInput  = document.getElementById("edit-email");
 
-/* ---------- 3.  Runtime flags ---------- */
-let signedInIsOwner     = false;
-let signedInIsAdminOnly = false; // admin but NOT owner
-let currentUserRef      = null;  // { uid, data }
+/* ---------- 3. Runtime flags ---------- */
+let signedInUser       = null;
+let signedInProfile    = null;
+let signedInIsOwner    = false;
+let signedInIsAdminOnly = false;
+let currentUserRef     = null;
 
-/* ---------- 4.  Build static checklist ---------- */
+/* ---------- 4. Static checklist ---------- */
 function buildEmpTypeCheckboxes() {
   empGrid.innerHTML = "";
-  EMP_TYPES.forEach((t) => {
+  EMP_TYPES.forEach(t => {
     empGrid.insertAdjacentHTML(
       "beforeend",
       `<label>
-         <input type="checkbox" value="${t}" id="emp-${t}" />
-         <span>${t.replace("-", " ")}</span>
-       </label>`
+        <input type="checkbox" value="${t}" id="emp-${t}" />
+        <span>${t.replace("-", " ")}</span>
+      </label>`
     );
   });
 }
 buildEmpTypeCheckboxes();
 
-/* ---------- 5.  Helpers ---------- */
+/* ---------- 5. Helpers ---------- */
 function toggleEmpTypeFieldset() {
   empWrapper.toggleAttribute("disabled", !chkEmployee.checked);
 }
 
-/* Owner ⇒ admin before computing flags */
 function gatherFormValues() {
   const roles = ["customer"];
   const employeeTypes = [];
 
   if (chkEmployee.checked) {
     roles.push("employee");
-    empGrid
-      .querySelectorAll("input[type=checkbox]:checked")
-      .forEach((c) => employeeTypes.push(c.value));
+    empGrid.querySelectorAll("input[type=checkbox]:checked")
+           .forEach(c => employeeTypes.push(c.value));
   }
 
   if (employeeTypes.includes("owner") && !employeeTypes.includes("admin")) {
     employeeTypes.push("admin");
   }
 
-  const isOwner = employeeTypes.includes("owner");
-  const isAdmin = employeeTypes.includes("admin");
-
-  return { roles, employeeTypes, isOwner, isAdmin };
+  return {
+    roles,
+    employeeTypes,
+    isOwner: employeeTypes.includes("owner"),
+    isAdmin: employeeTypes.includes("admin")
+  };
 }
 
-/* ---------- 6.  Render table ---------- */
+/* ---------- 6. Render user table ---------- */
 async function renderTable() {
   tbody.textContent = "Loading…";
   const users = await listAllUsers();
   tbody.innerHTML = "";
 
   users.forEach((u) => {
-    const uTypes  = Array.isArray(u.employeeTypes) ? u.employeeTypes : [];
-    const isEmp   = (u.roles || []).includes("employee");
+    const uTypes = Array.isArray(u.employeeTypes) ? u.employeeTypes : [];
+    const isEmp  = (u.roles || []).includes("employee");
     const typeStr = isEmp ? (uTypes.join(", ") || "employee") : "—";
+    const isSelf  = u.uid === signedInUser?.uid;
 
     tbody.insertAdjacentHTML(
       "beforeend",
@@ -102,64 +92,55 @@ async function renderTable() {
          <td>${u.email}</td>
          <td>${typeStr}</td>
          <td class="min-col">
-           <button class="btn" data-edit   data-id="${u.uid}">Edit&nbsp;Roles</button>
-           <button class="btn" data-delete data-id="${u.uid}">Delete</button>
+           <button class="btn" data-edit data-id="${u.uid}">Edit&nbsp;Roles</button>
+           <button class="btn" data-delete data-id="${u.uid}" ${isSelf ? "disabled" : ""}>
+             Delete
+           </button>
          </td>
        </tr>`
     );
   });
 }
 
-/* ---------- 7.  Modal open ---------- */
+/* ---------- 7. Open role editor ---------- */
 async function openEditor(uid) {
   const users = await listAllUsers();
-  const data  = users.find((u) => u.uid === uid);
+  const data = users.find(u => u.uid === uid);
   if (!data) return alert("User not found.");
 
-  /* Admins cannot modify owner accounts */
-  if (
-    !signedInIsOwner &&
-    (data.employeeTypes || []).includes("owner")
-  ) {
+  if (!signedInIsOwner && (data.employeeTypes || []).includes("owner")) {
     return alert("Only the owner can modify owner accounts.");
   }
 
   currentUserRef = { uid, data };
 
-  nameInput.value  = data.name  || data.email.split("@")[0];
+  nameInput.value  = data.name || data.email.split("@")[0];
   emailInput.value = data.email;
 
   chkEmployee.checked = (data.roles || []).includes("employee");
   toggleEmpTypeFieldset();
 
-  empGrid.querySelectorAll("input[type=checkbox]").forEach((c) => {
+  empGrid.querySelectorAll("input[type=checkbox]").forEach(c => {
     c.checked = (data.employeeTypes || []).includes(c.value);
   });
 
   dlg.showModal();
 }
 
-/* ---------- 8.  Save ---------- */
+/* ---------- 8. Save handler ---------- */
 async function handleSave(e) {
   e.preventDefault();
   if (!currentUserRef) return;
 
   const { roles, employeeTypes, isOwner, isAdmin } = gatherFormValues();
 
-  /* Admin-only user may not assign owner */
-  if (
-    signedInIsAdminOnly &&
-    employeeTypes.includes("owner")
-  ) {
+  if (signedInIsAdminOnly && isOwner) {
     return alert("Only the owner can assign or edit the owner role.");
   }
 
   try {
     await updateUserEmployeeTypes(currentUserRef.uid, {
-      roles,
-      employeeTypes,
-      isAdmin,
-      isOwner,
+      roles, employeeTypes, isOwner, isAdmin
     });
     dlg.close();
     await renderTable();
@@ -169,10 +150,17 @@ async function handleSave(e) {
   }
 }
 
-/* ---------- 9.  Delete ---------- */
+/* ---------- 9. Delete handler ---------- */
 async function handleDelete(uid, email) {
-  if (!signedInIsOwner) return alert("Only the owner can delete accounts.");
-  if (!confirm(`Delete account for ${email}?`)) return;
+  if (!signedInIsOwner) {
+    return alert("Only the owner can delete accounts.");
+  }
+
+  if (uid === signedInUser.uid) {
+    return alert("You cannot delete your own account while signed in.");
+  }
+
+  if (!confirm(`Permanently delete account for ${email}?`)) return;
 
   try {
     await deleteUserAccount(uid);
@@ -183,7 +171,7 @@ async function handleDelete(uid, email) {
   }
 }
 
-/* ---------- 10.  Auth gate & boot ---------- */
+/* ---------- 10. Init on login ---------- */
 document.addEventListener("DOMContentLoaded", () => {
   initAuthListener(async ({ user, profile }) => {
     if (!user || !profile) {
@@ -191,8 +179,11 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    signedInUser = user;
+    signedInProfile = profile;
+
     const types = profile.employeeTypes || [];
-    signedInIsOwner     = types.includes("owner");
+    signedInIsOwner = types.includes("owner");
     signedInIsAdminOnly = types.includes("admin") && !signedInIsOwner;
 
     if (!signedInIsOwner && !signedInIsAdminOnly) {
@@ -204,7 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-/* ---------- 11.  Event delegation ---------- */
+/* ---------- 11. Event listeners ---------- */
 tbody.addEventListener("click", (e) => {
   const edit   = e.target.closest("[data-edit]");
   const delBtn = e.target.closest("[data-delete]");
@@ -217,7 +208,6 @@ tbody.addEventListener("click", (e) => {
   }
 });
 
-/* ---------- 12.  Modal events ---------- */
 chkEmployee.addEventListener("change", toggleEmpTypeFieldset);
 form.addEventListener("submit", handleSave);
 dlg.addEventListener("click", (e) => {

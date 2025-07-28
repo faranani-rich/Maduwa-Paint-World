@@ -3,17 +3,46 @@
   <head>
     <meta charset="UTF-8" />
     <title>Welcome – Maduwa Paint World</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <h1>Welcome to Maduwa Paint World</h1>
+    <main class="login-container">
+      <h1>Maduwa Paint World</h1>
+      <p class="tagline">We don’t just make paint — we excel in chemistry.</p>
 
-    <div id="loginSection">
-      <button id="googleBtn">Continue with Google</button>
-      <button id="appleBtn">Continue with Apple</button>
-      <button id="guestBtn">Continue as Guest</button>
-    </div>
+      <div class="card login-card">
+        <h2>Sign In</h2>
+
+        <!-- OAuth Buttons -->
+        <button id="googleBtn" class="login-btn">Continue with Google</button>
+        <button id="appleBtn" class="login-btn">Continue with Apple</button>
+        <button id="guestBtn" class="login-btn">Continue as Guest</button>
+
+        <!-- Divider -->
+        <div class="divider"><span>OR</span></div>
+
+        <!-- Email/Password Login -->
+        <input type="email" id="emailInput" placeholder="Email address" />
+        <input type="password" id="passwordInput" placeholder="Password" />
+        <button id="emailLoginBtn" class="login-btn">Sign in with Email</button>
+
+        <!-- Phone Login (optional) -->
+        <input type="tel" id="phoneInput" placeholder="Phone number (+27...)" />
+        <input
+          type="password"
+          id="phonePasswordInput"
+          placeholder="Password (if set)"
+        />
+        <button id="phoneLoginBtn" class="login-btn">Sign in with Phone</button>
+
+        <!-- Register link -->
+        <p class="note">
+          New here?
+          <a href="register.html">Create an account</a>
+        </p>
+      </div>
+    </main>
 
     <script type="module" src="./login.js"></script>
   </body>

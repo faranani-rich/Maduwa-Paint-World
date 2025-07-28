@@ -1,19 +1,14 @@
+<!-- FULL UPDATED VERSION WITH BUDGET TRACKING, CUSTOMER PAYMENTS, AND BONUS STRUCTURE -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-
     <title>Edit Project – Maduwa Paint World</title>
-
-    <!-- global + print styles -->
     <link rel="stylesheet" href="styles/main.css" />
     <link rel="stylesheet" href="styles/print.css" media="print" />
-
-    <!-- page-specific styles -->
     <link rel="stylesheet" href="styles/project.css" />
   </head>
-
   <body>
     <header>
       <h1>Edit Project</h1>
@@ -23,22 +18,12 @@
     <main>
       <div id="print-view">
         <form id="project-form">
-          <!-- =================  GRID INFO  ================= -->
+          <!-- ========== PROJECT & PROGRESS INFO ========== -->
           <section class="grid-2col">
-            <!-- left column -->
             <div>
               <h2>Project Info</h2>
-
-              <label>
-                Name
-                <input type="text" name="name" required />
-              </label>
-
-              <label>
-                Location
-                <input type="text" name="location" />
-              </label>
-
+              <label>Name <input type="text" name="name" required /></label>
+              <label>Location <input type="text" name="location" /></label>
               <label>
                 Status
                 <select name="status">
@@ -48,12 +33,10 @@
                   <option value="completed">Completed</option>
                 </select>
               </label>
-
               <label>
                 Project Manager Name
                 <input type="text" name="pm-name" placeholder="Ritshidze" />
               </label>
-
               <label>
                 Project Manager Email
                 <input
@@ -62,22 +45,16 @@
                   placeholder="Ritshidze@gmail.com"
                 />
               </label>
-
               <label>
-                Customer Name
-                <input type="text" name="cust-name" />
+                Customer Name <input type="text" name="cust-name" />
               </label>
-
               <label>
-                Customer Email
-                <input type="email" name="cust-email" />
+                Customer Email <input type="email" name="cust-email" />
               </label>
             </div>
 
-            <!-- right column -->
             <div>
               <h2>Progress & Estimation</h2>
-
               <label>
                 Estimated Duration
                 <input
@@ -86,12 +63,9 @@
                   placeholder="E.g. 40 h or 1 week"
                 />
               </label>
-
               <label>
-                Hours Worked
-                <input type="number" name="hours-worked" min="0" />
+                Hours Worked <input type="number" name="hours-worked" min="0" />
               </label>
-
               <label>
                 Percent Complete (%)
                 <input
@@ -103,13 +77,11 @@
                   readonly
                 />
               </label>
-
               <div class="progress-bar-bg">
                 <div class="progress-bar" id="progress-bar" style="width: 0%">
                   0%
                 </div>
               </div>
-
               <label>
                 Progress Notes
                 <textarea
@@ -121,9 +93,12 @@
             </div>
           </section>
 
-          <!-- ============ EMPLOYEES ============ -->
-          <section>
-            <h2>Employees Assigned</h2>
+          <!-- ========== EMPLOYEES HOURLY ========== -->
+          <section class="no-customer-print">
+            <h2>Hourly-Based Labour</h2>
+            <label class="internal-only"
+              >Budget (R) <input type="number" name="budget-hourly" min="0"
+            /></label>
             <div class="table-scroll">
               <table id="employees-table">
                 <thead>
@@ -142,12 +117,52 @@
                 <tbody></tbody>
               </table>
             </div>
+            <p class="internal-only">
+              Used: R<span id="used-hourly">0.00</span> • Remaining: R<span
+                id="remaining-hourly"
+                >0.00</span
+              >
+            </p>
             <button type="button" id="add-employee-btn">+ Add Employee</button>
           </section>
 
-          <!-- ============ PAINTS ============ -->
+          <!-- ========== BUCKET LABOUR ========== -->
+          <section class="no-customer-print">
+            <h2>Bucket-Based Labour</h2>
+            <label class="internal-only"
+              >Budget (R) <input type="number" name="budget-bucket" min="0"
+            /></label>
+            <div class="table-scroll">
+              <table id="bucket-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Buckets</th>
+                    <th>Rate/Bucket</th>
+                    <th class="internal-only">Total Pay</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <p class="internal-only">
+              Used: R<span id="used-bucket">0.00</span> • Remaining: R<span
+                id="remaining-bucket"
+                >0.00</span
+              >
+            </p>
+            <button type="button" id="add-bucket-btn">
+              + Add Bucket Worker
+            </button>
+          </section>
+
+          <!-- ========== PAINTS ========== -->
           <section>
             <h2>Paints Used</h2>
+            <label class="internal-only"
+              >Budget (R) <input type="number" name="budget-paints" min="0"
+            /></label>
             <div class="table-scroll">
               <table id="paints-table">
                 <thead>
@@ -155,40 +170,30 @@
                     <th>Type</th>
                     <th>Color</th>
                     <th>Buckets</th>
-                    <th>Supplier</th>
                     <th>Date Bought</th>
                     <th class="internal-only">Cost/Bucket</th>
+                    <th class="internal-only">Total Cost</th>
                     <th></th>
                   </tr>
                 </thead>
                 <tbody></tbody>
               </table>
             </div>
+            <p class="internal-only">
+              Used: R<span id="used-paints">0.00</span> • Remaining: R<span
+                id="remaining-paints"
+                >0.00</span
+              >
+            </p>
             <button type="button" id="add-paint-btn">+ Add Paint</button>
           </section>
 
-          <!-- ============ MATERIALS ============ -->
-          <section>
-            <h2>Materials</h2>
-            <div class="table-scroll">
-              <table id="materials-table">
-                <thead>
-                  <tr>
-                    <th>Description</th>
-                    <th>Quantity</th>
-                    <th class="internal-only">Unit Cost</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody></tbody>
-              </table>
-            </div>
-            <button type="button" id="add-material-btn">+ Add Material</button>
-          </section>
-
-          <!-- ============ VEHICLES (internal) ============ -->
+          <!-- ========== VEHICLES ========== -->
           <section class="internal-only">
             <h2>Vehicles & Trips</h2>
+            <label
+              >Budget (R) <input type="number" name="budget-vehicles" min="0"
+            /></label>
             <div class="table-scroll">
               <table id="vehicles-table">
                 <thead>
@@ -199,6 +204,7 @@
                     <th class="wider-km">KM</th>
                     <th class="internal-only">Petrol</th>
                     <th class="internal-only">Tolls</th>
+                    <th class="internal-only">Total Cost</th>
                     <th>Destination</th>
                     <th>Date</th>
                     <th>Notes</th>
@@ -208,20 +214,30 @@
                 <tbody></tbody>
               </table>
             </div>
+            <p>
+              Used: R<span id="used-vehicles">0.00</span> • Remaining: R<span
+                id="remaining-vehicles"
+                >0.00</span
+              >
+            </p>
             <button type="button" id="add-vehicle-btn">
               + Add Vehicle/Trip
             </button>
           </section>
 
-          <!-- ============ EXPENSES (internal) ============ -->
+          <!-- ========== OTHER EXPENSES ========== -->
           <section class="internal-only">
             <h2>Other Expenses</h2>
+            <label
+              >Budget (R) <input type="number" name="budget-other" min="0"
+            /></label>
             <div class="table-scroll">
               <table id="expenses-table">
                 <thead>
                   <tr>
                     <th>Type</th>
                     <th>Amount</th>
+                    <th class="internal-only">Total Cost</th>
                     <th>Notes</th>
                     <th></th>
                   </tr>
@@ -229,20 +245,40 @@
                 <tbody></tbody>
               </table>
             </div>
+            <p>
+              Used: R<span id="used-other">0.00</span> • Remaining: R<span
+                id="remaining-other"
+                >0.00</span
+              >
+            </p>
             <button type="button" id="add-expense-btn">+ Add Expense</button>
           </section>
 
-          <!-- ============ TOTALS ============ -->
+          <!-- ========== TOTALS & FINANCES ========== -->
           <section>
-            <h2>Profit &amp; Totals</h2>
-            <label class="internal-only">
-              Markup %
-              <input type="number" name="markupPct" min="0" />
+            <h2>Quote and Payments</h2>
+
+            <label>
+              Customer Quoted Price (R)
+              <input type="number" name="quoted-price" min="0" />
             </label>
-            <div id="totals"></div>
+            <label>
+              Deposit / Payment Made (R)
+              <input type="number" name="customer-paid" min="0" />
+            </label>
+            <p>
+              Remaining to be paid: R<span id="remaining-payment">0.00</span>
+            </p>
+
+            <div class="internal-only">
+              <h3>Internal Cost Summary</h3>
+              <p>Total Expenses: R<span id="expensesDisplay">0.00</span></p>
+              <p>Profit / Loss: R<span id="profitDisplay">0.00</span></p>
+            </div>
+            <div id="budget-warning" class="internal-only"></div>
           </section>
 
-          <!-- ============ NOTES ============ -->
+          <!-- ========== NOTES ========== -->
           <section>
             <h2>Notes / Instructions</h2>
             <textarea
@@ -252,7 +288,7 @@
             ></textarea>
           </section>
 
-          <!-- ============ INTERNAL NOTES ============ -->
+          <!-- ========== INTERNAL NOTES ========== -->
           <section class="internal-only">
             <h2>Internal Notes</h2>
             <textarea
@@ -262,7 +298,7 @@
             ></textarea>
           </section>
 
-          <!-- ACTIONS -->
+          <!-- ========== ACTION BUTTONS ========== -->
           <div class="actions">
             <button type="submit">Save</button>
             <button type="button" id="print-customer-btn">
@@ -276,34 +312,8 @@
       </div>
     </main>
 
-    <!-- EmailJS & page logic -->
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
     <script type="module" src="js/project-page.js"></script>
-    <script type="module" src="js/project-enhancements.js"></script>
-
-    <!-- print-value sync helper -->
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const form = document.getElementById("project-form");
-        form.querySelectorAll("input, textarea, select").forEach((el) => {
-          const span = document.createElement("span");
-          span.className = "print-value";
-          span.textContent = getValue(el);
-          el.insertAdjacentElement("afterend", span);
-          el.addEventListener("input", () => (span.textContent = getValue(el)));
-          if (el.tagName === "SELECT") {
-            el.addEventListener(
-              "change",
-              () => (span.textContent = getValue(el))
-            );
-          }
-        });
-        function getValue(el) {
-          return el.tagName === "SELECT"
-            ? el.options[el.selectedIndex]?.text || ""
-            : el.value;
-        }
-      });
-    </script>
   </body>
 </html>

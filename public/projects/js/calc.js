@@ -1,100 +1,119 @@
 // js/calc.js
 
 /**
- * Calculate per-employee total pay and other project totals.
- * @param {Object} project – full project object
- * @returns {Object} – { labour, paint, materials, vehicles, expenses, cost, profit, price, breakdown, employeePays }
+ * Calculate project financials: costs, remaining budgets, payments, profit.
+ * @param {Object} project – full project object, including budgets and lines
+ * @returns {Object} – detailed totals and remaining balances
  */
-export function projectTotals(project, which = "actual") {
+export function projectTotals(project) {
   const sum = arr => arr.reduce((t, x) => t + x, 0);
 
-  // --- Employees (with detailed pay) ---
+  // --- Employees (hourly labour) ---
   const employees = project.lines.employees || [];
   const employeePays = employees.map(e => {
-    // Use your field names!
-    const hours         = Number(e.hours) || 0;
+    const hours = Number(e.hours) || 0;
     const overtimeHours = Number(e.overtimeHours) || 0;
-    const normalRate    = Number(e.normalRate) || 0;
-    const overtimeRate  = Number(e.overtimeRate) || 0;
-    const bonus         = Number(e.bonus) || 0;
-    // fallback: if overtimeRate is blank, fallback to normalRate
-    const totalPay = (hours * normalRate) + (overtimeHours * (overtimeRate || normalRate)) + bonus;
+    const normalRate = Number(e.normalRate) || 0;
+    const overtimeRate = Number(e.overtimeRate) || normalRate;
+    const bonus = Number(e.bonus) || 0;
+    const totalPay = (hours * normalRate) + (overtimeHours * overtimeRate) + bonus;
     return { ...e, totalPay };
   });
+  const labourCost = sum(employeePays.map(e => e.totalPay));
 
-  const labour = sum(employeePays.map(e => e.totalPay));
+  // --- Bucket-based labour ---
+  const buckets = project.lines.bucketLabour || [];
+  const bucketCost = sum(buckets.map(b =>
+    (Number(b.buckets) || 0) * (Number(b.ratePerBucket) || 0)
+  ));
 
   // --- Paints ---
   const paints = project.lines.paints || [];
-  const paint = sum(paints.map(p =>
+  const paintCost = sum(paints.map(p =>
     (Number(p.buckets) || 0) * (Number(p.costPerBucket) || 0)
-  ));
-
-  // --- Materials ---
-  const materialsArr = project.lines.materials || [];
-  const materials = sum(materialsArr.map(m =>
-    (Number(m.quantity) || 0) * (Number(m.unitCost) || 0)
   ));
 
   // --- Vehicles ---
   const vehicles = project.lines.vehicles || [];
-  // Use: (km * petrol) + tolls (matches your previous logic)
-  const vehiclesTotal = sum(vehicles.map(v =>
-    ((Number(v.km) || 0) * (Number(v.petrol) || 0)) +
-    (Number(v.tolls) || 0)
+  const vehiclesCost = sum(vehicles.map(v =>
+    // PETROL is the total petrol cost, TOLLS is tolls
+    (Number(v.petrol) || 0) + (Number(v.tolls) || 0)
   ));
 
-  // --- Expenses ---
-  const expensesArr = project.lines.expenses || [];
-  const expenses = sum(expensesArr.map(e => Number(e.amount) || 0));
+  // --- Other expenses ---
+  const others = project.lines.expenses || [];
+  const otherCost = sum(others.map(o => Number(o.amount) || 0));
 
-  // --- Total cost, profit, price ---
-  const cost = labour + paint + materials + vehiclesTotal + expenses;
-  let markupPct = typeof project.markupPct === "number" ? project.markupPct : Number(project.markupPct) || 0;
-  const profit = cost * (markupPct / 100);
-  const price  = cost + profit;
+  // --- Budgets from project.budgets ---
+  const budgets = {
+    hourly: Number(project.budgets?.hourly) || 0,
+    bucket: Number(project.budgets?.bucket) || 0,
+    paints: Number(project.budgets?.paints) || 0,
+    vehicles: Number(project.budgets?.vehicles) || 0,
+    other: Number(project.budgets?.other) || 0
+  };
 
-  // --- Return breakdown with pays
+  // --- Remaining budget per category ---
+  const remaining = {
+    hourly: budgets.hourly - labourCost,
+    bucket: budgets.bucket - bucketCost,
+    paints: budgets.paints - paintCost,
+    vehicles: budgets.vehicles - vehiclesCost,
+    other: budgets.other - otherCost
+  };
+
+  // --- Grand totals ---
+  const totalCost = labourCost + bucketCost + paintCost + vehiclesCost + otherCost;
+  const quotedPrice = Number(project.quotedPrice) || 0;
+  const customerPaid = Number(project.customer?.paid) || 0;
+  const remainingToPay = quotedPrice - customerPaid;
+  const profit = quotedPrice - totalCost;
+
   return {
-    labour,
-    paint,
-    materials,
-    vehicles: vehiclesTotal,
-    expenses,
-    cost,
+    // raw costs
+    labour: labourCost,
+    bucketLabour: bucketCost,
+    paints: paintCost,
+    vehicles: vehiclesCost,
+    otherExpenses: otherCost,
+    totalCost,
+    // budgets & remaining
+    budgets,
+    remaining,
+    // payments & profit
+    quotedPrice,
+    customerPaid,
+    remainingToPay,
     profit,
-    price,
-    employeePays, // array of { ...employee, totalPay }
+    // detailed breakdown
+    employeePays,
     breakdown: {
       employees: employeePays,
+      buckets,
       paints,
-      materials: materialsArr,
       vehicles,
-      expenses: expensesArr
+      expenses: others
     }
   };
 }
 
 /**
  * Calculate progress % from estimatedDuration and hoursWorked.
- * Accepts duration in hours (number or text like "1 week, 2 days").
+ * Accepts duration in hours or text like "1 week, 2 days".
  */
 export function calculateProgressPercent(estimatedDuration, hoursWorked) {
-  // Convert string to hours
   let totalHours = 0;
   if (typeof estimatedDuration === "string") {
-    // Parse for "xx hour", "xx day", "xx week" etc
     const hrMatch = estimatedDuration.match(/(\d+)\s*hour/);
     const dayMatch = estimatedDuration.match(/(\d+)\s*day/);
     const weekMatch = estimatedDuration.match(/(\d+)\s*week/);
-    totalHours += hrMatch ? parseInt(hrMatch[1], 10) : 0;
-    totalHours += dayMatch ? parseInt(dayMatch[1], 10) * 8 : 0;
-    totalHours += weekMatch ? parseInt(weekMatch[1], 10) * 40 : 0;
-    // If just a number, treat as hours
+    if (hrMatch) totalHours += parseInt(hrMatch[1], 10);
+    if (dayMatch) totalHours += parseInt(dayMatch[1], 10) * 8;
+    if (weekMatch) totalHours += parseInt(weekMatch[1], 10) * 40;
     if (!isNaN(Number(estimatedDuration))) totalHours = Number(estimatedDuration);
   } else if (typeof estimatedDuration === "number") {
     totalHours = estimatedDuration;
   }
-  hoursWorked = Number(hoursWorked) || 0;
-  return totalHours > 0 ? Math.round((hoursWorked / totalHours) * 100) : 0;
+  const worked = Number(hoursWorked) || 0;
+  return totalHours > 0 ? Math.round((worked / totalHours) * 100) : 0;
 }

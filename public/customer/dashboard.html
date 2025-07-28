@@ -5,40 +5,43 @@
     <title>Your Dashboard – Maduwa Paint World</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="dashboard.css" />
+    <link rel="stylesheet" href="../projects/styles/print.css" media="print" />
   </head>
+
   <body id="dashboardPage">
     <header>
       <h1>Your Dashboard</h1>
-      <button id="logoutBtn" class="btn logout-btn">Logout</button>
+      <button id="logoutBtn" class="btn logout-btn no-print">Logout</button>
     </header>
 
     <main>
       <!-- Top Bar -->
-      <div class="top-bar">
+      <div class="top-bar no-print">
         <button id="backBtn" class="btn">&larr; Back to Home</button>
         <div id="welcomeMessage" class="welcome"></div>
       </div>
 
       <!-- Filter Bar -->
-      <div class="filter-bar">
+      <div class="filter-bar no-print">
         <label for="statusFilter"><strong>Filter by status:</strong></label>
         <select id="statusFilter" class="btn">
           <option value="all">All</option>
-          <option value="in progress">In Progress</option>
+          <option value="quotation">Quotation</option>
+          <option value="approved">Approved</option>
+          <option value="in-progress">In Progress</option>
           <option value="completed">Completed</option>
-          <option value="cancelled">Cancelled</option>
         </select>
       </div>
 
-      <!-- Status Info -->
+      <!-- Loading -->
       <section id="statusMessage">
         <p>Checking your project status...</p>
       </section>
 
-      <!-- Project Results -->
+      <!-- Project Grid -->
       <section id="projectsSection" style="display: none">
         <h2>Projects Linked to Your Account</h2>
-        <div id="projectList" class="project-list"></div>
+        <div id="projectList" class="project-grid"></div>
       </section>
 
       <!-- Empty State -->
@@ -49,8 +52,9 @@
       </section>
     </main>
 
-    <footer>&copy; 2025 Maduwa Paint World (Pty) Ltd</footer>
+    <footer class="no-print">&copy; 2025 Maduwa Paint World (Pty) Ltd</footer>
 
+    <!-- Scripts -->
     <script type="module" src="./dashboard.js"></script>
   </body>
 </html>
