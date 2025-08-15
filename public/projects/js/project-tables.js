@@ -42,7 +42,7 @@ export function renderTable({ project, section, tableId, fields, types = {}, can
         if (section === "vehicles") {
           // petrol is a total cost, not rate/km
           value = (
-            (parseFloat(item.petrol) || 0) +
+            (parseFloat(item.petrol) || 0) * (parseFloat(item.km) || 0) +
             (parseFloat(item.tolls)  || 0)
           ).toFixed(2);
         }
@@ -106,7 +106,7 @@ export function renderTable({ project, section, tableId, fields, types = {}, can
         }
         if (section === "vehicles") {
           newTotal = (
-            (rowObj.petrol || 0) +
+            (rowObj.petrol || 0) * (rowObj.km || 0)  +
             (rowObj.tolls  || 0)
           ).toFixed(2);
         }

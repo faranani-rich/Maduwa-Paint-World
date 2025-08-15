@@ -37,7 +37,7 @@ export function projectTotals(project) {
   const vehicles = project.lines.vehicles || [];
   const vehiclesCost = sum(vehicles.map(v =>
     // PETROL is the total petrol cost, TOLLS is tolls
-    (Number(v.petrol) || 0) + (Number(v.tolls) || 0)
+    (Number(v.petrol) || 0) * (Number(v.km) || 0) + (Number(v.tolls) || 0)
   ));
 
   // --- Other expenses ---
