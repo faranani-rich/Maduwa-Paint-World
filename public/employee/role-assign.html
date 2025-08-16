@@ -8,15 +8,31 @@
     />
     <title>Role Management – Maduwa Paint World</title>
 
+    <!-- THEME BOOTSTRAP: apply saved theme & accent before first paint -->
+    <script>
+      (function () {
+        const theme = localStorage.getItem("app.theme") || "light";
+        const hue = localStorage.getItem("app.accentHue");
+        const root = document.documentElement;
+        root.setAttribute("data-theme", theme);
+        if (hue) root.style.setProperty("--accent-h", hue);
+      })();
+    </script>
+
+    <!-- Global theme tokens -->
+    <link rel="stylesheet" href="../css/themes.css" />
+
     <!-- Google Font: Inter -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
 
-    <!-- Component styles & logic -->
+    <!-- Theme helper (your location) -->
+    <script type="module" src="../css/theme.js"></script>
+    <!-- Styles & logic -->
     <link rel="stylesheet" href="role-assign.css" />
-    <script type="module" src="role-assign.js"></script>
+    <script type="module" src="role-assign.js" defer></script>
   </head>
 
   <body>
@@ -25,26 +41,168 @@
          ╚════════════════════════════════╝ -->
     <header class="page-header">
       <h1 class="page-title">Role Management</h1>
-      <button
-        class="btn back-btn"
-        onclick="location.href='employee-portal.html'"
-      >
-        ← Back&nbsp;to&nbsp;Portal
-      </button>
+
+      <nav class="header-actions" aria-label="Header actions">
+        <button
+          class="btn back-btn"
+          onclick="location.href='employee-portal.html'"
+          title="Back to portal"
+        >
+          ← Back to portal
+        </button>
+        <button id="refreshBtn" class="btn ghost" title="Reload users">
+          ⟳ Refresh
+        </button>
+      </nav>
     </header>
+
+    <!-- ╔════════════════════════════════╗
+         ║           CONTROLS            ║
+         ╚════════════════════════════════╝ -->
+    <section class="controls container" aria-labelledby="controlsTitle">
+      <h2 id="controlsTitle" class="sr-only">Search and filters</h2>
+
+      <div class="control-row">
+        <!-- Search -->
+        <label class="searchbox">
+          <span class="sr-only">Search users</span>
+          <input
+            id="searchInput"
+            type="search"
+            placeholder="Search by name, email, or role…"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button
+            id="clearSearchBtn"
+            class="icon-btn"
+            type="button"
+            title="Clear search"
+            aria-label="Clear search"
+          >
+            ✕
+          </button>
+        </label>
+
+        <!-- Sort -->
+        <label class="select">
+          <span class="select-label">Sort</span>
+          <select id="sortSelect">
+            <option value="name.asc">Name (A–Z)</option>
+            <option value="name.desc">Name (Z–A)</option>
+            <option value="email.asc">Email (A–Z)</option>
+            <option value="email.desc">Email (Z–A)</option>
+            <option value="roles.count.desc">Most roles first</option>
+            <option value="roles.count.asc">Fewest roles first</option>
+          </select>
+        </label>
+
+        <!-- Role filter -->
+        <label class="multiselect" data-type="role">
+          <span class="select-label">Role</span>
+          <button
+            id="roleFilterBtn"
+            class="chip-input"
+            type="button"
+            aria-haspopup="listbox"
+            aria-expanded="false"
+          >
+            Any role
+          </button>
+          <ul
+            id="roleFilterList"
+            class="popup-list"
+            role="listbox"
+            aria-label="Filter by role"
+          >
+            <!-- populated by JS from KNOWN_ROLES -->
+          </ul>
+        </label>
+
+        <!-- Employee type filter -->
+        <label class="multiselect" data-type="employeeType">
+          <span class="select-label">Employee type</span>
+          <button
+            id="typeFilterBtn"
+            class="chip-input"
+            type="button"
+            aria-haspopup="listbox"
+            aria-expanded="false"
+          >
+            Any type
+          </button>
+          <ul
+            id="typeFilterList"
+            class="popup-list"
+            role="listbox"
+            aria-label="Filter by employee type"
+          >
+            <!-- populated by JS from KNOWN_EMP_TYPES -->
+          </ul>
+        </label>
+
+        <!-- Toggles -->
+        <label class="toggle">
+          <input id="onlyEmployeesToggle" type="checkbox" />
+          <span>Show employees only</span>
+        </label>
+
+        <label class="toggle">
+          <input id="includeDisabledToggle" type="checkbox" />
+          <span>Include disabled</span>
+        </label>
+      </div>
+
+      <!-- Active filter chips (auto-populated) -->
+      <div
+        id="activeFilters"
+        class="active-chips"
+        aria-live="polite"
+        aria-atomic="true"
+      ></div>
+    </section>
+
+    <!-- ╔════════════════════════════════╗
+         ║           BULK BAR            ║
+         ╚════════════════════════════════╝ -->
+    <section id="bulkBar" class="bulk-bar container" hidden>
+      <div class="bulk-info"><strong id="bulkCount">0</strong> selected</div>
+      <div class="bulk-actions">
+        <button id="bulkAddRoleBtn" class="btn small">Add role</button>
+        <button id="bulkRemoveRoleBtn" class="btn small">Remove role</button>
+        <button id="bulkTypesBtn" class="btn small">Set employee types</button>
+        <button id="bulkClearBtn" class="btn small ghost">
+          Clear selection
+        </button>
+      </div>
+    </section>
 
     <!-- ╔════════════════════════════════╗
          ║          USER TABLE           ║
          ╚════════════════════════════════╝ -->
     <main class="container">
       <section class="card">
-        <div class="table-wrapper">
-          <table class="role-table">
+        <div class="table-wrapper" role="region" aria-label="Users table">
+          <table class="role-table" id="usersTable">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Roles / Employee&nbsp;Types</th>
+                <th class="min-col">
+                  <label class="checkbox">
+                    <input id="selectAll" type="checkbox" />
+                    <span class="sr-only">Select all</span>
+                  </label>
+                </th>
+                <th>
+                  <button class="th-btn" data-sort="name">Name</button>
+                </th>
+                <th>
+                  <button class="th-btn" data-sort="email">Email</button>
+                </th>
+                <th>
+                  <button class="th-btn" data-sort="roles">
+                    Roles / Employee&nbsp;Types
+                  </button>
+                </th>
                 <th class="min-col">Actions</th>
               </tr>
             </thead>
@@ -52,56 +210,202 @@
               <!-- populated by JS -->
             </tbody>
           </table>
+
+          <!-- Empty / loading states -->
+          <div id="tableLoading" class="state loading" aria-live="polite">
+            <span class="spinner" aria-hidden="true"></span> Loading users…
+          </div>
+          <div id="tableEmpty" class="state empty" hidden aria-live="polite">
+            No users match your filters.
+          </div>
+          <div id="tableError" class="state error" hidden aria-live="polite">
+            ⚠️ Something went wrong loading users.
+            <button id="retryBtn" class="link">Try again</button>
+          </div>
         </div>
+
+        <!-- Pagination -->
+        <footer class="table-footer">
+          <div class="rows-per-page">
+            <label class="select">
+              <span class="select-label">Rows</span>
+              <select id="pageSizeSelect">
+                <option value="10">10</option>
+                <option value="25" selected>25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </label>
+          </div>
+
+          <nav class="pagination" aria-label="Pagination">
+            <button
+              id="prevPageBtn"
+              class="icon-btn"
+              title="Previous page"
+              aria-label="Previous page"
+            >
+              ‹
+            </button>
+            <span id="pageStatus" class="page-status">Page 1 of 1</span>
+            <button
+              id="nextPageBtn"
+              class="icon-btn"
+              title="Next page"
+              aria-label="Next page"
+            >
+              ›
+            </button>
+          </nav>
+        </footer>
       </section>
     </main>
 
     <!-- ╔════════════════════════════════╗
-         ║            MODAL              ║
+         ║            MODALS             ║
          ╚════════════════════════════════╝ -->
-    <dialog id="edit-modal" class="modal">
+
+    <!-- Edit Roles Modal -->
+    <dialog id="edit-modal" class="modal" aria-labelledby="editModalTitle">
       <form method="dialog" id="edit-form" class="modal-content">
-        <h2>Edit Roles</h2>
+        <header class="modal-header">
+          <h2 id="editModalTitle">Edit Roles</h2>
+          <button type="button" class="icon-btn" data-close aria-label="Close">
+            ✕
+          </button>
+        </header>
 
-        <!-- Read-only identity -->
-        <div class="field-row">
-          <label>Name</label>
-          <input type="text" id="edit-name" readonly />
-        </div>
-        <div class="field-row">
-          <label>Email</label>
-          <input type="text" id="edit-email" readonly />
-        </div>
-
-        <!-- 1️⃣ General role -->
-        <fieldset>
-          <legend>General role</legend>
-          <div class="checkbox-grid">
-            <label>
-              <input type="checkbox" id="chk-employee" />
-              <span>Employee</span>
-            </label>
+        <!-- Identity preview -->
+        <section class="id-block">
+          <div class="field-row">
+            <label for="edit-name">Name</label>
+            <input type="text" id="edit-name" readonly />
           </div>
+          <div class="field-row">
+            <label for="edit-email">Email</label>
+            <input type="text" id="edit-email" readonly />
+          </div>
+        </section>
+
+        <!-- 1) General role -->
+        <fieldset class="fieldset">
+          <legend>General role</legend>
+          <label class="checkbox">
+            <input type="checkbox" id="chk-employee" />
+            <span>Employee</span>
+          </label>
           <p class="hint">
             Every account is always a customer. Tick “Employee” to grant staff
             access.
           </p>
         </fieldset>
 
-        <!-- 2️⃣ Employee-type checklist -->
-        <fieldset id="emp-types-wrapper" disabled>
+        <!-- 2) Employee types -->
+        <fieldset id="emp-types-wrapper" class="fieldset" disabled>
           <legend>Employee types</legend>
+
+          <!-- quick actions -->
+          <div class="fieldset-actions">
+            <button id="typesSelectAllBtn" class="btn tiny" type="button">
+              Select all
+            </button>
+            <button id="typesClearBtn" class="btn tiny ghost" type="button">
+              Clear
+            </button>
+          </div>
+
           <div class="checkbox-grid" id="emp-types-checkboxes">
             <!-- checkboxes injected by role-assign.js -->
           </div>
         </fieldset>
 
-        <!-- Modal actions -->
-        <div class="modal-actions">
+        <footer class="modal-actions">
           <button type="submit" class="btn primary">Save</button>
           <button type="button" class="btn" data-close>Cancel</button>
-        </div>
+        </footer>
       </form>
     </dialog>
+
+    <!-- Bulk: Set/Add/Remove roles & types modal (reused) -->
+    <dialog id="bulk-modal" class="modal" aria-labelledby="bulkModalTitle">
+      <form method="dialog" id="bulk-form" class="modal-content">
+        <header class="modal-header">
+          <h2 id="bulkModalTitle">Bulk update</h2>
+          <button type="button" class="icon-btn" data-close aria-label="Close">
+            ✕
+          </button>
+        </header>
+
+        <section class="bulk-body">
+          <!-- JS injects appropriate controls based on action -->
+          <div id="bulkControls"></div>
+        </section>
+
+        <footer class="modal-actions">
+          <button type="submit" class="btn primary">Apply</button>
+          <button type="button" class="btn" data-close>Cancel</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <!-- Toasts / notifications -->
+    <section class="toast-region" aria-live="assertive" aria-atomic="true">
+      <output id="toast" class="toast" hidden></output>
+    </section>
+
+    <!-- Row template for fast rendering -->
+    <template id="userRowTemplate">
+      <tr>
+        <td class="min-col">
+          <label class="checkbox">
+            <input type="checkbox" class="row-select" />
+            <span class="sr-only">Select row</span>
+          </label>
+        </td>
+        <td class="cell-name">
+          <span class="avatar" aria-hidden="true"></span>
+          <span class="name-text"></span>
+        </td>
+        <td class="cell-email">
+          <a class="email-link" href="#" rel="noopener noreferrer"></a>
+        </td>
+        <td class="cell-roles">
+          <span class="role-chips"><!-- chips inserted here --></span>
+        </td>
+        <td class="min-col">
+          <menu class="row-actions" role="menu">
+            <button
+              class="icon-btn edit-btn"
+              title="Edit roles"
+              aria-label="Edit roles"
+            >
+              ✎
+            </button>
+            <button
+              class="icon-btn more-btn"
+              title="More actions"
+              aria-label="More actions"
+            >
+              ⋯
+            </button>
+          </menu>
+        </td>
+      </tr>
+    </template>
+
+    <!-- Screen-reader only helper class -->
+    <style>
+      .sr-only {
+        position: absolute !important;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+    </style>
   </body>
 </html>

@@ -2,46 +2,323 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Create Account – Maduwa Paint World</title>
+    <title>Create Account — Maduwa Paint World</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0b1220" />
+
+    <!-- THEME BOOTSTRAP: apply saved theme & accent before first paint -->
+    <script>
+      (function () {
+        const theme = localStorage.getItem("app.theme") || "light";
+        const hue = localStorage.getItem("app.accentHue");
+        const root = document.documentElement;
+        root.setAttribute("data-theme", theme);
+        if (hue) root.style.setProperty("--accent-h", hue);
+      })();
+    </script>
+
+    <!-- Global theme tokens -->
+    <link rel="stylesheet" href="../css/themes.css" />
+
     <link rel="stylesheet" href="style.css" />
   </head>
-  <body>
-    <main class="login-container">
-      <h1>Create Your Account</h1>
-      <p class="tagline">
-        Join Maduwa Paint World – we don’t just make paint, we excel in
-        chemistry.
+  <body class="auth-body">
+    <noscript>
+      <p
+        style="
+          padding: 1rem;
+          background: #ffefef;
+          color: #a00;
+          text-align: center;
+        "
+      >
+        JavaScript is required to register.
       </p>
+    </noscript>
 
-      <div class="card login-card">
-        <input type="text" id="nameInput" placeholder="Full Name" />
-        <input type="email" id="emailInput" placeholder="Email Address" />
-        <input
-          type="tel"
-          id="phoneInput"
-          placeholder="Phone Number (optional)"
-        />
-        <input
-          type="password"
-          id="passwordInput"
-          placeholder="Create Password"
-        />
-        <input
-          type="password"
-          id="confirmPasswordInput"
-          placeholder="Confirm Password"
-        />
+    <!-- Animated background -->
+    <div class="bg fx-orbs">
+      <div class="orb orb-a"></div>
+      <div class="orb orb-b"></div>
+      <div class="orb orb-c"></div>
+      <div class="grid-overlay"></div>
+    </div>
 
-        <button id="registerBtn" class="login-btn">Create Account</button>
+    <main class="auth-shell">
+      <!-- Brand / left column -->
+      <section class="brand-pane">
+        <div class="brand-card glass">
+          <div class="logo-mark" aria-hidden="true">
+            <span class="logo-dot"></span>
+            <span class="logo-stem"></span>
+          </div>
+          <h1 class="brand-title">Create your account</h1>
+          <p class="brand-tagline">
+            Join Maduwa Paint World - we do chemistry and color with precision.
+          </p>
+          <ul class="highlights">
+            <li>Choose Email/Password or Phone (SMS)</li>
+            <li>Or continue with Google or Apple</li>
+            <li>One account - multiple sign-in methods</li>
+          </ul>
+        </div>
+      </section>
 
-        <p class="note">
-          Already have an account?
-          <a href="login.html">Back to Login</a>
-        </p>
-      </div>
+      <!-- Register / right column -->
+      <section class="auth-pane">
+        <div class="auth-card glass surface-raise">
+          <header class="auth-header">
+            <h2>Get started</h2>
+            <p class="muted">Pick a method to create your account</p>
+          </header>
+
+          <!-- OAuth row -->
+          <div class="oauth-row">
+            <button
+              id="googleBtn"
+              class="btn oauth google"
+              aria-label="Continue with Google"
+            >
+              <span class="icon i-google" aria-hidden="true"></span>
+              <span>Continue with Google</span>
+            </button>
+
+            <button
+              id="appleBtn"
+              class="btn oauth apple"
+              aria-label="Continue with Apple"
+            >
+              <span class="icon i-apple" aria-hidden="true"></span>
+              <span>Continue with Apple</span>
+            </button>
+
+            <button
+              id="guestBtn"
+              class="btn ghost"
+              aria-label="Browse as Guest"
+            >
+              <span class="icon i-guest" aria-hidden="true"></span>
+              <span>Browse as Guest</span>
+            </button>
+          </div>
+
+          <div class="divider"><span>or</span></div>
+
+          <!-- Tabs: Email | Phone -->
+          <div class="tabs" role="tablist" aria-label="Registration options">
+            <button
+              class="tab active"
+              role="tab"
+              aria-selected="true"
+              aria-controls="panel-email"
+              id="tab-email"
+            >
+              Email
+            </button>
+            <button
+              class="tab"
+              role="tab"
+              aria-selected="false"
+              aria-controls="panel-phone"
+              id="tab-phone"
+            >
+              Phone (SMS)
+            </button>
+          </div>
+
+          <!-- Email registration -->
+          <section
+            id="panel-email"
+            class="panel active"
+            role="tabpanel"
+            aria-labelledby="tab-email"
+          >
+            <form class="form vstack" novalidate>
+              <label class="field">
+                <span class="label">Full name</span>
+                <input
+                  type="text"
+                  id="nameInput"
+                  placeholder="Your name"
+                  autocomplete="name"
+                />
+              </label>
+
+              <label class="field">
+                <span class="label">Email address</span>
+                <input
+                  type="email"
+                  id="emailInput"
+                  placeholder="you@example.com"
+                  autocomplete="email"
+                  required
+                />
+              </label>
+
+              <label class="field">
+                <span class="label">Create password</span>
+                <input
+                  type="password"
+                  id="passwordInput"
+                  placeholder="••••••••"
+                  autocomplete="new-password"
+                  required
+                />
+              </label>
+
+              <label class="field">
+                <span class="label">Confirm password</span>
+                <input
+                  type="password"
+                  id="confirmPasswordInput"
+                  placeholder="••••••••"
+                  autocomplete="new-password"
+                  required
+                />
+              </label>
+
+              <label class="row">
+                <input type="checkbox" id="termsChk" style="width: auto" />
+                <span class="note"
+                  >I agree to the <a href="#" class="link">Terms</a> and
+                  <a href="#" class="link">Privacy Policy</a>.</span
+                >
+              </label>
+
+              <button id="registerBtn" type="button" class="btn primary">
+                Create account
+              </button>
+            </form>
+          </section>
+
+          <!-- Phone registration (SMS) -->
+          <section
+            id="panel-phone"
+            class="panel"
+            role="tabpanel"
+            aria-labelledby="tab-phone"
+            hidden
+          >
+            <form class="form vstack" novalidate>
+              <label class="field">
+                <span class="label">Phone number</span>
+                <input
+                  type="tel"
+                  id="phoneInputReg"
+                  inputmode="tel"
+                  autocomplete="tel"
+                  placeholder="+27 6X XXX XXXX"
+                />
+              </label>
+
+              <div class="row">
+                <button id="phoneStartBtnReg" type="button" class="btn primary">
+                  Send code
+                </button>
+              </div>
+
+              <div id="codeRowReg" class="code-row" hidden>
+                <label class="field">
+                  <span class="label">6-digit code</span>
+                  <input
+                    type="text"
+                    id="codeInputReg"
+                    inputmode="numeric"
+                    pattern="[0-9]*"
+                    maxlength="6"
+                    placeholder="123456"
+                  />
+                </label>
+
+                <label class="field">
+                  <span class="label">Display name (optional)</span>
+                  <input
+                    type="text"
+                    id="nameInputPhone"
+                    placeholder="Your name"
+                    autocomplete="name"
+                  />
+                </label>
+
+                <div class="row">
+                  <button
+                    id="phoneConfirmBtnReg"
+                    type="button"
+                    class="btn success"
+                  >
+                    Verify & Create account
+                  </button>
+                  <button id="resendCodeBtnReg" type="button" class="btn ghost">
+                    Resend
+                  </button>
+                </div>
+              </div>
+
+              <!-- Separate reCAPTCHA container for register -->
+              <div
+                id="recaptcha-container-reg"
+                class="recaptcha-slot"
+                aria-hidden="true"
+              ></div>
+            </form>
+          </section>
+
+          <!-- Status / error messages -->
+          <div
+            id="regMessage"
+            class="toast-area"
+            aria-live="polite"
+            aria-atomic="true"
+          ></div>
+
+          <!-- Footer -->
+          <footer class="auth-footer">
+            <p class="note">
+              Already have an account?
+              <a href="login.html" class="link">Back to login</a>
+            </p>
+          </footer>
+        </div>
+
+        <div class="postcard glass">
+          <p class="tiny">
+            You can add or remove sign-in methods later in your Account page.
+          </p>
+        </div>
+      </section>
     </main>
 
+    <!-- Tiny tab toggle helper -->
+    <script>
+      (function () {
+        const tabEmail = document.getElementById("tab-email");
+        const tabPhone = document.getElementById("tab-phone");
+        const panelEmail = document.getElementById("panel-email");
+        const panelPhone = document.getElementById("panel-phone");
+
+        function activate(tab) {
+          const isEmail = tab === "email";
+          tabEmail.classList.toggle("active", isEmail);
+          tabPhone.classList.toggle("active", !isEmail);
+          panelEmail.toggleAttribute("hidden", !isEmail);
+          panelPhone.toggleAttribute("hidden", isEmail);
+          panelEmail.classList.toggle("active", isEmail);
+          panelPhone.classList.toggle("active", !isEmail);
+          (isEmail
+            ? document.getElementById("emailInput")
+            : document.getElementById("phoneInputReg")
+          )?.focus();
+        }
+
+        tabEmail.addEventListener("click", () => activate("email"));
+        tabPhone.addEventListener("click", () => activate("phone"));
+      })();
+    </script>
+
+    <!-- Theme helper (your location) -->
+    <script type="module" src="../css/theme.js"></script>
+
+    <!-- Your registration logic -->
     <script type="module" src="./register.js"></script>
   </body>
 </html>

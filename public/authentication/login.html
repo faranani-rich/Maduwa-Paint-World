@@ -2,48 +2,295 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Welcome – Maduwa Paint World</title>
+    <title>Maduwa Paint World — Sign In</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0b1220" />
+
+    <!-- THEME BOOTSTRAP: apply saved theme & accent before first paint -->
+    <script>
+      (function () {
+        const theme = localStorage.getItem("app.theme") || "light";
+        const hue = localStorage.getItem("app.accentHue");
+        const root = document.documentElement;
+        root.setAttribute("data-theme", theme);
+        if (hue) root.style.setProperty("--accent-h", hue);
+      })();
+    </script>
+
+    <!-- Global theme tokens -->
+    <link rel="stylesheet" href="../css/themes.css" />
+
+    <!-- Main stylesheet (we'll upgrade this next) -->
     <link rel="stylesheet" href="style.css" />
+
+    <!-- Fonts/icons are optional; keep markup clean for now -->
   </head>
-  <body>
-    <main class="login-container">
-      <h1>Maduwa Paint World</h1>
-      <p class="tagline">We don’t just make paint — we excel in chemistry.</p>
+  <body class="auth-body">
+    <noscript>
+      <p
+        style="
+          padding: 1rem;
+          background: #ffefef;
+          color: #a00;
+          text-align: center;
+        "
+      >
+        JavaScript is required to sign in.
+      </p>
+    </noscript>
 
-      <div class="card login-card">
-        <h2>Sign In</h2>
+    <!-- Decorative background (CSS will make this glow/animate) -->
+    <div class="bg fx-orbs">
+      <div class="orb orb-a"></div>
+      <div class="orb orb-b"></div>
+      <div class="orb orb-c"></div>
+      <div class="grid-overlay"></div>
+    </div>
 
-        <!-- OAuth Buttons -->
-        <button id="googleBtn" class="login-btn">Continue with Google</button>
-        <button id="appleBtn" class="login-btn">Continue with Apple</button>
-        <button id="guestBtn" class="login-btn">Continue as Guest</button>
+    <main class="auth-shell">
+      <!-- Brand / left column -->
+      <section class="brand-pane">
+        <div class="brand-card glass">
+          <div class="logo-mark" aria-hidden="true">
+            <!-- you can replace with an actual SVG logo later -->
+            <span class="logo-dot"></span>
+            <span class="logo-stem"></span>
+          </div>
+          <h1 class="brand-title">Maduwa Paint World</h1>
+          <p class="brand-tagline">
+            We don’t just make paint — we excel in chemistry.
+          </p>
 
-        <!-- Divider -->
-        <div class="divider"><span>OR</span></div>
+          <ul class="highlights">
+            <li>Secure login: Google, Apple, Email, or SMS</li>
+            <li>One account, multiple sign-in methods</li>
+            <li>Customer & employee portals</li>
+          </ul>
+        </div>
+      </section>
 
-        <!-- Email/Password Login -->
-        <input type="email" id="emailInput" placeholder="Email address" />
-        <input type="password" id="passwordInput" placeholder="Password" />
-        <button id="emailLoginBtn" class="login-btn">Sign in with Email</button>
+      <!-- Auth / right column -->
+      <section class="auth-pane">
+        <div class="auth-card glass surface-raise">
+          <header class="auth-header">
+            <h2>Welcome back</h2>
+            <p class="muted">Choose a sign-in method to continue</p>
+          </header>
 
-        <!-- Phone Login (optional) -->
-        <input type="tel" id="phoneInput" placeholder="Phone number (+27...)" />
-        <input
-          type="password"
-          id="phonePasswordInput"
-          placeholder="Password (if set)"
-        />
-        <button id="phoneLoginBtn" class="login-btn">Sign in with Phone</button>
+          <!-- OAuth row -->
+          <div class="oauth-row">
+            <button
+              id="googleBtn"
+              class="btn oauth google"
+              aria-label="Continue with Google"
+            >
+              <span class="icon i-google" aria-hidden="true"></span>
+              <span>Continue with Google</span>
+            </button>
 
-        <!-- Register link -->
-        <p class="note">
-          New here?
-          <a href="register.html">Create an account</a>
-        </p>
-      </div>
+            <button
+              id="appleBtn"
+              class="btn oauth apple"
+              aria-label="Continue with Apple"
+            >
+              <span class="icon i-apple" aria-hidden="true"></span>
+              <span>Continue with Apple</span>
+            </button>
+
+            <button
+              id="guestBtn"
+              class="btn ghost"
+              aria-label="Continue as Guest"
+            >
+              <span class="icon i-guest" aria-hidden="true"></span>
+              <span>Continue as Guest</span>
+            </button>
+          </div>
+
+          <div class="divider"><span>or</span></div>
+
+          <!-- Tabs: Email | Phone -->
+          <div class="tabs" role="tablist" aria-label="Sign-in options">
+            <button
+              class="tab active"
+              role="tab"
+              aria-selected="true"
+              aria-controls="panel-email"
+              id="tab-email"
+            >
+              Email
+            </button>
+            <button
+              class="tab"
+              role="tab"
+              aria-selected="false"
+              aria-controls="panel-phone"
+              id="tab-phone"
+            >
+              Phone (SMS)
+            </button>
+          </div>
+
+          <!-- Email panel -->
+          <section
+            id="panel-email"
+            class="panel active"
+            role="tabpanel"
+            aria-labelledby="tab-email"
+          >
+            <form class="form vstack" novalidate>
+              <label class="field">
+                <span class="label">Email address</span>
+                <input
+                  type="email"
+                  id="emailInput"
+                  autocomplete="email"
+                  placeholder="you@example.com"
+                  required
+                />
+              </label>
+
+              <label class="field">
+                <span class="label">Password</span>
+                <input
+                  type="password"
+                  id="passwordInput"
+                  autocomplete="current-password"
+                  placeholder="••••••••"
+                  required
+                />
+              </label>
+
+              <div class="row between">
+                <button id="emailLoginBtn" type="button" class="btn primary">
+                  Sign in with Email
+                </button>
+                <button id="forgotPwBtn" type="button" class="link">
+                  Forgot password?
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <!-- Phone panel -->
+          <section
+            id="panel-phone"
+            class="panel"
+            role="tabpanel"
+            aria-labelledby="tab-phone"
+            hidden
+          >
+            <form class="form vstack" novalidate>
+              <label class="field">
+                <span class="label">Phone number</span>
+                <input
+                  type="tel"
+                  id="phoneInput"
+                  inputmode="tel"
+                  autocomplete="tel"
+                  placeholder="+27 6X XXX XXXX"
+                />
+              </label>
+
+              <div class="row">
+                <button id="phoneStartBtn" type="button" class="btn primary">
+                  Send code
+                </button>
+              </div>
+
+              <div id="codeRow" class="code-row" hidden>
+                <label class="field">
+                  <span class="label">6-digit code</span>
+                  <input
+                    type="text"
+                    id="codeInput"
+                    inputmode="numeric"
+                    pattern="[0-9]*"
+                    maxlength="6"
+                    placeholder="123456"
+                  />
+                </label>
+                <div class="row">
+                  <button
+                    id="phoneConfirmBtn"
+                    type="button"
+                    class="btn success"
+                  >
+                    Verify & Sign in
+                  </button>
+                  <button id="resendCodeBtn" type="button" class="btn ghost">
+                    Resend
+                  </button>
+                </div>
+              </div>
+
+              <!-- Required by Firebase Phone Auth -->
+              <div
+                id="recaptcha-container"
+                class="recaptcha-slot"
+                aria-hidden="true"
+              ></div>
+            </form>
+          </section>
+
+          <!-- Status / error messages -->
+          <div
+            id="authMessage"
+            class="toast-area"
+            aria-live="polite"
+            aria-atomic="true"
+          ></div>
+
+          <!-- Footer links -->
+          <footer class="auth-footer">
+            <p class="note">
+              By continuing you agree to our
+              <a href="#" class="link">Terms</a> and
+              <a href="#" class="link">Privacy Policy</a>.
+            </p>
+          </footer>
+        </div>
+
+        <!-- Secondary links -->
+        <div class="postcard glass">
+          <p class="tiny">
+            New here? <a href="register.html" class="link">Create an account</a>
+          </p>
+        </div>
+      </section>
     </main>
 
+    <!-- Optional: small inline script to switch tabs (no framework) -->
+    <script>
+      (function () {
+        const tabEmail = document.getElementById("tab-email");
+        const tabPhone = document.getElementById("tab-phone");
+        const panelEmail = document.getElementById("panel-email");
+        const panelPhone = document.getElementById("panel-phone");
+
+        function activate(tab) {
+          const isEmail = tab === "email";
+          tabEmail.classList.toggle("active", isEmail);
+          tabPhone.classList.toggle("active", !isEmail);
+          panelEmail.toggleAttribute("hidden", !isEmail);
+          panelPhone.toggleAttribute("hidden", isEmail);
+          panelEmail.classList.toggle("active", isEmail);
+          panelPhone.classList.toggle("active", !isEmail);
+          (isEmail
+            ? document.getElementById("emailInput")
+            : document.getElementById("phoneInput")
+          )?.focus();
+        }
+
+        tabEmail.addEventListener("click", () => activate("email"));
+        tabPhone.addEventListener("click", () => activate("phone"));
+      })();
+    </script>
+
+    <!-- Theme helper (your location) -->
+    <script type="module" src="../css/theme.js"></script>
+
+    <!-- Your login logic -->
     <script type="module" src="./login.js"></script>
   </body>
 </html>

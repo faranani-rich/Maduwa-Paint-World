@@ -4,49 +4,122 @@
     <title>Employee Portal – Maduwa Paint World</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#0b1220" />
+
+    <!-- THEME BOOTSTRAP: apply saved theme & accent before first paint -->
+    <script>
+      (function () {
+        const theme = localStorage.getItem("app.theme") || "light";
+        const hue = localStorage.getItem("app.accentHue");
+        const root = document.documentElement;
+        root.setAttribute("data-theme", theme);
+        if (hue) root.style.setProperty("--accent-h", hue);
+      })();
+    </script>
+
+    <!-- Global theme tokens -->
+    <link rel="stylesheet" href="../css/themes.css" />
 
     <!-- Inter font -->
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
-
     <link rel="stylesheet" href="employee-portal.css" />
   </head>
 
-  <body>
-    <!-- ╔══════════ Header ══════════╗ -->
-    <header>
-      <h1>Employee Portal</h1>
-      <div id="welcome"></div>
-      <button id="logoutBtn" style="float: right">Logout</button>
+  <body class="portal-body">
+    <!-- animated background -->
+    <div class="bg fx-orbs">
+      <div class="orb orb-a"></div>
+      <div class="orb orb-b"></div>
+      <div class="orb orb-c"></div>
+      <div class="grid-overlay"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="portal-header glass">
+      <div class="brand">
+        <div class="logo-mark" aria-hidden="true">
+          <span class="logo-dot"></span>
+          <span class="logo-stem"></span>
+        </div>
+        <div class="titles">
+          <h1>Employee Portal</h1>
+          <p id="welcome" class="subtitle">
+            Welcome, <span id="userName">—</span>
+          </p>
+        </div>
+      </div>
+      <nav class="actions">
+        <!-- Anchor link ensures it works even if JS is broken -->
+        <a
+          id="profileBtn"
+          class="btn ghost"
+          href="../authentication/profile.html?from=employee"
+          >My Profile</a
+        >
+        <button id="logoutBtn" class="btn">Logout</button>
+        <button id="settingsBtn" class="btn outline no-print">Settings</button>
+      </nav>
     </header>
 
-    <!-- ╔══════════ Dashboards ══════════╗ -->
-    <section>
-      <h2>Your Dashboards</h2>
+    <!-- Main -->
+    <main class="portal-shell">
+      <!-- Stats / quick glance (optional; JS can fill) -->
+      <section class="stats-row">
+        <div class="stat glass">
+          <div class="stat-label">Open Projects</div>
+          <div class="stat-value" id="openProjectsCount">—</div>
+        </div>
+        <div class="stat glass">
+          <div class="stat-label">Invoices Pending</div>
+          <div class="stat-value" id="pendingInvoicesCount">—</div>
+        </div>
+        <div class="stat glass">
+          <div class="stat-label">Tasks Today</div>
+          <div class="stat-value" id="tasksTodayCount">—</div>
+        </div>
+      </section>
 
-      <!-- JS-generated employee dashboards -->
-      <div id="dashboardLinks" class="dashboard-grid"></div>
+      <!-- Dashboards -->
+      <section class="dash-section glass">
+        <div class="section-head">
+          <h2>Your Dashboards</h2>
+          <p class="muted">Shortcuts based on your role</p>
+        </div>
 
-      <!-- Always-visible shortcut -->
-      <a
-        href="../projects/index.html"
-        class="dashboard-btn"
-        id="projectsPortalBtn"
-      >
-        Projects Portal
-      </a>
-    </section>
+        <div id="dashboardLinks" class="dashboard-grid">
+          <!-- Always-visible shortcut -->
+          <a href="../projects/index.html" class="tile">
+            <div class="tile-title">Projects Portal</div>
+            <div class="tile-sub">Create, track & invoice</div>
+          </a>
+        </div>
+      </section>
 
-    <!-- ╔══════════ Admin / Owner tools ══════════╗ -->
-    <section id="adminToolsSection" style="display: none">
-      <h2>Admin Tools</h2>
-      <!-- owner / admin only -->
-      <a href="role-assign.html" class="dashboard-btn" id="manageRolesBtn">
-        Assign / Manage Roles
-      </a>
-    </section>
+      <!-- Admin / Owner tools -->
+      <section id="adminToolsSection" class="admin-section glass" hidden>
+        <div class="section-head">
+          <h2>Admin Tools</h2>
+          <p class="muted">Owner & administrators only</p>
+        </div>
+
+        <div class="dashboard-grid">
+          <a href="role-assign.html" class="tile">
+            <div class="tile-title">Assign / Manage Roles</div>
+            <div class="tile-sub">Invite staff, set permissions</div>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="portal-footer">
+      <p>© 2025 Maduwa Paint World (Pty) Ltd</p>
+    </footer>
+
+    <!-- Theme helper (your location) -->
+    <script type="module" src="../css/theme.js"></script>
 
     <script type="module" src="./employee-portal.js"></script>
   </body>

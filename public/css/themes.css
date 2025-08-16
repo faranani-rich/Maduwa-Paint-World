@@ -1,0 +1,285 @@
+/* /public/css/themes.css */
+
+/* --------------------------------------------------------------
+   1) Design tokens (names never change)
+   -------------------------------------------------------------- */
+:root {
+  /* surfaces */
+  --bg:            #ffffff;
+  --surface:       #f7f8fa;
+  --surface-2:     #eef1f6;
+
+  /* text */
+  --text:          #1d2433;
+  --muted:         #4b5565;
+  --link:          #2563eb;
+
+  /* borders & shadows */
+  --border:        #e5e7eb;
+  --shadow:        0 6px 20px 0 rgba(0,0,0,.08);
+
+  /* brand accent (HSL lets us swap hues easily) */
+  --accent-h: 210; /* blue */
+  --accent-s: 90%;
+  --accent-l: 48%;
+
+  --accent:        hsl(var(--accent-h) var(--accent-s) var(--accent-l));
+  --accent-100:    hsl(var(--accent-h) 100% 96%);
+  --accent-700:    hsl(var(--accent-h) var(--accent-s) 35%);
+
+  /* component helpers */
+  --on-accent:     #ffffff;   /* text when background = accent */
+  --on-danger:     #ffffff;
+  --btn-fg:        var(--on-accent); /* backward-compat */
+  --danger:        #e11d48;
+  --success:       #16a34a;
+
+  /* table contrast (defaults; refined per-theme below) */
+  --table-border:     var(--border);
+  --table-header-bg:  var(--surface-2);
+  --table-row-alt:    var(--surface);
+  --table-hover:      var(--accent-100);
+}
+
+/* --------------------------------------------------------------
+   2) Base styles that all pages can rely on
+   -------------------------------------------------------------- */
+html, body {
+  background: var(--bg);
+  color: var(--text);
+}
+a { color: var(--link); }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+}
+
+/* Button base */
+.btn,
+.btn.primary {
+  background: var(--accent);
+  color: var(--btn-fg);
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  padding: .7rem 1rem;
+  cursor: pointer;
+}
+.btn:hover { filter: brightness(.98); }
+.btn:disabled { opacity:.6; cursor:not-allowed; }
+
+/* Outlines / ghost */
+.btn.outline,
+.btn.ghost {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+/* Status variants */
+.btn.success { background: var(--success); color: var(--on-accent); border-color: var(--success); }
+.btn.danger  { background: var(--danger);  color: var(--on-danger);  border-color: var(--danger); }
+
+/* Inputs */
+input, select, textarea {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+input::placeholder, textarea::placeholder { color: var(--muted); }
+
+/* --------------------------------------------------------------
+   3) Theme presets (apply with <html data-theme="dark"> etc.)
+   -------------------------------------------------------------- */
+
+/* Light (default) */
+:root[data-theme="light"] {
+  --bg:        #ffffff;
+  --surface:   #f7f8fa;
+  --surface-2: #eef1f6;
+
+  --text:   #1d2433;
+  --muted:  #4b5565;
+  --link:   #2563eb;
+
+  --border: #e5e7eb;
+  --shadow: 0 6px 20px 0 rgba(0,0,0,.08);
+
+  --on-accent: #ffffff;
+  --on-danger: #ffffff;
+
+  /* strengthen table contrast in light mode */
+  --table-border:    #d6dae1;                  /* a hair darker than --border */
+  --table-header-bg: #e9edf4;                  /* a hair darker than --surface-2 */
+  --table-row-alt:   #fdfdff;                  /* subtle zebra */
+  --table-hover:     hsl(var(--accent-h) 100% 94%);
+}
+
+/* Dark */
+:root[data-theme="dark"] {
+  --bg:        #0f172a;
+  --surface:   #111827;
+  --surface-2: #0b1220;
+
+  --text:   #e5e7eb;
+  --muted:  #9ca3af;
+  --link:   #93c5fd;
+
+  --border: rgba(255,255,255,0.08);
+  --shadow: 0 10px 30px rgba(0,0,0,.45);
+
+  --on-accent: #0b1220;
+  --on-danger: #ffffff;
+
+  --table-border:    rgba(255,255,255,0.10);
+  --table-header-bg: #0f1a2b;
+  --table-row-alt:   #0f1524;
+  --table-hover:     hsl(var(--accent-h) 35% 22% / .35);
+}
+
+/* Midnight (almost black + teal accent) */
+:root[data-theme="midnight"] {
+  --bg:#0a0a0b; --surface:#121214; --surface-2:#1a1b1e;
+  --text:#e7e7ea; --muted:#a1a1aa; --link:#67e8f9;
+  --border:#232427;
+  --accent-h:180; /* teal */
+  --on-accent:#0a0a0b;
+
+  --table-border:#2a2b30; --table-header-bg:#181a1e; --table-row-alt:#141519;
+}
+
+/* Forest (earthy light) */
+:root[data-theme="forest"] {
+  --bg:#fcfdf9; --surface:#f1f6ee; --surface-2:#e6efe3;
+  --text:#1e2a1f; --muted:#4d5b4f; --link:#2f855a;
+  --border:#dbe7d6;
+  --accent-h:140; /* green */
+  --on-accent:#ffffff;
+
+  --table-border:#cddac7; --table-header-bg:#e0eadc; --table-row-alt:#f8fbf5;
+}
+
+/* Ocean (cool light) */
+:root[data-theme="ocean"] {
+  --bg:#fbfdff; --surface:#f1f6ff; --surface-2:#e8f0ff;
+  --text:#112233; --muted:#56657a; --link:#2563eb;
+  --border:#d9e2f2;
+  --accent-h:210; /* blue */
+  --on-accent:#ffffff;
+
+  --table-border:#cbd7ea; --table-header-bg:#e3ebff; --table-row-alt:#f9fbff;
+}
+
+/* Grape (playful purple) */
+:root[data-theme="grape"] {
+  --bg:#fffaff; --surface:#fbf3ff; --surface-2:#f5eaff;
+  --text:#2a1039; --muted:#654b73; --link:#7c3aed;
+  --border:#ecd8ff;
+  --accent-h:270; /* purple */
+  --on-accent:#ffffff;
+
+  --table-border:#dec6fb; --table-header-bg:#f0e5ff; --table-row-alt:#fefbff;
+}
+
+/* Sunflower (high-contrast light, yellow accent) */
+:root[data-theme="sunflower"] {
+  --bg:#fffef7; --surface:#fff7d6; --surface-2:#ffefad;
+  --text:#1e1b04; --muted:#544f19; --link:#b45309;
+  --border:#fde68a;
+  --accent-h:45;  /* amber/yellow */
+  --on-accent:#111111; /* dark text reads better on bright yellow */
+
+  /* make table text stand out on warm surfaces */
+  --table-border:#e9c96a;
+  --table-header-bg:#ffe89d;
+  --table-row-alt:#fffbe2;
+}
+
+/* High contrast (accessibility) */
+:root[data-theme="contrast"] {
+  --bg:#000; --surface:#000; --surface-2:#000;
+  --text:#fff; --muted:#ddd; --link:#0af;
+  --border:#fff;
+  --accent-h:200;
+  --accent-s:100%;
+  --accent-l:50%;
+  --on-accent:#000; /* accent is bright; use black text for max contrast */
+
+  --table-border:#fff; --table-header-bg:#111; --table-row-alt:#000;
+}
+
+/* --------------------------------------------------------------
+   4) Theme component base (global rescue)
+   Put this near the END so it can fix pages with old hard-coded colors.
+   -------------------------------------------------------------- */
+
+/* Headings & basic text */
+h1, h2, h3, h4, h5, h6,
+p, span, label, small, strong {
+  color: var(--text);
+}
+
+/* Generic panels */
+.card, .panel, .sheet, .glass, .surface-raise {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+/* Badges / chips / pills */
+.badge, .pill, .tag {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.badge.accent, .pill.accent, .tag.accent {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+}
+
+/* Tables — global, contrast-safe */
+table {
+  width: 100%;
+  background: var(--surface);
+  color: var(--text);
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--table-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+th, td {
+  border-bottom: 1px solid var(--table-border);
+  padding: .7rem .85rem;
+  text-align: left;
+  color: var(--text);
+}
+thead th {
+  background: var(--table-header-bg);
+  color: var(--text);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+tbody tr:nth-child(even) td {
+  background: var(--table-row-alt);
+}
+tbody tr:hover td {
+  background: var(--table-hover);
+}
+
+/* Chips/badges inside tables match the table palette */
+table .badge, table .pill, table .tag {
+  background: var(--table-header-bg);
+  border-color: var(--table-border);
+  color: var(--text);
+}
+table .badge.accent, table .pill.accent, table .tag.accent {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}

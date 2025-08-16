@@ -1,0 +1,253 @@
+/* Role choice page – theme-aware, consistent with /public/css/themes.css */
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+/* Subtle ambient wash that adapts to the active theme */
+@supports (background: color-mix(in srgb, red, white)) {
+  body {
+    background:
+      radial-gradient(1200px 700px at -10% -10%,
+        color-mix(in srgb, var(--accent) 12%, var(--bg) 88%), transparent 60%),
+      radial-gradient(1000px 600px at 110% 10%,
+        color-mix(in srgb, var(--accent) 8%, var(--bg) 92%), transparent 60%),
+      var(--bg);
+  }
+}
+
+/* ── Local table contrast tokens (work across themes) ───────────── */
+:root {
+  --table-border: var(--border);
+  --table-header-bg: var(--surface-2);
+  --table-row-alt: var(--surface);   /* zebra alt */
+  --table-hover: var(--accent-100);
+}
+
+/* In light-ish themes, nudge borders/rows darker for readability */
+@supports (color: color-mix(in srgb, red, white)) {
+  :root[data-theme="light"],
+  :root[data-theme="forest"],
+  :root[data-theme="ocean"],
+  :root[data-theme="grape"],
+  :root[data-theme="sunflower"] {
+    --table-border: color-mix(in srgb, var(--text) 20%, var(--surface) 80%);
+    --table-header-bg: color-mix(in srgb, var(--text) 8%, var(--surface) 92%);
+    --table-row-alt: color-mix(in srgb, var(--text) 4%, var(--surface) 96%);
+  }
+
+  /* Dark-ish themes keep it subtle but visible */
+  :root[data-theme="dark"],
+  :root[data-theme="midnight"] {
+    --table-border: color-mix(in srgb, var(--text) 14%, var(--surface) 86%);
+    --table-header-bg: color-mix(in srgb, var(--text) 6%, var(--surface) 94%);
+  }
+}
+
+/* ----- Layout shell ----- */
+.shell {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 1rem;
+  padding: 1rem;
+  place-items: center;
+}
+
+/* ----- Top hero ----- */
+.hero {
+  width: min(1100px, 95vw);
+  padding: 1.1rem 1.25rem;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+@supports (background: color-mix(in srgb, red, white)) {
+  .hero {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--accent) 10%, var(--surface) 90%),
+      color-mix(in srgb, var(--accent) 4%,  var(--surface) 96%)
+    );
+  }
+}
+.title {
+  margin: 0;
+  font-size: clamp(1.3rem, 2.2vw, 1.8rem);
+  font-weight: 800;
+  color: var(--text);
+}
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: .95rem;
+}
+
+/* ----- Main panel (keeps cards/tables visually in sync) ----- */
+.panel {
+  width: min(1100px, 95vw);
+  padding: 1.25rem;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+}
+
+/* Grid of role options */
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+/* Cards */
+.role-card {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 1rem;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: .6rem;
+  outline: none;
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+.role-card:hover,
+.role-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: 0 10px 24px rgba(0,0,0,.12);
+}
+
+/* Card header */
+.role-head {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+}
+.icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--accent-100);
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-size: 1.2rem;
+}
+.role-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text);
+}
+.role-desc {
+  margin: 0;
+  color: var(--muted);
+  font-size: .95rem;
+}
+
+/* Bullet list */
+.role-points { margin: 0; padding-left: 1.1rem; color: var(--text); }
+.role-points li { margin: .25rem 0; }
+
+/* Actions */
+.actions { display: flex; justify-content: center; margin-top: 1rem; }
+
+/* ----- Tables (consistent + readable in all themes) ----- */
+.panel table,
+.role-card table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--table-border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: .5rem;
+}
+
+.panel th, .role-card th,
+.panel td, .role-card td {
+  padding: .65rem .8rem;
+  border-bottom: 1px solid var(--table-border);
+  text-align: left;
+  color: var(--text);
+  background: var(--surface);
+}
+
+/* Header row stronger for separation */
+.panel thead th, .role-card thead th {
+  background: var(--table-header-bg);
+  color: var(--text);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  font-weight: 700;
+}
+
+/* Zebra rows for legibility on light themes */
+.panel tbody tr:nth-child(even) td,
+.role-card tbody tr:nth-child(even) td {
+  background: var(--table-row-alt);
+}
+
+/* Hover highlight */
+.panel tbody tr:hover td,
+.role-card tbody tr:hover td {
+  background: var(--table-hover);
+}
+
+/* “Internal only” cols neutralized */
+.panel table .internal-only,
+.role-card table .internal-only {
+  background: var(--table-header-bg) !important;
+  color: var(--text) !important;
+}
+
+/* Chips/pills in cells */
+.panel table .chip, .role-card table .chip,
+.panel table .badge, .role-card table .badge {
+  display: inline-flex; align-items: center; gap: .35rem;
+  padding: .25rem .55rem; border-radius: 999px;
+  border: 1px solid var(--table-border);
+  background: var(--table-header-bg);
+  color: var(--text); font-weight: 700;
+}
+.panel table .chip.accent, .role-card table .chip.accent,
+.panel table .badge.accent, .role-card table .badge.accent {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+/* Icon buttons in the Actions column */
+.panel table .icon-btn, .role-card table .icon-btn {
+  border: 1px solid var(--table-border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 10px;
+  padding: .45rem .6rem;
+}
+.panel table .icon-btn:hover, .role-card table .icon-btn:hover {
+  background: var(--table-header-bg);
+}
+
+/* ----- Responsive tweaks ----- */
+@media (max-width: 560px) {
+  .panel { padding: .9rem; }
+  .role-card { padding: .85rem; }
+}

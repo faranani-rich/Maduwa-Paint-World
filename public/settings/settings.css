@@ -1,0 +1,194 @@
+/* =========================================================
+   Settings Page Styles (/public/settings/settings.css)
+   ========================================================= */
+
+/* ---------- Layout ---------- */
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Page header */
+.settings-header {
+  padding: 1rem 1.25rem;
+  margin: 0 0 1rem 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-header__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.settings-title {
+  font-size: 1.6rem;
+  margin: 0;
+}
+
+.settings-subtitle {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-top: 0.5rem;
+}
+
+/* Main content */
+.settings-main {
+  padding: 1rem 1.25rem;
+}
+
+/* Footer */
+.settings-footer {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+/* ---------- Tabs ---------- */
+.settings-tabs {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.settings-tab {
+  padding: 0.5rem 1rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: var(--text);
+  transition: background 0.2s, color 0.2s;
+}
+
+.settings-tab[aria-selected="true"] {
+  background: var(--accent);
+  color: var(--btn-fg);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+/* ---------- Sections ---------- */
+.settings-section {
+  margin-bottom: 2rem;
+}
+
+.settings-section.is-hidden {
+  display: none;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  margin: 0 0 1rem 0;
+}
+
+/* ---------- Fields ---------- */
+.field {
+  margin-bottom: 1.5rem;
+}
+
+.field-label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+.field-help {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0.25rem 0 0.75rem 0;
+}
+
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+}
+
+/* ---------- Theme grid ---------- */
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.swatch {
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: border 0.2s, transform 0.15s;
+  text-align: left;
+}
+
+.swatch:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+
+.swatch[aria-pressed="true"] {
+  border: 2px solid var(--accent);
+}
+
+.swatch .row {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.chip {
+  width: 28px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+/* ---------- Accent preview ---------- */
+#accentPicker {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.accent-preview {
+  margin-top: 0.5rem;
+  width: 40px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--accent);
+}
+
+/* ---------- Buttons (reusing global .btn/.btn.outline) ---------- */
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 600px) {
+  .settings-header__top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .settings-footer {
+    flex-direction: column;
+  }
+}

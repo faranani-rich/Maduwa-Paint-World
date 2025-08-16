@@ -1,0 +1,171 @@
+<!-- /public/settings/index.html -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Settings</title>
+
+    <!-- Global theme tokens (already used across the app) -->
+    <link rel="stylesheet" href="../css/themes.css" />
+
+    <!-- Settings page styles (create this file next) -->
+    <link rel="stylesheet" href="./settings.css" />
+  </head>
+  <body>
+    <header class="settings-header card">
+      <div class="settings-header__top">
+        <button
+          class="btn outline"
+          id="backBtn"
+          type="button"
+          aria-label="Go back"
+        >
+          Back
+        </button>
+        <h1 class="settings-title">Settings</h1>
+        <div class="settings-actions">
+          <button class="btn" id="saveBtn" type="button">Save</button>
+        </div>
+      </div>
+      <p class="settings-subtitle">
+        Customize how the app looks and feels. Changes apply across the entire
+        application.
+      </p>
+    </header>
+
+    <main class="settings-main" id="settingsMain" tabindex="-1">
+      <!-- Tabs (pure HTML; behavior added in index.js) -->
+      <nav class="settings-tabs" aria-label="Settings sections">
+        <button
+          class="settings-tab"
+          data-section="appearance"
+          aria-selected="true"
+        >
+          Appearance
+        </button>
+        <button class="settings-tab" data-section="accessibility">
+          Accessibility
+        </button>
+        <button class="settings-tab" data-section="preferences">
+          Preferences
+        </button>
+      </nav>
+
+      <!-- Appearance -->
+      <section
+        class="settings-section"
+        id="section-appearance"
+        role="region"
+        aria-labelledby="tab-appearance"
+      >
+        <h2 class="section-title" id="tab-appearance">Appearance</h2>
+
+        <div class="field">
+          <label class="field-label">Theme</label>
+          <p class="field-help">
+            Choose a color theme. This will be used everywhere (employee and
+            customer areas).
+          </p>
+          <div class="theme-grid" id="themeGrid" aria-live="polite"></div>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="accentPicker"
+            >Accent color (optional)</label
+          >
+          <p class="field-help">
+            Fine-tune the accent hue used for buttons and highlights.
+          </p>
+          <input id="accentPicker" type="range" min="0" max="359" step="1" />
+          <div
+            class="accent-preview"
+            id="accentPreview"
+            aria-hidden="true"
+          ></div>
+        </div>
+      </section>
+
+      <!-- Accessibility -->
+      <section
+        class="settings-section is-hidden"
+        id="section-accessibility"
+        role="region"
+        aria-labelledby="tab-accessibility"
+      >
+        <h2 class="section-title" id="tab-accessibility">Accessibility</h2>
+
+        <div class="field">
+          <label class="field-row">
+            <input type="checkbox" id="highContrastToggle" />
+            <span>High contrast mode</span>
+          </label>
+          <p class="field-help">Boost contrast for improved readability.</p>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="fontScale">Text size</label>
+          <select id="fontScale">
+            <option value="1">Normal</option>
+            <option value="1.1">Large</option>
+            <option value="1.25">Extra large</option>
+          </select>
+          <p class="field-help">Applies a global scaling factor to text.</p>
+        </div>
+      </section>
+
+      <!-- Preferences -->
+      <section
+        class="settings-section is-hidden"
+        id="section-preferences"
+        role="region"
+        aria-labelledby="tab-preferences"
+      >
+        <h2 class="section-title" id="tab-preferences">Preferences</h2>
+
+        <div class="field">
+          <label class="field-label" for="defaultStartPage"
+            >Default start page</label
+          >
+          <select id="defaultStartPage">
+            <option value="auto">Automatic (based on your role)</option>
+            <option value="customer">Customer dashboard</option>
+            <option value="employee">Employee portal</option>
+          </select>
+          <p class="field-help">
+            Choose where to land after sign-in. “Automatic” sends customers to
+            <code>customer/home.html</code> and employees to
+            <code>employee/employee-portal.html</code>.
+          </p>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="returnBehavior"
+            >Return after saving</label
+          >
+          <select id="returnBehavior">
+            <option value="toReferrer">Back to where I came from</option>
+            <option value="customer">Go to Customer Home</option>
+            <option value="employee">Go to Employee Portal</option>
+            <option value="stay">Stay on Settings</option>
+          </select>
+          <p class="field-help">
+            Controls where the Back/Save buttons navigate. This can also be
+            overridden by a <code>?from=…</code> URL parameter.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="settings-footer">
+      <button class="btn outline" id="footerBackBtn" type="button">Back</button>
+      <button class="btn" id="footerSaveBtn" type="button">Save</button>
+    </footer>
+
+    <!-- Page wiring (navigation, tabs, back behavior, save orchestration) -->
+    <script type="module" src="./index.js"></script>
+
+    <!-- Theme + appearance logic (themeGrid, accent picker, applying tokens) -->
+    <script type="module" src="./settings.js"></script>
+  </body>
+</html>

@@ -2,42 +2,254 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Maduwa Paint World – Projects</title>
 
-    <!-- global site-wide styles -->
+    <!-- THEME BOOTSTRAP: apply saved theme & accent before first paint -->
+    <script>
+      (function () {
+        const theme = localStorage.getItem("app.theme") || "light";
+        const hue = localStorage.getItem("app.accentHue");
+        const root = document.documentElement;
+        root.setAttribute("data-theme", theme);
+        if (hue) root.style.setProperty("--accent-h", hue);
+      })();
+    </script>
+
+    <!-- Global theme tokens -->
+    <link rel="stylesheet" href="../css/themes.css" />
+
+    <!-- Global styles for Projects -->
     <link rel="stylesheet" href="styles/main.css" />
 
-    <!-- page-specific styles for the projects dashboard -->
-    <link rel="stylesheet" href="styles/index.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap"
+      rel="stylesheet"
+    />
   </head>
 
   <body>
-    <header>
-      <h1>
-        Maduwa Paint World
-        <span style="font-weight: 300"> – Projects</span>
-      </h1>
+    <!-- Header -->
+    <header class="page-header">
+      <h1 class="page-title">Projects</h1>
+      <nav class="header-actions">
+        <button id="backBtn" class="btn ghost" type="button">← Back</button>
+        <button id="newProjectBtn" class="btn primary" type="button">
+          + New Project
+        </button>
+      </nav>
     </header>
 
-    <main id="dashboard">
-      <div class="dashboard-actions">
-        <button id="back-btn" class="back-btn">
-          &larr; Back to Employee Portal
-        </button>
-        <button id="new-project-btn">+ New Project</button>
-      </div>
+    <!-- Controls -->
+    <section class="container">
+      <div class="card">
+        <!-- NOTE: class matches CSS: control-row (not controls-row) -->
+        <div class="control-row" role="group" aria-label="Search and sorting">
+          <!-- Search -->
+          <label class="searchbox" style="flex: 1">
+            <input
+              id="searchInput"
+              type="search"
+              placeholder="Search by project, customer, or location…"
+              autocomplete="off"
+              spellcheck="false"
+              aria-label="Search projects"
+            />
+            <button
+              id="clearSearchBtn"
+              class="icon-btn"
+              type="button"
+              aria-label="Clear search"
+              title="Clear"
+            >
+              ✕
+            </button>
+          </label>
 
-      <!-- project cards injected by js/ui.js -->
-      <div id="projects-list"></div>
+          <!-- Sort -->
+          <label class="select" aria-label="Sort projects">
+            <span class="select-label">Sort</span>
+            <select id="sortSelect">
+              <option value="created.desc">Date created (newest)</option>
+              <option value="created.asc">Date created (oldest)</option>
+              <option value="modified.desc">Last modified (newest)</option>
+              <option value="modified.asc">Last modified (oldest)</option>
+
+              <option value="name.asc">Project name (A–Z)</option>
+              <option value="name.desc">Project name (Z–A)</option>
+
+              <option value="customer.asc">Customer name (A–Z)</option>
+              <option value="customer.desc">Customer name (Z–A)</option>
+
+              <option value="location.asc">Location (A–Z)</option>
+              <option value="location.desc">Location (Z–A)</option>
+
+              <option value="status.order">Status (pipeline)</option>
+            </select>
+          </label>
+
+          <!-- Columns per row -->
+          <label class="select" aria-label="Columns per row">
+            <span class="select-label">Columns</span>
+            <select id="colsSelect">
+              <option value="2">2</option>
+              <option value="3" selected>3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </label>
+
+          <button id="clearFiltersBtn" class="btn ghost" type="button">
+            Clear
+          </button>
+        </div>
+
+        <!-- Status tabs -->
+        <nav class="status-tabs" role="tablist" aria-label="Status filter">
+          <button
+            class="tab is-active"
+            data-status="all"
+            role="tab"
+            aria-selected="true"
+          >
+            All
+          </button>
+          <button class="tab" data-status="quotation" role="tab">
+            Quotation
+          </button>
+          <button class="tab" data-status="approved" role="tab">
+            Approved
+          </button>
+          <button class="tab" data-status="in-progress" role="tab">
+            In&nbsp;Progress
+          </button>
+          <button class="tab" data-status="completed" role="tab">
+            Completed
+          </button>
+        </nav>
+      </div>
+    </section>
+
+    <!-- Projects -->
+    <main class="container">
+      <section class="card">
+        <!-- Cards grid (JS updates columns via colsSelect) -->
+        <div id="cardsRegion" class="cards-grid" aria-live="polite">
+          <!-- cards injected by JS -->
+        </div>
+
+        <!-- States -->
+        <div id="listLoading" class="state">
+          <span class="spinner" aria-hidden="true"></span> Loading…
+        </div>
+        <div id="listEmpty" class="state hidden">No projects found.</div>
+        <div id="listError" class="state hidden">
+          ⚠️ Couldn’t load projects.
+        </div>
+
+        <!-- Pagination footer -->
+        <footer class="table-footer" style="margin-top: 0.75rem">
+          <div class="rows-per-page">
+            <label class="select">
+              <span class="select-label">Per page</span>
+              <select id="pageSizeSelect">
+                <option value="12" selected>12</option>
+                <option value="24">24</option>
+                <option value="48">48</option>
+                <option value="96">96</option>
+              </select>
+            </label>
+          </div>
+
+          <nav class="pagination" aria-label="Pagination">
+            <button
+              id="prevPageBtn"
+              class="icon-btn"
+              aria-label="Previous page"
+              type="button"
+            >
+              ‹
+            </button>
+            <span id="pageStatus" class="page-status">Page 1 of 1</span>
+            <button
+              id="nextPageBtn"
+              class="icon-btn"
+              aria-label="Next page"
+              type="button"
+            >
+              ›
+            </button>
+          </nav>
+        </footer>
+      </section>
     </main>
 
-    <!-- page logic -->
+    <!-- Card template -->
+    <template id="projectCardTemplate">
+      <article class="project-card">
+        <header
+          class="card-head"
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+          "
+        >
+          <span class="status-badge" data-status="quotation">Quotation</span>
+          <div class="row-actions" style="display: flex; gap: 0.35rem">
+            <!-- OPEN -->
+            <button
+              class="icon-btn open-btn"
+              title="Open project"
+              aria-label="Open project"
+            >
+              ↗
+            </button>
+            <!-- DELETE (restored) -->
+            <button
+              class="icon-btn delete-btn"
+              title="Delete project"
+              aria-label="Delete project"
+            >
+              🗑
+            </button>
+          </div>
+        </header>
+
+        <h3 class="proj-title"></h3>
+        <p class="proj-meta">
+          <span class="customer"></span> • <span class="location"></span>
+        </p>
+
+        <div class="meta-grid">
+          <div>
+            <span class="label">Modified</span><span class="modified"></span>
+          </div>
+          <div>
+            <span class="label">Created</span><span class="created"></span>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <!-- Toast -->
+    <section class="toast-region" aria-live="assertive" aria-atomic="true">
+      <output id="toast" class="toast" hidden></output>
+    </section>
+
+    <!-- Scripts -->
+
+    <!-- Theme helper -->
+    <script type="module" src="../css/theme.js"></script>
+
+    <!-- Page logic -->
     <script type="module" src="js/main.js"></script>
+
     <script>
-      document.getElementById("back-btn").onclick = () => {
+      document.getElementById("backBtn")?.addEventListener("click", () => {
         window.location.href = "../employee/employee-portal.html";
-      };
+      });
     </script>
   </body>
 </html>

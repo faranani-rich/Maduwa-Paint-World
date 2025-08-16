@@ -5,6 +5,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Edit Project – Maduwa Paint World</title>
+
+    <!-- THEME BOOTSTRAP: apply saved theme & accent before first paint -->
+    <script>
+      (function () {
+        const theme = localStorage.getItem("app.theme") || "light";
+        const hue = localStorage.getItem("app.accentHue");
+        const root = document.documentElement;
+        root.setAttribute("data-theme", theme);
+        if (hue) root.style.setProperty("--accent-h", hue);
+      })();
+    </script>
+
+    <!-- Global theme tokens -->
+    <link rel="stylesheet" href="../css/themes.css" />
+
     <link rel="stylesheet" href="styles/main.css" />
     <link rel="stylesheet" href="styles/print.css" media="print" />
     <link rel="stylesheet" href="styles/project.css" />
@@ -313,6 +328,10 @@
     </main>
 
     <!-- Scripts -->
+
+    <!-- Theme helper (your location) -->
+    <script type="module" src="../css/theme.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
     <script type="module" src="js/project-page.js"></script>
   </body>

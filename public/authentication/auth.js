@@ -1,15 +1,43 @@
-// authentication/auth.js 
+// authentication/auth.js
 import { auth, db } from "./config.js";
 import {
-  GoogleAuthProvider,
-  OAuthProvider,
-  signInWithPopup,
+  // Core auth
   onAuthStateChanged,
   signOut,
   signInAnonymously,
   deleteUser,
-  signInWithEmailAndPassword
+
+  // Popup providers
+  GoogleAuthProvider,
+  OAuthProvider,
+  signInWithPopup,
+
+  // Email/password
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  updateEmail,
+  updatePassword,
+  fetchSignInMethodsForEmail,
+  EmailAuthProvider,
+  linkWithCredential,
+
+  // Profile
+  updateProfile,
+
+  // Re-auth
+  reauthenticateWithCredential,
+  reauthenticateWithPopup,
+
+  // Phone (SMS)
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  linkWithPhoneNumber,
+
+  // Provider mgmt
+  linkWithPopup,
+  unlink,
 } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js";
+
 import {
   doc,
   setDoc,
@@ -20,43 +48,81 @@ import {
   getDocs,
   query,
   where,
-  serverTimestamp
+  serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
 
-/* ------------------------------------------------------------------
-   Auto-create a Firestore profile if it was deleted but the Auth user
-   still exists (e.g. removed via Role-Assign).
-   ------------------------------------------------------------------ */
-export async function ensureProfileExists(user) {
-  if (!user || user.isAnonymous) return; // guests don’t get profiles
+/* ──────────────────────────────────────────────────────────────
+   Internal helpers
+   ────────────────────────────────────────────────────────────── */
+async function _ensureProfileExists(user) {
+  if (!user || user.isAnonymous) return;
   const ref = doc(db, "users", user.uid);
   const snap = await getDoc(ref);
   if (!snap.exists()) {
     await setDoc(ref, {
       email: user.email || null,
       phone: user.phoneNumber || null,
-      name: user.displayName || user.email?.split("@")[0] || "Unknown",
+      name:
+        user.displayName ||
+        (user.email ? user.email.split("@")[0] : null) ||
+        "Unknown",
       roles: ["customer"],
       employeeTypes: [],
       isAdmin: false,
       isOwner: false,
       createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
     });
   }
 }
 
-/* =========================================================
-   1.  Auth-state listener
-   ========================================================= */
+async function _syncProfileBasics(user) {
+  if (!user || user.isAnonymous) return;
+  try {
+    await updateDoc(doc(db, "users", user.uid), {
+      email: user.email || null,
+      phone: user.phoneNumber || null,
+      name:
+        user.displayName ||
+        (user.email ? user.email.split("@")[0] : null) ||
+        null,
+      updatedAt: serverTimestamp(),
+    });
+  } catch { /* ignore if not created yet */ }
+}
+
+async function _withRecentLogin(fn) {
+  try {
+    return await fn();
+  } catch (e) {
+    if (e?.code === "auth/requires-recent-login") {
+      const u = auth.currentUser;
+      if (!u) throw e;
+      const methods = u.email
+        ? await fetchSignInMethodsForEmail(auth, u.email)
+        : [];
+      if (methods.includes("password")) {
+        const pw = prompt("Re-enter your password to continue:");
+        if (!pw) throw e;
+        const cred = EmailAuthProvider.credential(u.email, pw);
+        await reauthenticateWithCredential(u, cred);
+      } else {
+        await reauthenticateWithPopup(u, new GoogleAuthProvider());
+      }
+      return await fn();
+    }
+    throw e;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   1) Auth state
+   ────────────────────────────────────────────────────────────── */
 export function initAuthListener(onChange) {
   onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      onChange(null);
-      return;
-    }
-
-    await ensureProfileExists(user);
-
+    if (!user) { onChange(null); return; }
+    await _ensureProfileExists(user);
+    await _syncProfileBasics(user);
     let profile = null;
     if (!user.isAnonymous) {
       const snap = await getDoc(doc(db, "users", user.uid));
@@ -66,19 +132,21 @@ export function initAuthListener(onChange) {
   });
 }
 
-/* =========================================================
-   2.  Sign-in helpers
-   ========================================================= */
+/* ──────────────────────────────────────────────────────────────
+   2) Sign in methods (Google, Apple, Guest, Email/Password)
+   ────────────────────────────────────────────────────────────── */
 export async function googleLogin() {
-  const credential = await signInWithPopup(auth, new GoogleAuthProvider());
-  await ensureProfileExists(credential.user);
-  return credential.user;
+  const cred = await signInWithPopup(auth, new GoogleAuthProvider());
+  await _ensureProfileExists(cred.user);
+  await _syncProfileBasics(cred.user);
+  return cred.user;
 }
 
 export async function appleLogin() {
-  const credential = await signInWithPopup(auth, new OAuthProvider("apple.com"));
-  await ensureProfileExists(credential.user);
-  return credential.user;
+  const cred = await signInWithPopup(auth, new OAuthProvider("apple.com"));
+  await _ensureProfileExists(cred.user);
+  await _syncProfileBasics(cred.user);
+  return cred.user;
 }
 
 export function guestBrowse() {
@@ -89,51 +157,112 @@ export function logout() {
   return signOut(auth);
 }
 
-/* ✅ NEW: Email + Password login */
 export async function emailLogin(email, password) {
-  const credential = await signInWithEmailAndPassword(auth, email, password);
-  await ensureProfileExists(credential.user);
-  return credential.user;
+  const cred = await signInWithEmailAndPassword(auth, email, password);
+  await _ensureProfileExists(cred.user);
+  await _syncProfileBasics(cred.user);
+  return cred.user;
 }
 
-/* ✅ NEW: Phone + Password login (requires email lookup) */
-export async function phoneLogin(phone, password) {
-  // Step 1: Query Firestore for email matching the phone number
-  const usersRef = collection(db, "users");
-  const q = query(usersRef, where("phone", "==", phone));
-  const snap = await getDocs(q);
-
-  if (snap.empty) {
-    throw new Error("No account found with that phone number.");
-  }
-
-  const userDoc = snap.docs[0];
-  const userData = userDoc.data();
-
-  if (!userData.email) {
-    throw new Error("This phone number is not linked to an email/password account.");
-  }
-
-  // Step 2: Use found email to sign in
-  const credential = await signInWithEmailAndPassword(auth, userData.email, password);
-  await ensureProfileExists(credential.user);
-  return credential.user;
+/* ──────────────────────────────────────────────────────────────
+   3) Phone (SMS) sign-in + linking
+   Usage on login page:
+     const conf = await phoneLoginStart("+27…", "recaptcha-container");
+     const user = await phoneLoginConfirm(conf, code);
+   Usage to link on profile page:
+     const conf = await linkPhoneStart("+27…", "recaptcha-container");
+     await linkPhoneConfirm(conf, code);
+   ────────────────────────────────────────────────────────────── */
+export function phoneLoginStart(phone, recaptchaContainerId = "recaptcha-container") {
+  const verifier = new RecaptchaVerifier(auth, recaptchaContainerId, { size: "invisible" });
+  return signInWithPhoneNumber(auth, phone, verifier); // -> ConfirmationResult
+}
+export async function phoneLoginConfirm(confirmationResult, code) {
+  const cred = await confirmationResult.confirm(code);
+  await _ensureProfileExists(cred.user);
+  await _syncProfileBasics(cred.user);
+  return cred.user;
 }
 
-/* =========================================================
-   3.  Self-delete
-   ========================================================= */
+export function linkPhoneStart(phone, recaptchaContainerId = "recaptcha-container") {
+  const verifier = new RecaptchaVerifier(auth, recaptchaContainerId, { size: "invisible" });
+  return linkWithPhoneNumber(auth.currentUser, phone, verifier); // -> ConfirmationResult
+}
+export async function linkPhoneConfirm(confirmationResult, code) {
+  await confirmationResult.confirm(code); // links to current user
+  await _syncProfileBasics(auth.currentUser);
+  return auth.currentUser;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   4) Account management (profile, email, password, providers)
+   ────────────────────────────────────────────────────────────── */
+export async function saveProfile({ displayName, photoURL }) {
+  const u = auth.currentUser;
+  if (!u) throw new Error("No user");
+  await _withRecentLogin(() =>
+    updateProfile(u, {
+      displayName: (displayName ?? "").trim() || null,
+      photoURL: (photoURL ?? "").trim() || null,
+    })
+  );
+  await _syncProfileBasics(auth.currentUser);
+}
+
+export async function changeEmail(newEmail) {
+  const u = auth.currentUser;
+  if (!u) throw new Error("No user");
+  await _withRecentLogin(() => updateEmail(u, newEmail.trim()));
+  await _syncProfileBasics(auth.currentUser);
+}
+
+export async function setOrChangePassword(newPassword) {
+  const u = auth.currentUser;
+  if (!u) throw new Error("No user");
+  // If no password provider yet, linking this credential will add it
+  const methods = u.email ? await fetchSignInMethodsForEmail(auth, u.email) : [];
+  if (methods.includes("password")) {
+    await _withRecentLogin(() => updatePassword(u, newPassword));
+  } else {
+    const cred = EmailAuthProvider.credential(u.email, newPassword);
+    await _withRecentLogin(() => linkWithCredential(u, cred));
+  }
+}
+
+export function sendReset(email) {
+  return sendPasswordResetEmail(auth, email);
+}
+
+export async function linkGoogle() {
+  await _withRecentLogin(() => linkWithPopup(auth.currentUser, new GoogleAuthProvider()));
+}
+
+export async function unlinkProvider(providerId) {
+  const providers = currentProviderIds();
+  if (providers.length <= 1) throw new Error("You cannot unlink your only sign-in method.");
+  await _withRecentLogin(() => unlink(auth.currentUser, providerId));
+}
+
+export function currentProviderIds() {
+  const u = auth.currentUser;
+  return u ? u.providerData.map((p) => p.providerId) : [];
+}
+
+/* ──────────────────────────────────────────────────────────────
+   5) Account deletion (with re-auth)
+   ────────────────────────────────────────────────────────────── */
 export async function deleteAccount() {
-  const user = auth.currentUser;
-  if (!user) throw new Error("No user is signed in");
-
-  await deleteDoc(doc(db, "users", user.uid)); // profile
-  await deleteUser(user);                      // auth user
+  const u = auth.currentUser;
+  if (!u) throw new Error("No user is signed in");
+  await _withRecentLogin(async () => {
+    await deleteDoc(doc(db, "users", u.uid)); // your profile doc
+    await deleteUser(u);                      // auth user
+  });
 }
 
-/* =========================================================
-   4.  Admin / owner utilities
-   ========================================================= */
+/* ──────────────────────────────────────────────────────────────
+   6) Admin/owner utilities (unchanged API)
+   ────────────────────────────────────────────────────────────── */
 export async function updateUserProfile(uid, updates) {
   if ("employeeTypes" in updates) {
     if (typeof updates.employeeTypes === "string") {
@@ -145,33 +274,27 @@ export async function updateUserProfile(uid, updates) {
   }
   return updateDoc(doc(db, "users", uid), updates);
 }
-
 export async function getUserProfile(uid) {
   const snap = await getDoc(doc(db, "users", uid));
   return snap.exists() ? snap.data() : null;
 }
-
 export async function getAllUsers() {
   const snap = await getDocs(collection(db, "users"));
   return snap.docs.map((d) => ({ uid: d.id, ...d.data() }));
 }
-
 export async function setUserRoles(uid, roles) {
   return updateDoc(doc(db, "users", uid), { roles });
 }
-
 export async function removeUser(uid) {
   await deleteDoc(doc(db, "users", uid));
 }
 
-/* =========================================================
-   5.  Tiny helpers
-   ========================================================= */
+/* ──────────────────────────────────────────────────────────────
+   7) Tiny helpers (kept)
+   ────────────────────────────────────────────────────────────── */
 export const hasEmployeeType = (p, t) =>
   Array.isArray(p?.employeeTypes) && p.employeeTypes.includes(t);
-
 export const hasRole = (p, r) =>
   Array.isArray(p?.roles) && p.roles.includes(r);
-
 export const isAdmin = (p) => !!p?.isAdmin;
 export const isOwner = (p) => !!p?.isOwner;

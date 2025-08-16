@@ -1,65 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Welcome – Maduwa Paint World</title>
+    <title>Welcome — Maduwa Paint World</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#0b1220" />
+
+    <!-- THEME BOOTSTRAP: apply saved theme & accent before first paint -->
+    <script>
+      (function () {
+        const theme = localStorage.getItem("app.theme") || "light";
+        const hue = localStorage.getItem("app.accentHue");
+        const root = document.documentElement;
+        root.setAttribute("data-theme", theme);
+        if (hue) root.style.setProperty("--accent-h", hue);
+      })();
+    </script>
+
+    <!-- Global theme tokens -->
+    <link rel="stylesheet" href="../css/themes.css" />
+
     <link rel="stylesheet" href="home.css" />
   </head>
-  <body>
-    <header>
-      <h1>Maduwa Paint World</h1>
-      <button id="logoutBtn">Logout</button>
+
+  <body class="home-body">
+    <!-- Animated background -->
+    <div class="bg fx-orbs">
+      <div class="orb orb-a"></div>
+      <div class="orb orb-b"></div>
+      <div class="orb orb-c"></div>
+      <div class="grid-overlay"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="home-header glass">
+      <div class="brand">
+        <div class="logo-mark" aria-hidden="true">
+          <span class="logo-dot"></span>
+          <span class="logo-stem"></span>
+        </div>
+        <div class="titles">
+          <h1>Maduwa Paint World</h1>
+          <p id="userGreeting" class="subtitle">
+            Welcome, <span id="userName">friend</span>
+          </p>
+        </div>
+      </div>
+
+      <nav class="actions">
+        <!-- Anchor ensures it works even if JS is off -->
+        <a
+          class="btn ghost"
+          id="profileLink"
+          href="../authentication/profile.html?from=customer"
+        >
+          My Profile
+        </a>
+        <!-- This optional link can be shown by home.js if user is also an employee -->
+        <a
+          class="btn ghost hidden"
+          id="employeePortalLink"
+          href="../employee/employee-portal.html"
+        >
+          Employee Portal
+        </a>
+        <button class="btn" id="logoutBtn">Logout</button>
+
+        <button id="settingsBtn" class="btn outline no-print">Settings</button>
+      </nav>
     </header>
 
-    <main>
-      <section>
-        <h2>Welcome!</h2>
-        <p>
-          We are a proudly South African paint manufacturer and service company
-          based in Pretoria.<br />
-          <strong>Quality paint, friendly service, affordable prices.</strong>
-        </p>
-        <ul>
-          <li>Paint for homes, industries, and commercial buildings</li>
-          <li>Professional painting services – interior & exterior</li>
-          <li>Custom colours mixed to order</li>
-          <li>Branches in Gauteng and Limpopo</li>
-        </ul>
+    <!-- Main -->
+    <main class="home-shell">
+      <!-- Hero / intro -->
+      <section class="hero glass">
+        <div class="hero-left">
+          <h2>Quality paint, friendly service, affordable prices.</h2>
+          <p class="muted">
+            Proudly South African — precision chemistry, beautiful colour.
+          </p>
+
+          <div class="cta-row">
+            <!-- Projects CTA; keep IDs for your existing logic -->
+            <a id="projectsLink" class="btn primary" href="dashboard.html"
+              >View My Projects</a
+            >
+            <a class="btn ghost" href="home.html">Browse Products</a>
+            <a class="btn ghost" href="#stores">Find a Branch</a>
+          </div>
+          <ul class="bullets">
+            <li>Paint for homes, industries & commercial buildings</li>
+            <li>Professional interior & exterior painting services</li>
+            <li>Custom colours mixed to order</li>
+            <li>Branches in Gauteng and Limpopo</li>
+          </ul>
+        </div>
+
+        <div class="hero-right">
+          <div class="hero-card">
+            <div class="swatch swatch-a"></div>
+            <div class="swatch swatch-b"></div>
+            <div class="swatch swatch-c"></div>
+            <div class="swatch swatch-d"></div>
+          </div>
+        </div>
       </section>
 
-      <section id="projectsButton" style="display: none">
-        <a href="dashboard.html" class="btn">View My Projects</a>
+      <!-- Quick tiles (optional: home.js can add more) -->
+      <section class="tiles glass">
+        <div class="tiles-grid">
+          <a class="tile" href="home.html">
+            <div class="tile-title">Pricing & Quotes</div>
+            <div class="tile-sub">Get a quick estimate</div>
+          </a>
+          <a class="tile" href="home.html">
+            <div class="tile-title">Colour Lab</div>
+            <div class="tile-sub">Mix & preview shades</div>
+          </a>
+        </div>
       </section>
 
-      <section>
-        <h2>Our Stores</h2>
+      <!-- Stores -->
+      <section class="stores glass" id="stores">
+        <div class="section-head">
+          <h2>Our Stores</h2>
+          <p class="muted">Visit a branch near you</p>
+        </div>
+
         <div class="store-grid">
-          <div class="store-card">
+          <article class="store-card">
             <h3>Pretoria Factory</h3>
             <p>Topaz Park<br />72 Topaas Street<br />Rosslyn 0182</p>
             <p>
               <a
                 href="https://www.google.com/maps/place/72+Topaas+St,+Rosslyn,+Pretoria,+0182"
                 target="_blank"
+                rel="noopener"
                 >📍 Open in Maps</a
               >
             </p>
             <p>📞 <a href="tel:+27615241624">061 524 1624</a></p>
-          </div>
-          <div class="store-card">
+          </article>
+
+          <article class="store-card">
             <h3>Witbank Shop</h3>
             <p>1 Rhodes Street<br />Bambino Centre</p>
             <p>
               <a
                 href="https://www.google.com/maps/place/1+Rhodes+St,+Witbank,+Mpumalanga"
                 target="_blank"
+                rel="noopener"
                 >📍 Open in Maps</a
               >
             </p>
             <p>📞 <a href="tel:+27790439864">079 043 9864</a></p>
-          </div>
-          <div class="store-card">
+          </article>
+
+          <article class="store-card">
             <h3>Malamulele Shop</h3>
             <p>
               Kutsakeni Quick Save<br />Shop 6 Stand# 925<br />Malamulele
@@ -69,54 +166,67 @@
               <a
                 href="https://www.google.com/maps/place/Kutsakeni+Quick+Save,+Shop+6,+Malamulele"
                 target="_blank"
+                rel="noopener"
                 >📍 Open in Maps</a
               >
             </p>
             <p>📞 <a href="tel:+27714122695">071 412 2695</a></p>
-          </div>
-          <div class="store-card">
+          </article>
+
+          <article class="store-card">
             <h3>Makhado Shop</h3>
             <p>10 Songozwi Street<br />Louistrich</p>
             <p>
               <a
                 href="https://www.google.com/maps/place/10+Songozwi+St,+Louis+Trichardt"
                 target="_blank"
+                rel="noopener"
                 >📍 Open in Maps</a
               >
             </p>
             <p>📞 <a href="tel:+27792932290">079 293 2290</a></p>
-          </div>
-          <div class="store-card">
+          </article>
+
+          <article class="store-card">
             <h3>Atteridgeville</h3>
             <p>Atlyn Mall Traffic Circle<br />Opposite FNB</p>
             <p>
               <a
                 href="https://www.google.com/maps/place/FNB+Atlyn+Mall,+Atteridgeville,+Pretoria"
                 target="_blank"
+                rel="noopener"
                 >📍 Open in Maps</a
               >
             </p>
             <p>
-              📞 <a href="tel:+27120655835">012 065 5835</a><br />📞
-              <a href="tel:+27615241624">061 524 1624</a>
+              📞 <a href="tel:+27120655835">012 065 5835</a><br />
+              📞 <a href="tel:+27615241624">061 524 1624</a>
             </p>
-          </div>
+          </article>
         </div>
       </section>
     </main>
 
-    <footer>&copy; 2025 Maduwa Paint World (Pty) Ltd</footer>
+    <footer class="home-footer">
+      <p>© 2025 Maduwa Paint World (Pty) Ltd</p>
+    </footer>
 
     <!-- WhatsApp Icon (Floating) -->
     <div class="whatsapp-btn">
       <a
         href="https://wa.me/27794071053"
         target="_blank"
+        rel="noopener"
         title="Message Uncle Mbangi"
       >
         <img src="whatsapp.png" alt="WhatsApp" />
       </a>
     </div>
+
+    <!-- Your page logic -->
+
+    <!-- Theme helper (your location) -->
+    <script type="module" src="../css/theme.js"></script>
 
     <script type="module" src="./home.js"></script>
   </body>

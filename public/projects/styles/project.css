@@ -1,95 +1,113 @@
-/* project.css — specific styles for the Edit-Project page */
+/* /public/projects/styles/project.css — Edit-Project page (theme-aware) */
 
+/* ===== 0) Local aliases to global tokens (no hard-coded colors) ===== */
 :root {
-  --brand: #005a8d;
-  --border: #c3e2f5;
-  --bg: #fff;
-  --warn: #ffeded;    /* ✅ NEW */
-  --warn-text: #d00000; /* ✅ NEW */
+  --radius: 14px;
+  --radius-sm: 10px;
+
+  /* fields/chips map to global surfaces */
+  --field-bg:       var(--surface);
+  --field-bg-hover: var(--surface-2);
+  --field-stroke:   var(--border);
 }
 
+/* nicer focus ring using accent (with fallback) */
+@supports (color: color-mix(in srgb, red, white)) {
+  :root { --ring: 0 0 0 3px color-mix(in srgb, var(--accent) 40%, transparent); }
+}
+@supports not (color: color-mix(in srgb, red, white)) {
+  :root { --ring: 0 0 0 3px rgba(0,0,0,0); }
+}
+
+/* ===== 1) Base ===== */
 body {
   margin: 0;
-  font-family: system-ui, sans-serif;
-  background: #f2f6f8;
-  color: #222;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
 }
 
+/* ===== 2) Header ===== */
 header {
   display: flex;
   align-items: center;
   gap: 1rem;
   padding: 1rem 1.5rem;
-  background: var(--brand);
-  color: #fff;
+  background: var(--surface-2);
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
 }
-
+@supports (background: color-mix(in srgb, red, white)) {
+  header {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--accent) 14%, var(--surface) 86%),
+      color-mix(in srgb, var(--accent) 6%,  var(--surface) 94%)
+    );
+  }
+}
 header h1 {
   margin: 0;
   font-size: 1.4rem;
   flex: 1;
 }
-
 header button {
-  background: #fff;
-  color: var(--brand);
-  border: none;
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
+  /* rely on global .btn styles, keep minimal overrides */
+  background: var(--accent);
+  color: var(--on-accent);
+  border: 1px solid var(--accent);
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 0.95rem;
 }
 
+/* ===== 3) Main container ===== */
 main {
   max-width: 1100px;
   margin: 2rem auto;
-  background: var(--bg);
+  background: var(--surface);
+  color: var(--text);
   padding: 2rem 2rem 1.5rem;
   border-radius: 18px;
-  box-shadow: 0 6px 32px #005a8d14;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
 }
-
 @media (max-width: 700px) {
-  main {
-    padding: 1.2rem 0.6rem;
-    margin: 1rem 0.5rem;
-  }
+  main { padding: 1.2rem 0.6rem; margin: 1rem 0.5rem; }
 }
 
 h2 {
   margin-top: 2rem;
-  color: var(--brand);
   font-size: 1.1rem;
+  color: var(--text);
+  border-left: 4px solid var(--accent);
+  padding-left: .5rem;
 }
 
+/* ===== 4) Layout grids ===== */
 .grid-2col {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
 }
-
-@media (max-width: 900px) {
-  .grid-2col {
-    grid-template-columns: 1fr;
-  }
-}
+@media (max-width: 900px) { .grid-2col { grid-template-columns: 1fr; } }
 
 section {
   margin-bottom: 1.5rem;
   padding-bottom: 1.2rem;
-  border-bottom: 1px solid #eef1f3;
+  border-bottom: 1px solid var(--border);
 }
 
+/* ===== 5) Forms ===== */
 label {
   display: block;
   margin: 0.9rem 0 1rem;
   font-weight: 600;
   font-size: 0.9rem;
+  color: var(--text);
 }
-
-input,
-select,
-textarea {
+input, select, textarea {
   display: block;
   width: 100%;
   max-width: 350px;
@@ -97,150 +115,131 @@ textarea {
   padding: 0.55rem 0.8rem;
   margin-top: 0.4rem;
   border-radius: 7px;
-  border: 1px solid #bbb;
-  background: #fafbfc;
+  border: 1px solid var(--field-stroke);
+  background: var(--field-bg);
+  color: var(--text);
+  outline: none;
+  transition: box-shadow .18s ease, background .18s ease, border-color .18s ease;
 }
-
-@media (max-width: 700px) {
-  input,
-  select,
-  textarea {
-    max-width: 100%;
-  }
+input::placeholder, textarea::placeholder { color: var(--muted); }
+input:focus, select:focus, textarea:focus {
+  background: var(--field-bg-hover);
+  box-shadow: var(--ring);
 }
+@media (max-width: 700px) { input, select, textarea { max-width: 100%; } }
 
-.flex {
-  display: flex;
-  gap: 2rem;
-  flex-wrap: wrap;
-}
+.flex { display: flex; gap: 2rem; flex-wrap: wrap; }
 
+/* ===== 6) Actions ===== */
 .actions {
   display: flex;
   gap: 1rem;
   margin: 2rem 0 0;
   flex-wrap: wrap;
 }
-
-.actions button {
+.actions .btn, .actions button {
   font-size: 1rem;
   padding: 0.6rem 0.9rem;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--on-accent);
+  border: 1px solid var(--accent);
+}
+.actions .btn.ghost, .actions button.ghost {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
 }
 
-/* ---------- Tables ---------- */
+/* ===== 7) Tables ===== */
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 1rem; }
+.table-scroll table { min-width: 1100px; width: max-content; }
+@media (max-width: 700px) { .table-scroll table { min-width: 900px; } }
+
 table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
 }
-
-th,
-td {
+th, td {
   border: 1px solid var(--border);
   padding: 6px 8px;
   text-align: left;
   font-size: 0.85rem;
+  color: var(--text);
 }
+thead th { background: var(--surface-2); color: var(--text); }
+tbody tr:hover { background: var(--accent-100); }
 
 th.internal-only,
 td.internal-only {
-  background: #fff7de;
-  color: #a0760a;
+  background: var(--surface-2);
+  color: var(--text);
   font-style: italic;
-  text-align: right; /* ✅ align numeric internal columns */
+  text-align: right;
 }
 
-.scrollable-cell {
-  max-height: 48px;
-  overflow-y: auto;
-  min-width: 90px;
-}
+.scrollable-cell { max-height: 48px; overflow-y: auto; min-width: 90px; }
+.wider-km { min-width: 80px; max-width: 180px; }
 
-.wider-km {
-  min-width: 80px;
-  max-width: 180px;
-}
-
-.table-scroll {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  margin-bottom: 1rem;
-}
-
-.table-scroll table {
-  min-width: 1100px;
-  width: max-content;
-}
-
-@media (max-width: 700px) {
-  .table-scroll table {
-    min-width: 900px;
-  }
-}
-
-/* ---------- Progress bar ---------- */
+/* ===== 8) Progress bar ===== */
 .progress-bar-bg {
-  background: #eee;
+  background: var(--surface-2);
   border-radius: 10px;
   height: 22px;
   width: 100%;
   margin: 0.7rem 0;
+  border: 1px solid var(--border);
 }
-
 .progress-bar {
-  background: var(--brand);
+  background: var(--accent);
   height: 100%;
   border-radius: 10px;
-  color: #fff;
+  color: var(--on-accent);
   padding-left: 8px;
   font-weight: bold;
   font-size: 0.9rem;
   transition: width 0.4s;
 }
 
-/* ---------- Totals & Profit display ---------- */
-#totals p,
-.totals-summary p {
-  margin: 0.35rem 0;
-  font-weight: 500;
-}
+/* ===== 9) Totals & Profit ===== */
+#totals p, .totals-summary p { margin: 0.35rem 0; font-weight: 500; }
 
-/* ---------- Budget Warnings (BONUS) ---------- */
+/* ===== 10) Budget Warnings ===== */
 .warning {
-  background: var(--warn) !important;
-  border-left: 5px solid var(--warn-text);
+  border-left: 5px solid var(--danger);
   padding-left: 10px;
+  background: rgba(225, 29, 72, 0.10); /* fallback */
 }
-
-.warning h2,
-.warning p,
-.warning span {
-  color: var(--warn-text) !important;
+@supports (background: color-mix(in srgb, red, white)) {
+  .warning {
+    background: color-mix(in srgb, var(--danger) 15%, var(--bg) 85%);
+  }
+}
+.warning h2, .warning p, .warning span {
+  color: var(--danger);
   font-weight: bold;
 }
 
-/* ---------- Preview Customer Mode (SCREEN) ---------- */
-body.print-customer-mode .internal-only {
-  display: none !important; /* ✅ hide internal content on screen */
-}
-
-/* ---------- print helper (mirrored values) ---------- */
-.print-value {
-  display: none;
-}
-
-@media print {
-  .print-value {
-    display: inline-block !important;
-    margin-left: 0.3rem;
-  }
-}
-
-/* ────────── Over-Budget Highlight ────────── */
+/* Over-Budget inline highlight */
 .over-budget {
-  background-color: rgba(255, 0, 0, 0.1);
-  color: var(--warn-text);
+  background-color: rgba(225, 29, 72, 0.12);
+  color: var(--danger);
   font-weight: bold;
   border-radius: 4px;
   padding: 2px 4px;
+}
+
+/* ===== 11) Customer preview (screen) ===== */
+body.print-customer-mode .internal-only { display: none !important; }
+
+/* ===== 12) Print helpers ===== */
+.print-value { display: none; }
+@media print {
+  .print-value { display: inline-block !important; margin-left: 0.3rem; }
 }

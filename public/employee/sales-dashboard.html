@@ -4,6 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Sales Dashboard</title>
+
+    <!-- THEME BOOTSTRAP: apply saved theme & accent before first paint -->
+    <script>
+      (function () {
+        const theme = localStorage.getItem("app.theme") || "light";
+        const hue = localStorage.getItem("app.accentHue");
+        const root = document.documentElement;
+        root.setAttribute("data-theme", theme);
+        if (hue) root.style.setProperty("--accent-h", hue);
+      })();
+    </script>
+
+    <!-- Global theme tokens -->
+    <link rel="stylesheet" href="../css/themes.css" />
+
     <link rel="stylesheet" href="employee-portal.css" />
   </head>
   <body>
@@ -57,5 +72,8 @@
         <div class="card"><strong>New Leads:</strong> <span>–––</span></div>
       </section>
     </main>
+
+    <!-- Theme helper (your location) -->
+    <script type="module" src="../css/theme.js"></script>
   </body>
 </html>
