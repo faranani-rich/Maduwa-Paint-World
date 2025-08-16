@@ -31,6 +31,15 @@ const by = (sel, dir = "asc") => (a, b) => {
 };
 const parseISO = (s) => (s ? Date.parse(s) || 0 : 0);
 
+// safe text output inside HTML
+const escapeHtml = (s = "") =>
+  toStr(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
 /* ========= 1) State ========= */
 let all = [];          // full dataset
 let filtered = [];     // after search / status filter
@@ -123,8 +132,7 @@ function applySort() {
       filtered.sort(by((p) => norm(p.name), dir));
       break;
     case "customer":
-      // use flat string provided by storage.normalizeProject
-      filtered.sort(by((p) => norm(p.customerName), dir));
+      filtered.sort(by((p) => norm(p.customerName), dir)); // flat string
       break;
     case "manager":
       filtered.sort(by((p) => norm(p.managerName), dir));
@@ -133,7 +141,6 @@ function applySort() {
       filtered.sort(by((p) => STATUS_ORDER.indexOf(p.status ?? "quotation"), "asc"));
       break;
     default:
-      // default to modified desc
       filtered.sort(by((p) => parseISO(p.modifiedAt), "desc"));
       break;
   }
@@ -180,16 +187,22 @@ function renderCard(node, p) {
   // title
   node.querySelector(".proj-title").textContent = p.name || "Untitled";
 
-  // subtitle line: Manager • Customer
-  const manager = p.managerName || p.projectManager?.name || "—";
-  const customer = p.customerName || "—";
-  node.querySelector(".customer").textContent = `${manager} • ${customer}`;
+  // labeled details
+  const manager  = p.managerName || p.projectManager?.name || "—";
+  const customer = p.customerName || p.customer?.name || "—";
+  const detailsHtml = `
+    <div class="kv"><span class="k">Project Name:</span> <span class="v">${escapeHtml(p.name || "Untitled")}</span></div>
+    <div class="kv"><span class="k">Project Manager:</span> <span class="v">${escapeHtml(manager)}</span></div>
+    <div class="kv"><span class="k">Customer Name:</span> <span class="v">${escapeHtml(customer)}</span></div>
+  `;
 
-  // we no longer show location here; clear/hide if template has it
+  // use the existing ".customer" block as our details area
+  const detailsHost = node.querySelector(".customer");
+  if (detailsHost) detailsHost.innerHTML = detailsHtml;
+
+  // hide any old location text
   const loc = node.querySelector(".location");
-  if (loc) {
-    loc.textContent = "";         // or: loc.classList.add("hidden");
-  }
+  if (loc) loc.textContent = "";
 
   // dates
   node.querySelector(".modified").textContent = fmtDate(p.modifiedAt);
