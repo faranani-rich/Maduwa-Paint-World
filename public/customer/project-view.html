@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>Project Summary – Maduwa Paint World</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <!-- THEME BOOTSTRAP: apply saved theme & accent before first paint -->
     <script>
@@ -16,29 +16,41 @@
       })();
     </script>
 
-    <!-- Global theme tokens -->
+    <!-- Global theme tokens FIRST -->
     <link rel="stylesheet" href="../css/themes.css" />
 
-    <link rel="stylesheet" href="project-view.css" />
+    <!-- Page stylesheet (token-aligned) -->
+    <link rel="stylesheet" href="project-view.css?v=2" />
     <link rel="stylesheet" href="../projects/styles/print.css" media="print" />
   </head>
+
   <body class="customer-project-view">
     <header>
       <h1>Project Summary</h1>
-      <button id="backBtn" class="btn no-print">
-        &larr; Back to Dashboard
-      </button>
+      <!-- Back lives in the top bar below for consistent layout -->
     </header>
 
     <main>
+      <!-- Top Bar (consistent with dashboard/home) -->
+      <div class="top-bar no-print">
+        <a
+          id="backBtn"
+          class="back-btn"
+          href="dashboard.html"
+          aria-label="Back to Dashboard"
+          >← Back to Dashboard</a
+        >
+        <div class="spacer"></div>
+      </div>
+
       <!-- Status / Loading -->
-      <section id="statusMessage">
+      <section id="statusMessage" class="panel panel--status">
         <p>Loading project details...</p>
       </section>
 
       <!-- Loaded Project Details -->
-      <section id="projectDetails" style="display: none">
-        <h2 id="projectName">—</h2>
+      <section id="projectDetails" class="card" style="display: none">
+        <h2 id="projectName" class="card-title">—</h2>
 
         <div class="info-grid">
           <p><strong>Location:</strong> <span id="location">—</span></p>
@@ -49,7 +61,8 @@
           <p><strong>Progress:</strong> <span id="progress">—</span></p>
           <p>
             <strong>Project Manager:</strong>
-            <span id="managerName">—</span> (<span id="managerEmail">—</span>)
+            <span id="managerName">—</span>
+            (<span id="managerEmail">—</span>)
           </p>
           <p>
             <strong>Customer Name:</strong> <span id="customerName">—</span>
@@ -62,7 +75,7 @@
           </p>
         </div>
 
-        <!-- Summary (Optional) -->
+        <!-- Summary -->
         <div class="summary-box">
           <p>
             <strong>Quoted Price:</strong> R<span id="quotedPrice">—</span
@@ -73,18 +86,19 @@
           </p>
         </div>
 
-        <!-- Action Buttons -->
+        <!-- Actions -->
         <div class="action-buttons no-print">
-          <button class="btn" id="printBtn">🖨️ Print</button>
+          <button class="btn" id="printBtn" aria-label="Print project summary">
+            🖨️ Print
+          </button>
         </div>
       </section>
     </main>
 
-    <footer>&copy; 2025 Maduwa Paint World (Pty) Ltd</footer>
+    <footer class="no-print">&copy; 2025 Maduwa Paint World (Pty) Ltd</footer>
 
-    <!-- Theme helper (your location) -->
+    <!-- Theme helper -->
     <script type="module" src="../css/theme.js"></script>
-
     <script type="module" src="./project-view.js"></script>
   </body>
 </html>
