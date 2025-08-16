@@ -52,6 +52,10 @@ function friendly(e) {
     case "auth/invalid-phone-number": return "Enter a valid phone number in international format (e.g. +27…).";
     case "auth/invalid-verification-code":
     case "auth/missing-verification-code": return "Invalid or expired code.";
+    case "auth/code-expired": return "Code expired. Request a new one.";
+    case "auth/provider-already-linked": return "Your account already has a phone number linked.";
+    case "auth/credential-already-in-use": return "This phone number is already linked to another account.";
+    case "auth/app-not-authorized": return "This domain isn’t authorized for Phone auth (check Firebase → Auth → Settings → Authorized domains).";
     default: return e?.message || "Something went wrong.";
   }
 }
@@ -72,7 +76,25 @@ function roleBackHref(profile) {
 
 function renderProviders() {
   const list = currentProviderIds();
-  $("providerList").textContent = `Connected: ${list.length ? list.join(", ") : "none"}`;
+  $("providerList")?.replaceChildren(); // clear if it exists
+  const label = document.createElement("span");
+  label.textContent = `Connected: ${list.length ? list.join(", ") : "none"}`;
+  $("providerList")?.appendChild(label);
+}
+
+/* ---- Ensure profile reCAPTCHA container exists for phone linking ---- */
+function ensureRecaptchaContainerProfile() {
+  const id = "recaptcha-container-profile";
+  let el = document.getElementById(id);
+  if (!el) {
+    el = document.createElement("div");
+    el.id = id;
+    // Keep a minimal footprint; invisible reCAPTCHA still needs a node
+    el.style.minHeight = "1px";
+    el.style.minWidth = "1px";
+    document.body.appendChild(el);
+  }
+  return el;
 }
 
 /* ---------- Phone link flow state ---------- */
@@ -82,7 +104,7 @@ let userCache = null;
 let profileCache = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-  // IMPORTANT: don't destructure; payload can be null on first tick.
+  // IMPORTANT: don't destructure blindly; payload can be null on first tick.
   initAuthListener((payload) => {
     if (!payload || !payload.user) { location.href = "./login.html"; return; }
     const { user, profile } = payload;
@@ -90,53 +112,64 @@ document.addEventListener("DOMContentLoaded", () => {
     profileCache = profile || null;
 
     // Fill current values (allow user to set a name if none)
-    $("nameInput").value  = user.displayName || profile?.displayName || "";
-    $("photoInput").value = user.photoURL || "";
-    $("emailCurrent").value = user.email || "";
-    $("avatarPreview").src = user.photoURL || "https://dummyimage.com/96x96/ffffff/cccccc&text=%20";
+    if ($("nameInput")) $("nameInput").value  = user.displayName || profile?.displayName || "";
+    if ($("photoInput")) $("photoInput").value = user.photoURL || "";
+    if ($("emailCurrent")) $("emailCurrent").value = user.email || "";
+
+    if ($("avatarPreview")) {
+      $("avatarPreview").src = user.photoURL || "https://dummyimage.com/96x96/ffffff/cccccc&text=%20";
+    }
+
+    // Pre-fill phone (read-only display or input if you allow edits)
+    if ($("phoneCurrent")) $("phoneCurrent").value = user.phoneNumber || profile?.phone || "";
+    if ($("phoneInput") && !$("phoneInput").value) {
+      $("phoneInput").value = user.phoneNumber || profile?.phone || "";
+    }
 
     renderProviders();
 
     // Back + Logout
-    $("backBtn").onclick = () => { location.href = roleBackHref(profileCache); };
-    $("logoutBtn").onclick = async () => { await logout(); location.href = "./login.html"; };
+    $("backBtn") && ($("backBtn").onclick = () => { location.href = roleBackHref(profileCache); });
+    $("logoutBtn") && ($("logoutBtn").onclick = async () => { await logout(); location.href = "./login.html"; });
   });
 
   // Save display name / photo URL
-  $("saveProfileBtn").onclick = async () => {
+  $("saveProfileBtn") && ($("saveProfileBtn").onclick = async () => {
     setLoading($("saveProfileBtn"), true);
     try {
       await saveProfile({
-        displayName: $("nameInput").value.trim(),
-        photoURL: $("photoInput").value.trim() || null
+        displayName: $("nameInput")?.value.trim(),
+        photoURL: $("photoInput")?.value.trim() || null
       });
-      $("avatarPreview").src = $("photoInput").value.trim() || $("avatarPreview").src;
+      if ($("avatarPreview") && $("photoInput")) {
+        $("avatarPreview").src = $("photoInput").value.trim() || $("avatarPreview").src;
+      }
       toast("Profile saved.", "ok");
     } catch (e) {
       toast(friendly(e), "err");
     } finally {
       setLoading($("saveProfileBtn"), false, "Save profile");
     }
-  };
+  });
 
-  $("savePhotoUrlBtn").onclick = async () => {
-    const url = $("photoInput").value.trim();
+  $("savePhotoUrlBtn") && ($("savePhotoUrlBtn").onclick = async () => {
+    const url = $("photoInput")?.value.trim();
     if (!url) { toast("Enter a photo URL or upload a file.", "err"); return; }
     setLoading($("savePhotoUrlBtn"), true);
     try {
       await saveProfile({ photoURL: url });
-      $("avatarPreview").src = url;
+      if ($("avatarPreview")) $("avatarPreview").src = url;
       toast("Photo updated.", "ok");
     } catch (e) {
       toast(friendly(e), "err");
     } finally {
       setLoading($("savePhotoUrlBtn"), false, "Use URL");
     }
-  };
+  });
 
   // Upload & use photo (Firebase Storage)
-  $("uploadPhotoBtn").onclick = async () => {
-    const file = $("photoFile").files?.[0];
+  $("uploadPhotoBtn") && ($("uploadPhotoBtn").onclick = async () => {
+    const file = $("photoFile")?.files?.[0];
     if (!file) { toast("Choose an image to upload.", "err"); return; }
     if (!userCache) { toast("Not signed in.", "err"); return; }
 
@@ -149,8 +182,8 @@ document.addEventListener("DOMContentLoaded", () => {
       await uploadBytes(r, file, { contentType: file.type || "image/jpeg" });
       const url = await getDownloadURL(r);
 
-      $("photoInput").value = url;
-      $("avatarPreview").src = url;
+      if ($("photoInput")) $("photoInput").value = url;
+      if ($("avatarPreview")) $("avatarPreview").src = url;
       await saveProfile({ photoURL: url });
       toast("Photo uploaded and set.", "ok");
     } catch (e) {
@@ -158,44 +191,44 @@ document.addEventListener("DOMContentLoaded", () => {
     } finally {
       setLoading($("uploadPhotoBtn"), false, "Upload & Use Photo");
     }
-  };
+  });
 
   // Change email
-  $("changeEmailBtn").onclick = async () => {
-    const newEmail = $("emailNew").value.trim();
+  $("changeEmailBtn") && ($("changeEmailBtn").onclick = async () => {
+    const newEmail = $("emailNew")?.value.trim();
     if (!newEmail) { toast("Enter a new email.", "err"); return; }
     setLoading($("changeEmailBtn"), true);
     try {
       await changeEmail(newEmail);
-      $("emailCurrent").value = newEmail;
-      $("emailNew").value = "";
+      if ($("emailCurrent")) $("emailCurrent").value = newEmail;
+      if ($("emailNew")) $("emailNew").value = "";
       toast("Email updated.", "ok");
     } catch (e) {
       toast(friendly(e), "err");
     } finally {
       setLoading($("changeEmailBtn"), false, "Update email");
     }
-  };
+  });
 
   // Set or change password
-  $("changePwBtn").onclick = async () => {
-    const pw = $("newPw").value;
+  $("changePwBtn") && ($("changePwBtn").onclick = async () => {
+    const pw = $("newPw")?.value;
     if (!pw || pw.length < 6) { toast("Password should be at least 6 characters.", "err"); return; }
     setLoading($("changePwBtn"), true);
     try {
       await setOrChangePassword(pw);
-      $("newPw").value = "";
+      if ($("newPw")) $("newPw").value = "";
       toast("Password saved.", "ok");
     } catch (e) {
       toast(friendly(e), "err");
     } finally {
       setLoading($("changePwBtn"), false, "Save password");
     }
-  };
+  });
 
   // Send reset
-  $("resetPwBtn").onclick = async () => {
-    const email = $("emailCurrent").value;
+  $("resetPwBtn") && ($("resetPwBtn").onclick = async () => {
+    const email = $("emailCurrent")?.value;
     if (!email) { toast("No email on this account.", "err"); return; }
     setLoading($("resetPwBtn"), true);
     try {
@@ -206,10 +239,10 @@ document.addEventListener("DOMContentLoaded", () => {
     } finally {
       setLoading($("resetPwBtn"), false, "Send password reset email");
     }
-  };
+  });
 
   // Provider: Google
-  $("linkGoogleBtn").onclick = async () => {
+  $("linkGoogleBtn") && ($("linkGoogleBtn").onclick = async () => {
     setLoading($("linkGoogleBtn"), true);
     try {
       await linkGoogle();
@@ -220,8 +253,9 @@ document.addEventListener("DOMContentLoaded", () => {
     } finally {
       setLoading($("linkGoogleBtn"), false, "Link Google");
     }
-  };
-  $("unlinkGoogleBtn").onclick = async () => {
+  });
+
+  $("unlinkGoogleBtn") && ($("unlinkGoogleBtn").onclick = async () => {
     setLoading($("unlinkGoogleBtn"), true);
     try {
       await unlinkProvider("google.com");
@@ -232,32 +266,36 @@ document.addEventListener("DOMContentLoaded", () => {
     } finally {
       setLoading($("unlinkGoogleBtn"), false, "Unlink Google");
     }
-  };
+  });
 
   // Provider: Phone SMS (link)
-  $("linkPhoneStartBtn").onclick = async () => {
-    const phone = $("phoneInput").value.trim();
+  $("linkPhoneStartBtn") && ($("linkPhoneStartBtn").onclick = async () => {
+    const phone = $("phoneInput")?.value.trim();
     if (!phone) { toast("Enter your phone number (e.g. +27…)", "err"); return; }
+    ensureRecaptchaContainerProfile();
     setLoading($("linkPhoneStartBtn"), true);
     try {
       linkConfirmation = await linkPhoneStart(phone, "recaptcha-container-profile");
-      $("phoneCodeRow").hidden = false;
+      $("phoneCodeRow") && ( $("phoneCodeRow").hidden = false );
+      $("phoneCodeInput")?.focus();
       toast("Code sent. Check your SMS.", "ok");
     } catch (e) {
       toast(friendly(e), "err");
     } finally {
       setLoading($("linkPhoneStartBtn"), false, "Link phone - send code");
     }
-  };
+  });
 
-  $("linkPhoneConfirmBtn").onclick = async () => {
+  $("linkPhoneConfirmBtn") && ($("linkPhoneConfirmBtn").onclick = async () => {
     if (!linkConfirmation) { toast("Request a code first.", "err"); return; }
-    const code = $("phoneCodeInput").value.trim();
+    const code = $("phoneCodeInput")?.value.trim();
     if (!code) { toast("Enter the 6-digit code.", "err"); return; }
     setLoading($("linkPhoneConfirmBtn"), true);
     try {
       await linkPhoneConfirm(linkConfirmation, code);
-      $("phoneCodeInput").value = "";
+      if ($("phoneCodeInput")) $("phoneCodeInput").value = "";
+      // Reflect the linked phone if the auth state updated it
+      if ($("phoneCurrent") && userCache) $("phoneCurrent").value = userCache.phoneNumber || $("phoneCurrent").value;
       renderProviders();
       toast("Phone linked.", "ok");
     } catch (e) {
@@ -265,11 +303,17 @@ document.addEventListener("DOMContentLoaded", () => {
     } finally {
       setLoading($("linkPhoneConfirmBtn"), false, "Verify & Link");
     }
-  };
+  });
 
-  $("resendPhoneBtn").onclick = async () => {
-    const phone = $("phoneInput").value.trim();
+  // Enter key on the code field
+  $("phoneCodeInput") && ($("phoneCodeInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") $("linkPhoneConfirmBtn")?.click();
+  }));
+
+  $("resendPhoneBtn") && ($("resendPhoneBtn").onclick = async () => {
+    const phone = $("phoneInput")?.value.trim();
     if (!phone) { toast("Enter your phone number first.", "err"); return; }
+    ensureRecaptchaContainerProfile();
     setLoading($("resendPhoneBtn"), true);
     try {
       linkConfirmation = await linkPhoneStart(phone, "recaptcha-container-profile");
@@ -279,23 +323,25 @@ document.addEventListener("DOMContentLoaded", () => {
     } finally {
       setLoading($("resendPhoneBtn"), false, "Resend");
     }
-  };
+  });
 
-  $("unlinkPhoneBtn").onclick = async () => {
+  $("unlinkPhoneBtn") && ($("unlinkPhoneBtn").onclick = async () => {
     setLoading($("unlinkPhoneBtn"), true);
     try {
-      await unlinkProvider("phone"); // 'phone' is the providerId
+      await unlinkProvider("phone"); // Firebase provider ID for phone
       renderProviders();
+      // Clear visible phone if you keep a read-only display
+      if ($("phoneCurrent")) $("phoneCurrent").value = "";
       toast("Phone unlinked.", "ok");
     } catch (e) {
       toast(friendly(e), "err");
     } finally {
       setLoading($("unlinkPhoneBtn"), false, "Unlink phone");
     }
-  };
+  });
 
   // Danger zone: delete account
-  $("deleteBtn").onclick = async () => {
+  $("deleteBtn") && ($("deleteBtn").onclick = async () => {
     if (!confirm("Delete your account? This cannot be undone.")) return;
     setLoading($("deleteBtn"), true);
     try {
@@ -306,5 +352,5 @@ document.addEventListener("DOMContentLoaded", () => {
     } finally {
       setLoading($("deleteBtn"), false, "Delete my account");
     }
-  };
+  });
 });

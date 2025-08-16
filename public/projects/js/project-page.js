@@ -41,27 +41,33 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (profile.roles?.includes("customer") && !profile.roles?.includes("employee")) {
-    document.body.innerHTML = "<p>You do not have access to this page.</p>";
-    return;
-  }
-
+      document.body.innerHTML = "<p>You do not have access to this page.</p>";
+      return;
+    }
 
     const id = new URLSearchParams(location.search).get("id");
-    const project = id ? await getProjectById(id) : null;
+
+    // IMPORTANT: use let (we will replace it after save)
+    let project = id ? await getProjectById(id) : null;
     if (!project) {
       document.body.innerHTML = "<p>Project not found.</p>";
       return;
     }
 
+    // If somehow project came back as a string (bad legacy writes), normalize it
+    if (typeof project === "string") {
+      project = { name: project };
+    }
+
     const canEdit = !isCustomerMode && canEditProject(project, profile);
 
-    // Setup defaults
-    project.lines ??= {};
-    project.lines.employees ??= [];
-    project.lines.bucketLabour ??= [];
-    project.lines.paints ??= [];
-    project.lines.vehicles ??= [];
-    project.lines.expenses ??= [];
+    // Setup defaults / normalize structure
+    project.lines = project.lines && typeof project.lines === "object" ? project.lines : {};
+    project.lines.employees    = Array.isArray(project.lines.employees)    ? project.lines.employees    : [];
+    project.lines.bucketLabour = Array.isArray(project.lines.bucketLabour) ? project.lines.bucketLabour : [];
+    project.lines.paints       = Array.isArray(project.lines.paints)       ? project.lines.paints       : [];
+    project.lines.vehicles     = Array.isArray(project.lines.vehicles)     ? project.lines.vehicles     : [];
+    project.lines.expenses     = Array.isArray(project.lines.expenses)     ? project.lines.expenses     : [];
 
     // Back button
     dom.backBtn.addEventListener("click", () => {
@@ -93,28 +99,28 @@ document.addEventListener("DOMContentLoaded", () => {
       expensesDisplay, profitDisplay, remainingPaymentDisplay
     } = dom;
 
-    nameInput.value         = project.name           || "";
-    locationInput.value     = project.location       || "";
-    statusSelect.value      = project.status         || "quotation";
-    notesInput.value        = project.notes          || "";
-    pmNameInput.value       = project.projectManager?.name  || "";
-    pmEmailInput.value      = project.projectManager?.email || "";
-    custNameInput.value     = project.customer?.name        || "";
-    custEmailInput.value    = project.customer?.email       || "";
-    estDurationInput.value  = project.estimatedDuration     || "";
-    hoursWorkedInput.value  = project.hoursWorked           || 0;
-    progressInput.value     = project.progress?.percent     || 0;
-    progressComment.value   = project.progress?.comment     || "";
-    internalNotes.value     = project.internalNotes         || "";
-    quotedPriceInput.value  = project.quotedPrice           || 0;
-    customerPaidInput.value = project.customer?.paid        || 0;
+    nameInput.value         = project.name                         || "";
+    locationInput.value     = project.location                     || "";
+    statusSelect.value      = project.status                       || "quotation";
+    notesInput.value        = project.notes                        || "";
+    pmNameInput.value       = project.projectManager?.name         || "";
+    pmEmailInput.value      = project.projectManager?.email        || "";
+    custNameInput.value     = project.customer?.name               || "";
+    custEmailInput.value    = project.customer?.email              || "";
+    estDurationInput.value  = project.estimatedDuration            || "";
+    hoursWorkedInput.value  = project.hoursWorked                  || 0;
+    progressInput.value     = project.progress?.percent            || 0;
+    progressComment.value   = project.progress?.comment            || "";
+    internalNotes.value     = project.internalNotes                || "";
+    quotedPriceInput.value  = project.quotedPrice                  || 0;
+    customerPaidInput.value = project.customer?.paid               || 0;
 
     // Budgets
-    budgetHourlyInput.value   = project.budgets?.hourly   || 0;
-    budgetBucketInput.value   = project.budgets?.bucket   || 0;
-    budgetPaintsInput.value   = project.budgets?.paints   || 0;
-    budgetVehiclesInput.value = project.budgets?.vehicles || 0;
-    budgetOtherInput.value    = project.budgets?.other    || 0;
+    budgetHourlyInput.value   = project.budgets?.hourly            || 0;
+    budgetBucketInput.value   = project.budgets?.bucket            || 0;
+    budgetPaintsInput.value   = project.budgets?.paints            || 0;
+    budgetVehiclesInput.value = project.budgets?.vehicles          || 0;
+    budgetOtherInput.value    = project.budgets?.other             || 0;
 
     dom.form.querySelectorAll("input,select,textarea").forEach(attachPrintMirror);
 
@@ -161,16 +167,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
       expensesDisplay.textContent = t.totalCost.toFixed(2);
       profitDisplay.textContent = t.profit.toFixed(2);
-      remainingPaymentDisplay.textContent = 
-        (project.quotedPrice - (project.customer?.paid || 0)).toFixed(2);
+      remainingPaymentDisplay.textContent =
+        (Number(project.quotedPrice || 0) - Number(project.customer?.paid || 0)).toFixed(2);
 
       [
-        ["hourly", t.labour, budgetHourlyInput, usedHourlyDisplay, remainingHourlyDisplay],
-        ["bucket", t.bucketLabour, budgetBucketInput, usedBucketDisplay, remainingBucketDisplay],
-        ["paints", t.paints, budgetPaintsInput, usedPaintsDisplay, remainingPaintsDisplay],
-        ["vehicles", t.vehicles, budgetVehiclesInput, usedVehiclesDisplay, remainingVehiclesDisplay],
-        ["other", t.otherExpenses, budgetOtherInput, usedOtherDisplay, remainingOtherDisplay]
-      ].forEach(([key, usedAmt, budInp, usedSp, remSp]) => {
+        ["hourly", t.labour,        budgetHourlyInput,   usedHourlyDisplay,     remainingHourlyDisplay],
+        ["bucket", t.bucketLabour,  budgetBucketInput,   usedBucketDisplay,     remainingBucketDisplay],
+        ["paints", t.paints,        budgetPaintsInput,   usedPaintsDisplay,     remainingPaintsDisplay],
+        ["vehicles", t.vehicles,    budgetVehiclesInput, usedVehiclesDisplay,   remainingVehiclesDisplay],
+        ["other",   t.otherExpenses,budgetOtherInput,    usedOtherDisplay,      remainingOtherDisplay]
+      ].forEach(([_, usedAmt, budInp, usedSp, remSp]) => {
         const bud = Number(budInp.value) || 0;
         const rem = bud - usedAmt;
         usedSp.textContent = usedAmt.toFixed(2);
@@ -207,57 +213,90 @@ document.addEventListener("DOMContentLoaded", () => {
     hoursWorkedInput.addEventListener("input", updateProgress);
     document.addEventListener("section-updated", updateTotals);
 
+    // ---------- SAVE ----------
     dom.form.onsubmit = async ev => {
       ev.preventDefault();
       if (!canEdit) return alert("No permission to save.");
 
-      // Sync fields
-      project.name = nameInput.value;
-      project.location = locationInput.value;
-      project.status = statusSelect.value;
-      project.notes = notesInput.value;
-      project.projectManager = {
-        name: pmNameInput.value,
-        email: pmEmailInput.value
-      };
-      project.customer = project.customer || {};
-      project.customer.name = custNameInput.value;
-      project.customer.email = custEmailInput.value;
-      project.customer.paid = +customerPaidInput.value || 0;
-      project.quotedPrice = +quotedPriceInput.value || 0;
-      project.estimatedDuration = estDurationInput.value;
-      project.hoursWorked = +hoursWorkedInput.value || 0;
-      project.progress = {
-        percent: +progressInput.value || 0,
-        comment: progressComment.value
-      };
-      project.internalNotes = internalNotes.value;
-
-      [
-        { sec: "employees", tbl: "employees-table", flds: EMPLOYEE_FIELDS },
-        { sec: "bucketLabour", tbl: "bucket-table", flds: ["name", "buckets", "ratePerBucket"] },
-        { sec: "paints", tbl: "paints-table", flds: ["type", "color", "buckets", "dateBought", "costPerBucket"] },
-        { sec: "vehicles", tbl: "vehicles-table", flds: ["driver", "car", "purpose", "km", "petrol", "tolls", "destination", "date", "notes"] },
-        { sec: "expenses", tbl: "expenses-table", flds: ["type", "amount", "notes"] }
-      ].forEach(({ sec, tbl, flds }) => {
-        project.lines[sec] = Array.from(
-          document.querySelectorAll(`#${tbl} tbody tr`)
-        ).map(tr => {
+      // 1) Collect tables into a fresh object (no mutation on possibly-bad shapes)
+      const linesFromDom = (tblId, fields) => {
+        return Array.from(document.querySelectorAll(`#${tblId} tbody tr`)).map(tr => {
           const obj = {};
-          flds.forEach(f => {
+          fields.forEach(f => {
             const inp = tr.querySelector(`input[name="${f}"]`);
-            obj[f] = inp
-              ? inp.type === "number"
-                ? +inp.value || 0
-                : inp.value
-              : "";
+            if (!inp) {
+              obj[f] = "";
+            } else if (inp.type === "number") {
+              obj[f] = Number(inp.value) || 0;
+            } else if (inp.type === "date") {
+              obj[f] = inp.value || "";
+            } else {
+              obj[f] = inp.value;
+            }
           });
           return obj;
         });
-      });
+      };
+
+      const lines = {
+        employees:    linesFromDom("employees-table", EMPLOYEE_FIELDS),
+        bucketLabour: linesFromDom("bucket-table",   ["name", "buckets", "ratePerBucket"]),
+        paints:       linesFromDom("paints-table",   ["type", "color", "buckets", "dateBought", "costPerBucket"]),
+        vehicles:     linesFromDom("vehicles-table", ["driver", "car", "purpose", "km", "petrol", "tolls", "destination", "date", "notes"]),
+        expenses:     linesFromDom("expenses-table", ["type", "amount", "notes"])
+      };
+
+      // 2) Normalize nested structs that might be strings in legacy docs
+      const customer = (project.customer && typeof project.customer === "object")
+        ? project.customer
+        : {};
+      const manager  = (project.projectManager && typeof project.projectManager === "object")
+        ? project.projectManager
+        : {};
+
+      // 3) Build updated object purely from current form + tables
+      const updated = {
+        ...((typeof project === "object" && project) || {}), // guard if ever a string again
+        id: project.id, // ensure id sticks
+        name:            (nameInput.value || "").trim(),
+        location:        (locationInput.value || "").trim(),
+        status:          statusSelect.value || "quotation",
+        notes:           notesInput.value || "",
+        projectManager: {
+          ...manager,
+          name:  (pmNameInput.value || "").trim(),
+          email: (pmEmailInput.value || "").trim()
+        },
+        customer: {
+          ...customer,
+          name:  (custNameInput.value || "").trim(),
+          email: (custEmailInput.value || "").trim(),
+          paid:  Number(customerPaidInput.value) || 0
+        },
+        quotedPrice:       Number(quotedPriceInput.value) || 0,
+        estimatedDuration: estDurationInput.value || "",
+        hoursWorked:       Number(hoursWorkedInput.value) || 0,
+        progress: {
+          percent: Number(progressInput.value) || 0,
+          comment: progressComment.value || ""
+        },
+        internalNotes:     internalNotes.value || "",
+        budgets: {
+          hourly:   Number(budgetHourlyInput.value)   || 0,
+          bucket:   Number(budgetBucketInput.value)   || 0,
+          paints:   Number(budgetPaintsInput.value)   || 0,
+          vehicles: Number(budgetVehiclesInput.value) || 0,
+          other:    Number(budgetOtherInput.value)    || 0
+        },
+        lines
+      };
 
       try {
-        await updateProject(project.id, project);
+        await updateProject(project.id, updated);
+
+        // keep local state in sync for totals/progress re-render
+        project = updated;
+
         updateTotals();
         showToast();
       } catch (err) {

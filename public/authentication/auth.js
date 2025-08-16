@@ -46,8 +46,6 @@ import {
   updateDoc,
   collection,
   getDocs,
-  query,
-  where,
   serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
 
@@ -165,31 +163,129 @@ export async function emailLogin(email, password) {
 }
 
 /* ──────────────────────────────────────────────────────────────
-   3) Phone (SMS) sign-in + linking
-   Usage on login page:
+   3) Phone (SMS) sign-in + linking  ✅ UPDATED
+   Public API (unchanged):
      const conf = await phoneLoginStart("+27…", "recaptcha-container");
      const user = await phoneLoginConfirm(conf, code);
-   Usage to link on profile page:
+
      const conf = await linkPhoneStart("+27…", "recaptcha-container");
      await linkPhoneConfirm(conf, code);
    ────────────────────────────────────────────────────────────── */
-export function phoneLoginStart(phone, recaptchaContainerId = "recaptcha-container") {
-  const verifier = new RecaptchaVerifier(auth, recaptchaContainerId, { size: "invisible" });
-  return signInWithPhoneNumber(auth, phone, verifier); // -> ConfirmationResult
+
+// Singleton recaptcha instance we can reuse
+let _recaptcha = null;
+let _recaptchaContainerId = null;
+
+/** Ensure a container exists; return the element */
+function _ensureContainer(containerId = "recaptcha-container") {
+  let el = document.getElementById(containerId);
+  if (!el) {
+    el = document.createElement("div");
+    el.id = containerId;
+    // Keep minimal size; invisible recaptcha still needs a node
+    el.style.minHeight = "1px";
+    el.style.minWidth = "1px";
+    document.body.appendChild(el);
+  }
+  return el;
 }
+
+/** Get or create a RecaptchaVerifier (reused across calls) */
+function _getRecaptcha(containerId = "recaptcha-container", size = "invisible") {
+  _ensureContainer(containerId);
+
+  // If we already have one bound to the same container, reuse it
+  if (_recaptcha && _recaptchaContainerId === containerId) return _recaptcha;
+
+  // If an old instance exists for a different container, clear it
+  try { _recaptcha?.clear?.(); } catch {}
+  _recaptcha = new RecaptchaVerifier(auth, containerId, {
+    size, // "invisible" | "normal"
+    callback: () => { /* solved */ },
+    "expired-callback": () => { /* user can retry */ },
+  });
+  _recaptchaContainerId = containerId;
+  return _recaptcha;
+}
+
+/** Clear the recaptcha if we hit a hard error (will recreate next time) */
+function _resetRecaptcha() {
+  try { _recaptcha?.clear?.(); } catch {}
+  _recaptcha = null;
+  _recaptchaContainerId = null;
+}
+
+export async function phoneLoginStart(
+  phone,
+  recaptchaContainerId = "recaptcha-container",
+  { size = "invisible" } = {}
+) {
+  // Basic sanity: require E.164 format
+  if (!phone || !phone.startsWith("+")) {
+    const err = new Error("Invalid phone number format. Use +27…");
+    err.code = "auth/invalid-phone-number";
+    throw err;
+  }
+  const verifier = _getRecaptcha(recaptchaContainerId, size);
+  try {
+    // signInWithPhoneNumber renders the verifier if needed
+    const confirmation = await signInWithPhoneNumber(auth, phone, verifier);
+    return confirmation; // ConfirmationResult
+  } catch (e) {
+    // Recover from common recaptcha/render errors by resetting
+    if (
+      e?.code === "auth/app-not-authorized" ||
+      e?.code === "auth/operation-not-allowed" ||
+      e?.code === "auth/network-request-failed"
+    ) {
+      _resetRecaptcha();
+    }
+    throw e;
+  }
+}
+
 export async function phoneLoginConfirm(confirmationResult, code) {
-  const cred = await confirmationResult.confirm(code);
+  if (!confirmationResult) {
+    const err = new Error("Missing confirmation session. Request a code first.");
+    err.code = "auth/missing-verification-code";
+    throw err;
+  }
+  const cred = await confirmationResult.confirm((code || "").trim());
   await _ensureProfileExists(cred.user);
   await _syncProfileBasics(cred.user);
   return cred.user;
 }
 
-export function linkPhoneStart(phone, recaptchaContainerId = "recaptcha-container") {
-  const verifier = new RecaptchaVerifier(auth, recaptchaContainerId, { size: "invisible" });
-  return linkWithPhoneNumber(auth.currentUser, phone, verifier); // -> ConfirmationResult
+export async function linkPhoneStart(
+  phone,
+  recaptchaContainerId = "recaptcha-container",
+  { size = "invisible" } = {}
+) {
+  if (!auth.currentUser) {
+    throw new Error("Must be signed in to link a phone number.");
+  }
+  if (!phone || !phone.startsWith("+")) {
+    const err = new Error("Invalid phone number format. Use +27…");
+    err.code = "auth/invalid-phone-number";
+    throw err;
+  }
+  const verifier = _getRecaptcha(recaptchaContainerId, size);
+  try {
+    const confirmation = await linkWithPhoneNumber(auth.currentUser, phone, verifier);
+    return confirmation;
+  } catch (e) {
+    _resetRecaptcha();
+    throw e;
+  }
 }
+
 export async function linkPhoneConfirm(confirmationResult, code) {
-  await confirmationResult.confirm(code); // links to current user
+  if (!confirmationResult) {
+    const err = new Error("Send the verification code first.");
+    err.code = "auth/missing-verification-code";
+    throw err;
+  }
+  await confirmationResult.confirm((code || "").trim());
   await _syncProfileBasics(auth.currentUser);
   return auth.currentUser;
 }
@@ -219,7 +315,6 @@ export async function changeEmail(newEmail) {
 export async function setOrChangePassword(newPassword) {
   const u = auth.currentUser;
   if (!u) throw new Error("No user");
-  // If no password provider yet, linking this credential will add it
   const methods = u.email ? await fetchSignInMethodsForEmail(auth, u.email) : [];
   if (methods.includes("password")) {
     await _withRecentLogin(() => updatePassword(u, newPassword));
@@ -255,8 +350,8 @@ export async function deleteAccount() {
   const u = auth.currentUser;
   if (!u) throw new Error("No user is signed in");
   await _withRecentLogin(async () => {
-    await deleteDoc(doc(db, "users", u.uid)); // your profile doc
-    await deleteUser(u);                      // auth user
+    await deleteDoc(doc(db, "users", u.uid));
+    await deleteUser(u);
   });
 }
 

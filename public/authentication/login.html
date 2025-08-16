@@ -19,11 +19,8 @@
 
     <!-- Global theme tokens -->
     <link rel="stylesheet" href="../css/themes.css" />
-
-    <!-- Main stylesheet (we'll upgrade this next) -->
+    <!-- Main stylesheet -->
     <link rel="stylesheet" href="style.css" />
-
-    <!-- Fonts/icons are optional; keep markup clean for now -->
   </head>
   <body class="auth-body">
     <noscript>
@@ -39,8 +36,8 @@
       </p>
     </noscript>
 
-    <!-- Decorative background (CSS will make this glow/animate) -->
-    <div class="bg fx-orbs">
+    <!-- Decorative background -->
+    <div class="bg fx-orbs" aria-hidden="true">
       <div class="orb orb-a"></div>
       <div class="orb orb-b"></div>
       <div class="orb orb-c"></div>
@@ -52,15 +49,13 @@
       <section class="brand-pane">
         <div class="brand-card glass">
           <div class="logo-mark" aria-hidden="true">
-            <!-- you can replace with an actual SVG logo later -->
             <span class="logo-dot"></span>
             <span class="logo-stem"></span>
           </div>
           <h1 class="brand-title">Maduwa Paint World</h1>
           <p class="brand-tagline">
-            We don’t just make paint — we excel in chemistry.
+            We don't just make paint - we excel in chemistry.
           </p>
-
           <ul class="highlights">
             <li>Secure login: Google, Apple, Email, or SMS</li>
             <li>One account, multiple sign-in methods</li>
@@ -78,7 +73,7 @@
           </header>
 
           <!-- OAuth row -->
-          <div class="oauth-row">
+          <div class="oauth-row" role="group" aria-label="Single-sign-on">
             <button
               id="googleBtn"
               class="btn oauth google"
@@ -107,7 +102,9 @@
             </button>
           </div>
 
-          <div class="divider"><span>or</span></div>
+          <div class="divider" role="separator" aria-label="or">
+            <span>or</span>
+          </div>
 
           <!-- Tabs: Email | Phone -->
           <div class="tabs" role="tablist" aria-label="Sign-in options">
@@ -138,13 +135,15 @@
             role="tabpanel"
             aria-labelledby="tab-email"
           >
-            <form class="form vstack" novalidate>
+            <form class="form vstack" novalidate onsubmit="return false;">
               <label class="field">
                 <span class="label">Email address</span>
                 <input
                   type="email"
                   id="emailInput"
                   autocomplete="email"
+                  autocapitalize="none"
+                  spellcheck="false"
                   placeholder="you@example.com"
                   required
                 />
@@ -156,6 +155,8 @@
                   type="password"
                   id="passwordInput"
                   autocomplete="current-password"
+                  autocapitalize="none"
+                  spellcheck="false"
                   placeholder="••••••••"
                   required
                 />
@@ -180,7 +181,7 @@
             aria-labelledby="tab-phone"
             hidden
           >
-            <form class="form vstack" novalidate>
+            <form class="form vstack" novalidate onsubmit="return false;">
               <label class="field">
                 <span class="label">Phone number</span>
                 <input
@@ -188,6 +189,8 @@
                   id="phoneInput"
                   inputmode="tel"
                   autocomplete="tel"
+                  autocapitalize="none"
+                  spellcheck="false"
                   placeholder="+27 6X XXX XXXX"
                 />
               </label>
@@ -205,9 +208,12 @@
                     type="text"
                     id="codeInput"
                     inputmode="numeric"
-                    pattern="[0-9]*"
+                    pattern="\\d{6}"
                     maxlength="6"
+                    autocomplete="one-time-code"
                     placeholder="123456"
+                    autocapitalize="none"
+                    spellcheck="false"
                   />
                 </label>
                 <div class="row">
@@ -224,7 +230,7 @@
                 </div>
               </div>
 
-              <!-- Required by Firebase Phone Auth -->
+              <!-- Required by Firebase Phone Auth (can be invisible) -->
               <div
                 id="recaptcha-container"
                 class="recaptcha-slot"
@@ -260,7 +266,7 @@
       </section>
     </main>
 
-    <!-- Optional: small inline script to switch tabs (no framework) -->
+    <!-- Tab switcher (no framework) -->
     <script>
       (function () {
         const tabEmail = document.getElementById("tab-email");
@@ -287,9 +293,8 @@
       })();
     </script>
 
-    <!-- Theme helper (your location) -->
+    <!-- Theme helper -->
     <script type="module" src="../css/theme.js"></script>
-
     <!-- Your login logic -->
     <script type="module" src="./login.js"></script>
   </body>

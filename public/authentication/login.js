@@ -19,9 +19,9 @@ import {
   initAuthListener,
   deleteAccount,         // Only used if you place a delete button on this page
   emailLogin,
-  phoneLoginStart,       // NEW: proper SMS flow
-  phoneLoginConfirm,     // NEW: proper SMS flow
-  sendReset,             // NEW: Forgot password
+  phoneLoginStart,       // Uses Firebase signInWithPhoneNumber under the hood
+  phoneLoginConfirm,     // Confirms the code
+  sendReset,             // Forgot password
 } from "./auth.js";
 
 /* ---------------- Role Check Helpers ---------------- */
@@ -68,12 +68,12 @@ function redirectBasedOnProfile(profile) {
     return;
   }
 
-  // Fallback
+  // Fallback (e.g., new user without roles yet)
   window.location.href = "./role-choice.html";
 }
 
 /* ---------------- UI helpers ---------------- */
-function qs(id) { return document.getElementById(id); }
+const qs = (id) => document.getElementById(id);
 
 function setLoading(el, loading, labelWhenDone) {
   if (!el) return;
@@ -113,11 +113,30 @@ function friendlyError(e) {
     case "auth/missing-verification-code":
     case "auth/invalid-verification-code":
       return "Invalid or expired code. Request a new one.";
+    case "auth/code-expired":
+      return "Code expired. Request a new one.";
     case "auth/quota-exceeded":
       return "SMS quota exceeded. Try again later or use email/Google.";
+    case "auth/app-not-authorized":
+      return "This domain isn’t authorized for Phone auth. Add it in Firebase → Auth → Settings → Authorized domains.";
     default:
       return e?.message || "Something went wrong.";
   }
+}
+
+/* Ensure recaptcha container exists (for phoneLoginStart) */
+function ensureRecaptchaContainer() {
+  const id = "recaptcha-container";
+  let el = document.getElementById(id);
+  if (!el) {
+    el = document.createElement("div");
+    el.id = id;
+    // Keep it in the DOM; invisible reCAPTCHA still needs the node present
+    el.style.minHeight = "1px";
+    el.style.minWidth = "1px";
+    document.body.appendChild(el);
+  }
+  return el;
 }
 
 /* ---------------- MAIN INIT ---------------- */
@@ -160,8 +179,6 @@ function init() {
     }
 
     if (!profile || !Array.isArray(profile.roles)) {
-      // Profile will usually have roles ["customer"] from ensureProfileExists
-      // but if not, send them to choose roles.
       window.location.href = "./role-choice.html";
       return;
     }
@@ -260,20 +277,22 @@ function init() {
     });
   }
 
-  /* 7) Phone (SMS) login */
+  /* 7) Phone (SMS) login — optional */
   if (phoneStartBtn && phoneInput) {
     phoneStartBtn.addEventListener("click", async () => {
       const phone = (phoneInput.value || "").trim();
-      if (!phone) {
+      if (!phone || !phone.startsWith("+")) {
         toast("Please enter your phone number in international format (e.g. +27…)", "err");
         return;
       }
+      ensureRecaptchaContainer();
       setLoading(phoneStartBtn, true);
       try {
-        // Start SMS flow (uses #recaptcha-container on the page)
+        // Start SMS flow (uses #recaptcha-container in the DOM)
         phoneConfirmation = await phoneLoginStart(phone, "recaptcha-container");
         codeRow?.removeAttribute("hidden");
         toast("Code sent. Check your SMS.", "ok");
+        codeInput?.focus();
       } catch (err) {
         toast(friendlyError(err), "err");
       } finally {
@@ -303,15 +322,21 @@ function init() {
         setLoading(phoneConfirmBtn, false, "Verify & Sign in");
       }
     });
+
+    // Enter key on code field triggers verify
+    codeInput?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") phoneConfirmBtn.click();
+    });
   }
 
   if (resendCodeBtn && phoneInput) {
     resendCodeBtn.addEventListener("click", async () => {
       const phone = (phoneInput.value || "").trim();
-      if (!phone) {
-        toast("Enter your phone number first.", "err");
+      if (!phone || !phone.startsWith("+")) {
+        toast("Enter your phone number first (e.g. +27…)", "err");
         return;
       }
+      ensureRecaptchaContainer();
       setLoading(resendCodeBtn, true);
       try {
         phoneConfirmation = await phoneLoginStart(phone, "recaptcha-container");

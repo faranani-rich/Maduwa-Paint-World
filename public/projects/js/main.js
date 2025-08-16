@@ -36,7 +36,7 @@ let all = [];          // full dataset
 let filtered = [];     // after search / status filter
 let page = 1;
 let pageSize = 12;
-let sortKey = "created";
+let sortKey = "modified";   // default sort by modified
 let sortDir = "desc";
 let statusFilter = "all";
 let searchQuery = "";
@@ -80,42 +80,11 @@ async function listProjects() {
     {
       id: "demo-1",
       name: "Showroom Revamp",
-      customer: "Maduwa HQ",
-      location: "Tzaneen",
+      customerName: "Maduwa HQ",
+      managerName: "—",
       status: "quotation",
       createdAt: "2025-01-04T10:00:00Z",
       modifiedAt: "2025-02-02T09:00:00Z",
-      createdBy: "demo",
-    },
-    {
-      id: "demo-2",
-      name: "Warehouse Coating",
-      customer: "Makonde Logistics",
-      location: "Polokwane",
-      status: "in-progress",
-      createdAt: "2024-12-19T10:00:00Z",
-      modifiedAt: "2025-02-05T12:00:00Z",
-      createdBy: "demo",
-    },
-    {
-      id: "demo-3",
-      name: "Estate Villas",
-      customer: "Green Hills",
-      location: "Giyani",
-      status: "approved",
-      createdAt: "2024-11-01T10:00:00Z",
-      modifiedAt: "2025-01-28T08:00:00Z",
-      createdBy: "demo",
-    },
-    {
-      id: "demo-4",
-      name: "Factory Line Repaint",
-      customer: "Maduwa Paint World",
-      location: "Makhado",
-      status: "completed",
-      createdAt: "2024-10-01T10:00:00Z",
-      modifiedAt: "2024-12-15T08:00:00Z",
-      createdBy: "demo",
     },
   ];
 }
@@ -124,7 +93,6 @@ async function deleteProject(id) {
   if (typeof _deleteProjectMaybe === "function") {
     return await _deleteProjectMaybe(id);
   }
-  // Fallback if storage.js hasn’t implemented delete yet.
   throw new Error("deleteProject is not implemented in storage.js");
 }
 
@@ -134,7 +102,8 @@ function applyFilters() {
   filtered = all.filter((p) => {
     if (statusFilter !== "all" && p.status !== statusFilter) return false;
     if (q) {
-      const hay = `${toStr(p.name)} ${toStr(p.customer)} ${toStr(p.location)}`.toLowerCase();
+      // search across name, managerName, customerName
+      const hay = `${toStr(p.name)} ${toStr(p.managerName)} ${toStr(p.customerName)}`.toLowerCase();
       if (!hay.includes(q)) return false;
     }
     return true;
@@ -154,15 +123,18 @@ function applySort() {
       filtered.sort(by((p) => norm(p.name), dir));
       break;
     case "customer":
-      filtered.sort(by((p) => norm(p.customer), dir));
+      // use flat string provided by storage.normalizeProject
+      filtered.sort(by((p) => norm(p.customerName), dir));
       break;
-    case "location":
-      filtered.sort(by((p) => norm(p.location), dir));
+    case "manager":
+      filtered.sort(by((p) => norm(p.managerName), dir));
       break;
     case "status":
       filtered.sort(by((p) => STATUS_ORDER.indexOf(p.status ?? "quotation"), "asc"));
       break;
     default:
+      // default to modified desc
+      filtered.sort(by((p) => parseISO(p.modifiedAt), "desc"));
       break;
   }
 }
@@ -205,12 +177,23 @@ function renderCard(node, p) {
   badge.dataset.status = p.status || "quotation";
   badge.textContent = STATUS_LABEL[p.status] || "Quotation";
 
-  // text
+  // title
   node.querySelector(".proj-title").textContent = p.name || "Untitled";
-  node.querySelector(".customer").textContent   = p.customer || "—";
-  node.querySelector(".location").textContent   = p.location || "—";
-  node.querySelector(".modified").textContent   = fmtDate(p.modifiedAt);
-  node.querySelector(".created").textContent    = fmtDate(p.createdAt);
+
+  // subtitle line: Manager • Customer
+  const manager = p.managerName || p.projectManager?.name || "—";
+  const customer = p.customerName || "—";
+  node.querySelector(".customer").textContent = `${manager} • ${customer}`;
+
+  // we no longer show location here; clear/hide if template has it
+  const loc = node.querySelector(".location");
+  if (loc) {
+    loc.textContent = "";         // or: loc.classList.add("hidden");
+  }
+
+  // dates
+  node.querySelector(".modified").textContent = fmtDate(p.modifiedAt);
+  node.querySelector(".created").textContent  = fmtDate(p.createdAt);
 
   // open
   node.querySelector(".open-btn").addEventListener("click", () => {
@@ -239,7 +222,6 @@ function renderCard(node, p) {
 
       try {
         await deleteProject(p.id);
-        // remove locally & re-render
         all = all.filter((x) => x.id !== p.id);
         runPipeline();
       } catch (err) {
@@ -248,7 +230,6 @@ function renderCard(node, p) {
       }
     });
 
-    // keep a reference if we need to re-enable after auth arrives
     delBtn._setAuthState = setAuthState;
   }
 }
@@ -334,9 +315,9 @@ function wireControls() {
 
   // Sort
   sortSelect?.addEventListener("change", () => {
-    const [k, d] = (sortSelect.value || "created.desc").split(".");
+    const [k, d] = (sortSelect.value || "modified.desc").split(".");
     sortKey = (k === "status" || k === "status.order") ? "status"
-            : ["created","modified","name","customer","location"].includes(k) ? k
+            : ["created","modified","name","customer","manager"].includes(k) ? k
             : "modified";
     sortDir = (d === "asc" || d === "desc") ? d : "desc";
     page = 1;
@@ -352,8 +333,8 @@ function wireControls() {
   clearFilters?.addEventListener("click", () => {
     searchQuery = "";
     if (searchInput) searchInput.value = "";
-    sortKey = "created"; sortDir = "desc";
-    if (sortSelect) sortSelect.value = "created.desc";
+    sortKey = "modified"; sortDir = "desc";
+    if (sortSelect) sortSelect.value = "modified.desc";
     statusFilter = "all";
     $$(".status-tabs .tab").forEach((t) => {
       const active = t.dataset.status === "all";
@@ -396,7 +377,6 @@ function wireControls() {
   // New project (role-gated)
   if (newBtn) {
     if (!canCreateProject(currentProfile, currentUser)) {
-      // Keep space stable: hide visually but keep layout if desired
       newBtn.style.display = "none";
       newBtn.addEventListener("click", (e) => {
         e.preventDefault();
