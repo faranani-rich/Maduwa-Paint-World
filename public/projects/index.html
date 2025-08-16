@@ -50,7 +50,7 @@
             <input
               id="searchInput"
               type="search"
-              placeholder="Search by project, customer, or location…"
+              placeholder="Search by project, customer, or manager…"
               autocomplete="off"
               spellcheck="false"
               aria-label="Search projects"
@@ -72,7 +72,9 @@
             <select id="sortSelect">
               <option value="created.desc">Date created (newest)</option>
               <option value="created.asc">Date created (oldest)</option>
-              <option value="modified.desc">Last modified (newest)</option>
+              <option value="modified.desc" selected>
+                Last modified (newest)
+              </option>
               <option value="modified.asc">Last modified (oldest)</option>
 
               <option value="name.asc">Project name (A–Z)</option>
@@ -81,8 +83,8 @@
               <option value="customer.asc">Customer name (A–Z)</option>
               <option value="customer.desc">Customer name (Z–A)</option>
 
-              <option value="location.asc">Location (A–Z)</option>
-              <option value="location.desc">Location (Z–A)</option>
+              <option value="manager.asc">Manager name (A–Z)</option>
+              <option value="manager.desc">Manager name (Z–A)</option>
 
               <option value="status.order">Status (pipeline)</option>
             </select>
@@ -206,7 +208,7 @@
             >
               ↗
             </button>
-            <!-- DELETE (restored) -->
+            <!-- DELETE -->
             <button
               class="icon-btn delete-btn"
               title="Delete project"
@@ -218,16 +220,20 @@
         </header>
 
         <h3 class="proj-title"></h3>
-        <p class="proj-meta">
-          <span class="customer"></span> • <span class="location"></span>
-        </p>
+
+        <!-- Host for labeled details injected by JS -->
+        <div class="proj-meta">
+          <span class="customer"></span>
+        </div>
 
         <div class="meta-grid">
           <div>
-            <span class="label">Modified</span><span class="modified"></span>
+            <span class="label">Date Modified:&nbsp;</span>
+            <span class="modified"></span>
           </div>
           <div>
-            <span class="label">Created</span><span class="created"></span>
+            <span class="label">Date Created:&nbsp;</span>
+            <span class="created"></span>
           </div>
         </div>
       </article>
