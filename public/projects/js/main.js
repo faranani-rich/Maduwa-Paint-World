@@ -7,7 +7,10 @@ import { emptyProject }     from "./models.js";
 import { canCreateProject, canDeleteProject } from "./permissions.js";
 
 // Optional, if you expose it. We fall back nicely if not present.
-import { listProjects as _listProjectsMaybe, deleteProject as _deleteProjectMaybe } from "./storage.js";
+import {
+  listProjects as _listProjectsMaybe,
+  deleteProject as _deleteProjectMaybe
+} from "./storage.js";
 
 /* ========= 0) Small helpers ========= */
 const $  = (sel) => document.querySelector(sel);
@@ -39,6 +42,16 @@ const escapeHtml = (s = "") =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+
+/* ========= 0.1) Ensure .hidden works even if CSS missing ========= */
+(function ensureHiddenUtility() {
+  if (!document.getElementById("util-hidden-style")) {
+    const st = document.createElement("style");
+    st.id = "util-hidden-style";
+    st.textContent = `.hidden{display:none !important}`;
+    document.head.appendChild(st);
+  }
+})();
 
 /* ========= 1) State ========= */
 let all = [];          // full dataset
@@ -105,16 +118,124 @@ async function deleteProject(id) {
   throw new Error("deleteProject is not implemented in storage.js");
 }
 
-/* ========= 4) Pipeline: filter → sort → paginate ========= */
-function applyFilters() {
-  const q = norm(searchQuery);
-  filtered = all.filter((p) => {
-    if (statusFilter !== "all" && p.status !== statusFilter) return false;
-    if (q) {
-      // search across name, managerName, customerName
-      const hay = `${toStr(p.name)} ${toStr(p.managerName)} ${toStr(p.customerName)}`.toLowerCase();
-      if (!hay.includes(q)) return false;
+/* ========= 4) Query parsing & filter pipeline ========= */
+
+/** Format for display AND search */
+function fmtDate(iso) {
+  if (!iso) return "—";
+  const t = Date.parse(iso);
+  if (Number.isNaN(t)) return "—";
+  const d = new Date(t);
+  return d.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+  });
+}
+/** ISO YYYY-MM-DD for search */
+function yyyy_mm_dd(iso) {
+  if (!iso) return "";
+  const t = Date.parse(iso);
+  if (Number.isNaN(t)) return "";
+  const d = new Date(t);
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+/** Parse fielded query like:
+ *  name:hector manager:mukoni customer:Hendrick status:approved
+ *  modified:2025-07 created:"Jul 21"
+ *  plus generic terms (space-separated)
+ */
+function parseQuery(qraw) {
+  const q = norm(qraw);
+  const out = {
+    generic: [], // words that should match any haystack part
+    fields: { name: [], manager: [], customer: [], status: [], created: [], modified: [] }
+  };
+  if (!q) return out;
+
+  // tokenization with simple quotes support
+  const re = /(\w+):"([^"]+)"|(\w+):'([^']+)'|(\w+):(\S+)|"([^"]+)"|'([^']+)'|(\S+)/g;
+  let m;
+  while ((m = re.exec(q))) {
+    const [ , k1, v1, k2, v2, k3, v3, q1, q2, lone ] = m;
+    const key = (k1 || k2 || k3 || "").toLowerCase();
+    const val = (v1 || v2 || v3 || q1 || q2 || lone || "").toLowerCase();
+
+    const keyMap = {
+      name: "name",
+      "project": "name",
+      "projectname": "name",
+      manager: "manager",
+      "projectmanager": "manager",
+      customer: "customer",
+      "customername": "customer",
+      status: "status",
+      created: "created",
+      "datecreated": "created",
+      modified: "modified",
+      "datemodified": "modified",
+    };
+
+    if (key && keyMap[key]) {
+      out.fields[keyMap[key]].push(val);
+    } else if (val) {
+      out.generic.push(val);
     }
+  }
+  return out;
+}
+
+function applyFilters() {
+  const parsed = parseQuery(searchQuery);
+
+  filtered = all.filter((p) => {
+    // 1) status tab filter
+    if (statusFilter !== "all" && p.status !== statusFilter) return false;
+
+    // Prepare searchable fields
+    const f = {
+      name:       norm(p.name),
+      manager:    norm(p.managerName || p.projectManager?.name || ""),
+      customer:   norm(p.customerName || p.customer?.name || ""),
+      status:     norm(p.status),
+      createdISO: yyyy_mm_dd(p.createdAt),
+      modifiedISO: yyyy_mm_dd(p.modifiedAt),
+      createdPretty: norm(fmtDate(p.createdAt)),
+      modifiedPretty: norm(fmtDate(p.modifiedAt)),
+    };
+
+    // 2) fielded constraints: each specified field must match ALL of its tokens
+    const fields = parsed.fields;
+    const fieldMatch =
+      (!fields.name.length     || fields.name.every(t => f.name.includes(t))) &&
+      (!fields.manager.length  || fields.manager.every(t => f.manager.includes(t))) &&
+      (!fields.customer.length || fields.customer.every(t => f.customer.includes(t))) &&
+      (!fields.status.length   || fields.status.every(t => f.status.includes(t))) &&
+      (!fields.created.length  || fields.created.every(t => (f.createdISO.includes(t) || f.createdPretty.includes(t)))) &&
+      (!fields.modified.length || fields.modified.every(t => (f.modifiedISO.includes(t) || f.modifiedPretty.includes(t))));
+    if (!fieldMatch) return false;
+
+    // 3) generic term matching over a big haystack (include labels so
+    //    queries that literally type "project name:" still work)
+    if (parsed.generic.length) {
+      const hay = norm(
+        [
+          `project name: ${p.name}`,
+          `project manager: ${p.managerName || p.projectManager?.name || ""}`,
+          `customer name: ${p.customerName || p.customer?.name || ""}`,
+          `status: ${STATUS_LABEL[p.status] || p.status || ""}`,
+          `date modified: ${fmtDate(p.modifiedAt)} ${yyyy_mm_dd(p.modifiedAt)}`,
+          `date created: ${fmtDate(p.createdAt)} ${yyyy_mm_dd(p.createdAt)}`,
+        ].join("  ")
+      );
+      for (const term of parsed.generic) {
+        if (!hay.includes(term)) return false;
+      }
+    }
+
     return true;
   });
 }
@@ -164,28 +285,34 @@ function setGridColumns(n) {
   cardsRegion.style.gap = "16px";
 }
 
-function clearStates() {
-  listLoading.classList.add("hidden");
-  listEmpty.classList.add("hidden");
-  listError.classList.add("hidden");
+function hideAllBanners() {
+  listLoading?.classList.add("hidden");
+  listEmpty?.classList.add("hidden");
+  listError?.classList.add("hidden");
 }
-
-function fmtDate(iso) {
-  if (!iso) return "—";
-  const t = Date.parse(iso);
-  if (Number.isNaN(t)) return "—";
-  const d = new Date(t);
-  return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "2-digit" });
+function showLoading() {
+  hideAllBanners();
+  listLoading?.classList.remove("hidden");
+}
+function showEmpty() {
+  hideAllBanners();
+  listEmpty?.classList.remove("hidden");
+}
+function showError() {
+  hideAllBanners();
+  listError?.classList.remove("hidden");
 }
 
 function renderCard(node, p) {
   // badge
   const badge = node.querySelector(".status-badge");
-  badge.dataset.status = p.status || "quotation";
-  badge.textContent = STATUS_LABEL[p.status] || "Quotation";
+  if (badge) {
+    badge.dataset.status = p.status || "quotation";
+    badge.textContent = STATUS_LABEL[p.status] || "Quotation";
+  }
 
   // title
-  node.querySelector(".proj-title").textContent = p.name || "Untitled";
+  node.querySelector(".proj-title")?.append(document.createTextNode(p.name || "Untitled"));
 
   // labeled details
   const manager  = p.managerName || p.projectManager?.name || "—";
@@ -205,11 +332,11 @@ function renderCard(node, p) {
   if (loc) loc.textContent = "";
 
   // dates
-  node.querySelector(".modified").textContent = fmtDate(p.modifiedAt);
-  node.querySelector(".created").textContent  = fmtDate(p.createdAt);
+  node.querySelector(".modified") && (node.querySelector(".modified").textContent = fmtDate(p.modifiedAt));
+  node.querySelector(".created")  && (node.querySelector(".created").textContent  = fmtDate(p.createdAt));
 
   // open
-  node.querySelector(".open-btn").addEventListener("click", () => {
+  node.querySelector(".open-btn")?.addEventListener("click", () => {
     if (!p.id) return;
     window.location.href = `project.html?id=${encodeURIComponent(p.id)}`;
   });
@@ -248,16 +375,16 @@ function renderCard(node, p) {
 }
 
 function paint() {
-  clearStates();
+  hideAllBanners();
 
   const { start, end, total, pages } = pageSlice();
 
   if (total === 0) {
     cardsRegion.innerHTML = "";
-    listEmpty.classList.remove("hidden");
-    pageStatus.textContent = "Page 1 of 1";
-    prevBtn.disabled = true;
-    nextBtn.disabled = true;
+    showEmpty();
+    pageStatus && (pageStatus.textContent = "Page 1 of 1");
+    prevBtn && (prevBtn.disabled = true);
+    nextBtn && (nextBtn.disabled = true);
     return;
   }
 
@@ -269,9 +396,9 @@ function paint() {
     cardsRegion.appendChild(node);
   }
 
-  pageStatus.textContent = `Page ${page} of ${pages}`;
-  prevBtn.disabled = page <= 1;
-  nextBtn.disabled = page >= pages;
+  pageStatus && (pageStatus.textContent = `Page ${page} of ${pages}`);
+  prevBtn && (prevBtn.disabled = page <= 1);
+  nextBtn && (nextBtn.disabled = page >= pages);
 
   // if auth landed late, refresh delete button enabled state
   cardsRegion.querySelectorAll(".delete-btn").forEach((b) => b._setAuthState?.());
@@ -297,16 +424,15 @@ async function initPage() {
   setGridColumns(cols);
 
   try {
-    clearStates();
-    listLoading.classList.remove("hidden");
+    showLoading();
     all = await listProjects();
   } catch (err) {
     console.error("[projects] load failed:", err);
-    clearStates();
-    listError.classList.remove("hidden");
+    showError();
     return;
   } finally {
-    listLoading.classList.add("hidden");
+    // hide loading in both success & error (error path re-shows error)
+    listLoading?.classList.add("hidden");
   }
 
   runPipeline();
