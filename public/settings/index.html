@@ -6,10 +6,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Settings</title>
 
-    <!-- Global theme tokens (already used across the app) -->
+    <!-- THEME / ACCENT / MOTION / FONT BOOTSTRAP: apply before first paint -->
+    <script>
+      (function () {
+        const root = document.documentElement;
+        const theme = localStorage.getItem("app.theme") || "light";
+        const hue = localStorage.getItem("app.accentHue");
+        const motion = localStorage.getItem("app.motion") || "auto"; // 'auto' | 'reduced'
+        const scale = Number(localStorage.getItem("app.fontScale") || "1");
+
+        root.setAttribute("data-theme", theme);
+        root.setAttribute("data-motion", motion);
+        if (hue) root.style.setProperty("--accent-h", hue);
+        if (Number.isFinite(scale) && scale > 0) {
+          root.style.fontSize = Math.round(scale * 100) + "%";
+        }
+      })();
+    </script>
+
+    <!-- Global theme tokens & utilities (tilt/parallax classes) -->
     <link rel="stylesheet" href="../css/themes.css" />
 
-    <!-- Settings page styles (create this file next) -->
+    <!-- Settings page styles -->
     <link rel="stylesheet" href="./settings.css" />
   </head>
   <body>
@@ -35,20 +53,47 @@
     </header>
 
     <main class="settings-main" id="settingsMain" tabindex="-1">
-      <!-- Tabs (pure HTML; behavior added in index.js) -->
-      <nav class="settings-tabs" aria-label="Settings sections">
+      <!-- Tabs -->
+      <nav class="settings-tabs" role="tablist" aria-label="Settings sections">
         <button
           class="settings-tab"
+          id="tab-appearance"
+          role="tab"
           data-section="appearance"
+          aria-controls="section-appearance"
           aria-selected="true"
         >
           Appearance
         </button>
-        <button class="settings-tab" data-section="accessibility">
+        <button
+          class="settings-tab"
+          id="tab-accessibility"
+          role="tab"
+          data-section="accessibility"
+          aria-controls="section-accessibility"
+          aria-selected="false"
+        >
           Accessibility
         </button>
-        <button class="settings-tab" data-section="preferences">
+        <button
+          class="settings-tab"
+          id="tab-preferences"
+          role="tab"
+          data-section="preferences"
+          aria-controls="section-preferences"
+          aria-selected="false"
+        >
           Preferences
+        </button>
+        <button
+          class="settings-tab"
+          id="tab-animations"
+          role="tab"
+          data-section="animations"
+          aria-controls="section-animations"
+          aria-selected="false"
+        >
+          Animations
         </button>
       </nav>
 
@@ -56,10 +101,10 @@
       <section
         class="settings-section"
         id="section-appearance"
-        role="region"
+        role="tabpanel"
         aria-labelledby="tab-appearance"
       >
-        <h2 class="section-title" id="tab-appearance">Appearance</h2>
+        <h2 class="section-title">Appearance</h2>
 
         <div class="field">
           <label class="field-label">Theme</label>
@@ -90,10 +135,10 @@
       <section
         class="settings-section is-hidden"
         id="section-accessibility"
-        role="region"
+        role="tabpanel"
         aria-labelledby="tab-accessibility"
       >
-        <h2 class="section-title" id="tab-accessibility">Accessibility</h2>
+        <h2 class="section-title">Accessibility</h2>
 
         <div class="field">
           <label class="field-row">
@@ -118,10 +163,10 @@
       <section
         class="settings-section is-hidden"
         id="section-preferences"
-        role="region"
+        role="tabpanel"
         aria-labelledby="tab-preferences"
       >
-        <h2 class="section-title" id="tab-preferences">Preferences</h2>
+        <h2 class="section-title">Preferences</h2>
 
         <div class="field">
           <label class="field-label" for="defaultStartPage"
@@ -135,7 +180,8 @@
           <p class="field-help">
             Choose where to land after sign-in. “Automatic” sends customers to
             <code>customer/home.html</code> and employees to
-            <code>employee/employee-portal.html</code>.
+            <code>employee/employee-portal.html</code> (or to their specific
+            dashboard if configured).
           </p>
         </div>
 
@@ -155,12 +201,116 @@
           </p>
         </div>
       </section>
+
+      <!-- Animations -->
+      <section
+        class="settings-section is-hidden"
+        id="section-animations"
+        role="tabpanel"
+        aria-labelledby="tab-animations"
+      >
+        <h2 class="section-title">Animations</h2>
+
+        <div class="field">
+          <label class="field-row">
+            <input type="checkbox" id="animeEnabled" />
+            <span>Enable animations</span>
+          </label>
+          <p class="field-help">
+            Respects your OS “reduced motion” preference automatically.
+          </p>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="animeSpeed">Animation speed</label>
+          <input id="animeSpeed" type="range" min="0" max="100" step="1" />
+          <p class="field-help">0 = still; 100 = fastest. Default is 60.</p>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="animeSize">Widget size</label>
+          <input id="animeSize" type="range" min="60" max="320" step="10" />
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="animeName">Animation</label>
+          <select id="animeName">
+            <option value="">Random (recommended)</option>
+            <option value="character-idle.json">Character – idle</option>
+            <option value="anime-eyes-blink.json">Anime – eyes blink</option>
+            <option value="anime-wave.json">Anime – wave</option>
+            <option value="anime-heart.json">Anime – heart</option>
+            <option value="chibi-jump.json">Chibi – jump</option>
+            <option value="background.json">Depresso</option>
+            <option value="timing.json">timing</option>
+          </select>
+          <p class="field-help">Files are loaded from <code>/assets/</code>.</p>
+        </div>
+      </section>
     </main>
 
     <footer class="settings-footer">
       <button class="btn outline" id="footerBackBtn" type="button">Back</button>
       <button class="btn" id="footerSaveBtn" type="button">Save</button>
     </footer>
+
+    <!-- Optional: preview dock for the anime widget on this page -->
+    <div id="animeDock" aria-hidden="true"></div>
+
+    <!-- Lottie (for animations) and theme/motion helpers -->
+    <!-- Core theme helper (reads/writes app.theme + dispatches 'themechange') -->
+    <script type="module" src="../css/theme.js"></script>
+
+    <!-- Lottie (must come before the anime widget) -->
+    <script
+      src="https://unpkg.com/lottie-web/build/player/lottie.min.js"
+      defer
+    ></script>
+
+    <!-- Anime buddy widget (IIFE; reads app.anime* keys and mounts into #animeDock) -->
+    <script src="../css/anime-widget.js" defer></script>
+
+    <!-- Tiny tilt enhancer (optional). Uses .tilt + CSS vars; reduced-motion safe -->
+    <script>
+      (function () {
+        function shouldReduce() {
+          return (
+            document.documentElement.getAttribute("data-motion") ===
+              "reduced" ||
+            (window.matchMedia &&
+              window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+          );
+        }
+        if (shouldReduce()) return;
+
+        const MAX_DEG = 6; // softer tilt
+        const els = document.querySelectorAll(".tilt");
+        els.forEach((el) => {
+          el.addEventListener("pointermove", (e) => {
+            const r = el.getBoundingClientRect();
+            const cx = r.left + r.width / 2;
+            const cy = r.top + r.height / 2;
+            const dx = (e.clientX - cx) / (r.width / 2);
+            const dy = (e.clientY - cy) / (r.height / 2);
+            // invert Y for natural tilt
+            el.style.setProperty(
+              "--tilt-x",
+              (-dy * MAX_DEG).toFixed(2) + "deg"
+            );
+            el.style.setProperty("--tilt-y", (dx * MAX_DEG).toFixed(2) + "deg");
+          });
+          el.addEventListener("pointerleave", () => {
+            el.style.removeProperty("--tilt-x");
+            el.style.removeProperty("--tilt-y");
+          });
+        });
+
+        // Respect runtime motion changes
+        window.addEventListener("themechange", () => {
+          // nothing needed for tilt here; placeholder if you later theme-guard tilt
+        });
+      })();
+    </script>
 
     <!-- Page wiring (navigation, tabs, back behavior, save orchestration) -->
     <script type="module" src="./index.js"></script>

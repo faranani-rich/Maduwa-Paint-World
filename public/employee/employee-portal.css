@@ -1,139 +1,211 @@
 /* =========================================================
-   employee-portal.css — Futuristic glass portal theme
+   employee-portal.css — Theme-aware, token-driven styling
+   Works with /public/css/themes.css design tokens.
    ========================================================= */
 
-:root{
-  --bg:#0b1220; --bg2:#0e1630; --text:#e8eefc; --muted:#9bb0d0;
-  --primary:#6cc6ff; --accent:#7effc9; --danger:#ff6b6b;
-  --glass:rgba(255,255,255,.08); --glass2:rgba(255,255,255,.06);
-  --border:rgba(255,255,255,.16); --shadow:0 14px 40px rgba(3,8,20,.6);
-  --radius:18px; --radius-sm:12px; --ring:0 0 0 3px rgba(108,198,255,.35);
-}
-
+/* Reset box model */
 *,
 *::before,
 *::after { box-sizing: border-box; }
 
-html,body { height:100%; }
+html, body { height: 100%; }
 
+/* ---------------------------------------------------------
+   Body & background — use theme tokens (no hard-coded dark)
+   --------------------------------------------------------- */
 body.portal-body{
-  margin:0;
-  font-family:'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial;
-  color:var(--text);
-  background:
-    radial-gradient(1200px 800px at 10% -10%, #19386a 0%, transparent 60%),
-    radial-gradient(1000px 600px at 110% 10%, #2a1e6a 0%, transparent 60%),
-    linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
-  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-  overflow-x:hidden;
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
-/* ---------- Animated background ---------- */
-.bg{position:fixed; inset:0; pointer-events:none; z-index:0}
-.fx-orbs .orb{position:absolute; filter:blur(40px); opacity:.55; border-radius:50%;
-  animation:float 18s ease-in-out infinite}
-.orb-a{width:460px;height:460px;left:-120px;top:-120px;
-  background:radial-gradient(circle at 30% 30%, #3cc6ff, #6b7bff 60%, transparent 70%)}
-.orb-b{width:420px;height:420px;right:-110px;top:12%;
-  background:radial-gradient(circle at 35% 35%, #7effc9, #76a8ff 60%, transparent 70%);animation-delay:2s}
-.orb-c{width:360px;height:360px;left:35%;bottom:-160px;
-  background:radial-gradient(circle at 40% 40%, #ff9de1, #6cc6ff 60%, transparent 70%);animation-delay:4s}
-@keyframes float{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(0,-10px,0) scale(1.02)}}
-.grid-overlay{position:absolute; inset:0;
-  background-image:linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
-                   linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
-  background-size:40px 40px,40px 40px;
-  mask-image:radial-gradient(1000px 600px at 50% 40%, rgba(255,255,255,.85), transparent 80%)}
+/* Soft themed background accents (respect reduced motion) */
+.bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.fx-orbs .orb {
+  position: absolute; filter: blur(40px); opacity: .25; border-radius: 50%;
+  animation: float 18s ease-in-out infinite;
+}
+.orb-a {
+  width: 460px; height: 460px; left: -120px; top: -120px;
+  background: radial-gradient(
+    circle at 30% 30%,
+    color-mix(in srgb, var(--accent) 65%, transparent),
+    color-mix(in srgb, var(--accent) 25%, transparent) 60%,
+    transparent 70%
+  );
+}
+.orb-b {
+  width: 420px; height: 420px; right: -110px; top: 12%;
+  background: radial-gradient(
+    circle at 35% 35%,
+    color-mix(in srgb, var(--accent) 55%, transparent),
+    color-mix(in srgb, var(--accent) 20%, transparent) 60%,
+    transparent 70%
+  );
+  animation-delay: 2s;
+}
+.orb-c {
+  width: 360px; height: 360px; left: 35%; bottom: -160px;
+  background: radial-gradient(
+    circle at 40% 40%,
+    color-mix(in srgb, var(--accent) 45%, transparent),
+    color-mix(in srgb, var(--accent) 18%, transparent) 60%,
+    transparent 70%
+  );
+  animation-delay: 4s;
+}
+@keyframes float {
+  0%,100% { transform: translate3d(0,0,0) scale(1) }
+  50%     { transform: translate3d(0,-10px,0) scale(1.02) }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fx-orbs .orb { animation: none; }
+}
 
-/* ---------- Reusable helpers ---------- */
+/* Subtle grid overlay using table/header tones so it fits the theme */
+.grid-overlay{
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--table-border) 60%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--table-border) 60%, transparent) 1px, transparent 1px);
+  background-size: 40px 40px, 40px 40px;
+  mask-image: radial-gradient(1000px 600px at 50% 40%, rgba(255,255,255,.85), transparent 80%);
+  opacity: .25;
+}
+
+/* ---------------------------------------------------------
+   Glass & buttons — use theme tokens, not fixed colors
+   --------------------------------------------------------- */
 .glass{
-  background:linear-gradient(180deg, var(--glass), var(--glass2));
-  border:1px solid var(--border);
-  backdrop-filter:blur(14px);
-  box-shadow:var(--shadow);
-  border-radius:var(--radius);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--surface) 82%, transparent),
+    color-mix(in srgb, var(--surface-2) 82%, transparent)
+  );
+  border: 1px solid var(--border);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow);
+  border-radius: 18px;
 }
 
 .btn{
-  display:inline-flex; align-items:center; justify-content:center; gap:8px;
-  height:42px; padding:0 16px; border-radius:12px; border:1px solid var(--border);
-  background:rgba(255,255,255,.07); color:var(--text); font-weight:600; letter-spacing:.2px;
-  transition:transform .15s, box-shadow .2s, background .2s, border-color .2s; cursor:pointer;
-  text-decoration:none;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 42px; padding: 0 16px; border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text); font-weight: 600; letter-spacing: .2px;
+  transition: transform .15s, box-shadow .2s, background .2s, border-color .2s, filter .2s;
+  cursor: pointer; text-decoration: none;
 }
-.btn:hover{transform:translateY(-1px); box-shadow:0 10px 24px rgba(0,0,0,.35)}
-.btn:focus-visible{outline:none; box-shadow:var(--ring)}
-.btn.ghost{background:transparent; border-style:dashed}
+.btn:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(0,0,0,.15); background: color-mix(in srgb, var(--surface-2) 85%, var(--accent) 15%); }
+.btn:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); border-color: var(--accent); }
+.btn.ghost { background: transparent; border-style: dashed; color: var(--text); }
+.btn.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.btn.primary:hover { filter: brightness(.98); }
 
-/* ---------- Header ---------- */
+/* ---------------------------------------------------------
+   Header
+   --------------------------------------------------------- */
 .portal-header{
-  position:sticky; top:0; z-index:10; margin:16px; padding:14px 18px;
-  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  position: sticky; top: 0; z-index: 5; margin: 16px; padding: 14px 18px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow);
 }
-.brand{display:flex; align-items:center; gap:14px}
-.logo-mark{width:46px;height:46px;position:relative;filter:drop-shadow(0 6px 16px rgba(108,198,255,.35))}
-.logo-dot,.logo-stem{position:absolute;background:var(--primary);border-radius:999px}
-.logo-dot{width:12px;height:12px;left:17px;top:5px}
-.logo-stem{width:10px;height:36px;left:18px;top:10px;background:linear-gradient(180deg,#6cc6ff,#7aa8ff)}
-.titles h1{margin:.1rem 0 0;font-size:1.4rem}
-.subtitle{margin:.1rem 0 0;color:var(--muted);font-size:.95rem}
-.actions{display:flex; gap:10px}
+.brand { display: flex; align-items: center; gap: 14px; }
+.logo-mark { width: 46px; height: 46px; position: relative; filter: drop-shadow(0 6px 16px color-mix(in srgb, var(--accent) 35%, transparent)); }
+.logo-dot, .logo-stem { position: absolute; background: var(--accent); border-radius: 999px; }
+.logo-dot { width: 12px; height: 12px; left: 17px; top: 5px; }
+.logo-stem {
+  width: 10px; height: 36px; left: 18px; top: 10px;
+  background: linear-gradient(180deg, var(--accent), color-mix(in srgb, var(--accent) 65%, var(--surface)));
+}
+.titles h1 { margin: .1rem 0 0; font-size: 1.4rem; color: var(--text); }
+.subtitle { margin: .1rem 0 0; color: var(--muted); font-size: .95rem; }
+.actions { display: flex; gap: 10px; }
 
-/* ---------- Main layout ---------- */
-.portal-shell{position:relative; z-index:1; padding:20px; display:grid; gap:20px}
+/* ---------------------------------------------------------
+   Main layout
+   --------------------------------------------------------- */
+.portal-shell { position: relative; z-index: 1; padding: 20px; display: grid; gap: 20px; }
 
 /* Quick stats */
-.stats-row{
-  display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:16px;
+.stats-row{ display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; }
+.stat{
+  padding: 16px; border-radius: 14px; background: var(--surface);
+  border: 1px solid var(--border); box-shadow: var(--shadow);
 }
-.stat{padding:16px; border-radius:14px}
-.stat-label{color:var(--muted); font-size:.9rem}
-.stat-value{font-size:1.6rem; font-weight:700; margin-top:6px}
+.stat-label{ color: var(--muted); font-size: .9rem; }
+.stat-value{ font-size: 1.6rem; font-weight: 700; margin-top: 6px; color: var(--text); }
 
 /* Sections */
-.dash-section, .admin-section{padding:18px}
-.section-head{display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:10px}
-.section-head h2{margin:0}
-.muted{color:var(--muted)}
+.dash-section, .admin-section{
+  padding: 18px; border-radius: 16px; background: var(--surface);
+  border: 1px solid var(--border); box-shadow: var(--shadow);
+}
+.section-head{ display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.section-head h2{ margin: 0; color: var(--text); }
+.muted{ color: var(--muted); }
 
 /* Dashboard grid */
 .dashboard-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
-  gap:14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
 }
 
 /* Tiles (cards) */
 .tile{
-  display:block; padding:16px; border-radius:14px; border:1px solid var(--border);
-  background:rgba(255,255,255,.05); color:var(--text); text-decoration:none;
-  transition:transform .15s, box-shadow .2s, background .2s, border-color .2s;
+  display: block; padding: 16px; border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text); text-decoration: none;
+  transition: transform .15s, box-shadow .2s, background .2s, border-color .2s;
+  box-shadow: var(--shadow);
 }
-.tile:hover{transform:translateY(-2px); box-shadow:0 16px 30px rgba(0,0,0,.35)}
-.tile-title{font-weight:700; margin:0 0 4px}
-.tile-sub{color:var(--muted); font-size:.95rem}
+.tile:hover{
+  transform: translateY(-2px);
+  background: color-mix(in srgb, var(--surface) 85%, var(--accent) 15%);
+  box-shadow: 0 16px 30px rgba(0,0,0,.15);
+}
+.tile-title{ font-weight: 700; margin: 0 0 4px; color: var(--text); }
+.tile-sub{ color: var(--muted); font-size: .95rem; }
 
-/* Backward compatibility: old .dashboard-btn gets tile look */
-.dashboard-btn { composes: tile; } /* if your build doesn’t support composes, copy the .tile props below */
+/* Backward compatibility: .dashboard-btn styled like .tile */
 .dashboard-btn{
-  display:block; padding:16px; border-radius:14px; border:1px solid var(--border);
-  background:rgba(255,255,255,.05); color:var(--text); text-decoration:none;
-  transition:transform .15s, box-shadow .2s, background .2s, border-color .2s;
+  display: block; padding: 16px; border-radius: 14px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); text-decoration: none;
+  transition: transform .15s, box-shadow .2s, background .2s, border-color .2s;
+  box-shadow: var(--shadow);
 }
-.dashboard-btn:hover{transform:translateY(-2px); box-shadow:0 16px 30px rgba(0,0,0,.35)}
+.dashboard-btn:hover{ transform: translateY(-2px); background: color-mix(in srgb, var(--surface) 85%, var(--accent) 15%); box-shadow: 0 16px 30px rgba(0,0,0,.15); }
 
 /* Admin section visibility */
-.admin-section[hidden]{display:none !important}
+.admin-section[hidden]{ display: none !important; }
 
 /* Footer */
-.portal-footer{padding:20px; text-align:center; color:var(--muted)}
+.portal-footer{ padding: 20px; text-align: center; color: var(--muted); }
 
-/* ---------- Responsive ---------- */
+/* ---------------------------------------------------------
+   Responsive
+   --------------------------------------------------------- */
 @media (max-width: 900px){
-  .stats-row{grid-template-columns:1fr}
+  .stats-row{ grid-template-columns: 1fr; }
+}
+@media (max-width: 560px){
+  .portal-header{ margin: 12px; padding: 12px; }
+  .btn{ height: 40px; }
 }
 
-@media (max-width: 560px){
-  .portal-header{margin:12px; padding:12px}
-  .btn{height:40px}
+/* ---------------------------------------------------------
+   Safety: ensure buddy never blocks this page either
+   (themes.css already sets these, but harmless to repeat)
+   --------------------------------------------------------- */
+#animeDock, #animeDock * { pointer-events: none !important; }
+#animeDock {
+  position: fixed; right: 16px; bottom: 16px; z-index: 1;
+  width: var(--anime-size); height: var(--anime-size);
 }

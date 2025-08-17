@@ -1,4 +1,4 @@
-// authentication/auth.js
+// /authentication/auth.js
 import { auth, db } from "./config.js";
 import {
   // Core auth
@@ -48,6 +48,25 @@ import {
   getDocs,
   serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
+
+/* ──────────────────────────────────────────────────────────────
+   Small navigation helpers for "Default start page"
+   ────────────────────────────────────────────────────────────── */
+export function resolveStartPage({ role = null } = {}) {
+  // User preference from Settings
+  const pref = (localStorage.getItem("app.defaultStartPage") || "auto").toLowerCase();
+  if (pref === "customer") return "/customer/home.html";
+  if (pref === "employee") return "/employee/employee-portal.html";
+
+  // 'auto' — decide from explicit role or last known role (set in initAuthListener)
+  const last = (role || localStorage.getItem("app.lastRole") || "customer").toLowerCase();
+  return last === "employee" ? "/employee/employee-portal.html" : "/customer/home.html";
+}
+
+export function goToStartPage(opts = {}) {
+  const url = resolveStartPage(opts);
+  window.location.replace(url);
+}
 
 /* ──────────────────────────────────────────────────────────────
    Internal helpers
@@ -115,17 +134,32 @@ async function _withRecentLogin(fn) {
 
 /* ──────────────────────────────────────────────────────────────
    1) Auth state
+   - Writes app.lastRole so "Automatic" start-page works.
    ────────────────────────────────────────────────────────────── */
 export function initAuthListener(onChange) {
   onAuthStateChanged(auth, async (user) => {
-    if (!user) { onChange(null); return; }
+    if (!user) {
+      try { localStorage.removeItem("app.lastRole"); } catch {}
+      onChange(null);
+      return;
+    }
+
     await _ensureProfileExists(user);
     await _syncProfileBasics(user);
+
     let profile = null;
     if (!user.isAnonymous) {
       const snap = await getDoc(doc(db, "users", user.uid));
       profile = snap.exists() ? snap.data() : null;
+
+      // Determine role snapshot for navigation heuristics
+      const isEmployee =
+        Array.isArray(profile?.employeeTypes) && profile.employeeTypes.length > 0;
+      try {
+        localStorage.setItem("app.lastRole", isEmployee ? "employee" : "customer");
+      } catch {}
     }
+
     onChange({ user, profile });
   });
 }

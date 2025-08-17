@@ -8,6 +8,9 @@ import {
   saveAppearance,
 } from "./settings.js";
 
+// Centralized start-page logic
+import { resolveStartPage } from "../authentication/auth-utils.js";
+
 /* ----------------------------- Keys ----------------------------- */
 const KEYS = {
   highContrast: "app.highContrast",
@@ -15,6 +18,12 @@ const KEYS = {
   startPage: "app.defaultStartPage", // 'auto' | 'customer' | 'employee'
   returnBehavior: "app.returnBehavior", // 'toReferrer' | 'customer' | 'employee' | 'stay'
   prevTheme: "app.prevTheme", // for temporary high-contrast override
+
+  // Anime widget settings (match /public/css/anime-widget.js)
+  animeOn: "app.animeOn",           // "1" | "0"
+  animeMotion: "app.animeMotion",   // "0".."100"
+  animeName: "app.animeName",       // "<file>.json" | ""
+  animeSize: "app.animeSize",       // "60".."320"
 };
 
 /* ------------------------- DOM References ------------------------ */
@@ -30,10 +39,19 @@ const tabsNav = $(".settings-tabs");
 const tabButtons = $$(".settings-tab");
 const sections = $$(".settings-section");
 
+// Accessibility
 const highContrastToggle = $("#highContrastToggle");
 const fontScaleSelect = $("#fontScale");
+
+// Preferences
 const startPageSelect = $("#defaultStartPage");
 const returnBehaviorSelect = $("#returnBehavior");
+
+// Animations (new)
+const animeEnabled = $("#animeEnabled");
+const animeSpeed = $("#animeSpeed");
+const animeSize = $("#animeSize");
+const animeName = $("#animeName");
 
 /* --------------------------- Utilities --------------------------- */
 function getSearchParam(name) {
@@ -94,43 +112,33 @@ function navigateBack({ onSave = false } = {}) {
     return;
   }
 
-  // 4) Last resort: use start page pref
-  const sp = (startPageSelect?.value || read(KEYS.startPage) || "auto");
-  if (sp === "customer") {
-    window.location.href = targetFor("customer");
-  } else if (sp === "employee") {
-    window.location.href = targetFor("employee");
-  } else {
-    // 'auto' -> guess employee if referrer missing
-    window.location.href = targetFor("customer");
-  }
+  // 4) Last resort: use centralized resolver (fixes "Default start page" issues)
+  window.location.href = resolveStartPage();
 }
 
 /* ------------------------ Local Persistence ---------------------- */
 function read(key) {
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
+  try { return localStorage.getItem(key); } catch { return null; }
 }
 function write(key, val) {
-  try {
-    localStorage.setItem(key, val);
-  } catch {}
+  try { localStorage.setItem(key, val); } catch {}
 }
 function readBool(key, fallback = "false") {
   const v = read(key);
   return (v ?? fallback) === "true";
 }
 function readNum(key, fallback = 1) {
-  const v = Number(read(key));
-  return Number.isFinite(v) && v > 0 ? v : fallback;
+  const n = Number(read(key));
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+function readIntClamp(key, def, min, max) {
+  const n = parseInt(read(key) ?? `${def}`, 10);
+  if (!Number.isFinite(n)) return def;
+  return Math.max(min, Math.min(max, n));
 }
 
 /* ------------------------- Apply Settings ------------------------ */
 function applyFontScale(scale) {
-  // Apply by scaling root font-size
   const pct = Math.round(100 * scale);
   document.documentElement.style.fontSize = `${pct}%`;
 }
@@ -140,17 +148,63 @@ function applyHighContrast(enabled) {
   const currentTheme = root.getAttribute("data-theme") || "light";
 
   if (enabled) {
-    // Remember current theme, then switch to contrast
     if (currentTheme !== "contrast") {
       write(KEYS.prevTheme, currentTheme);
     }
     root.setAttribute("data-theme", "contrast");
   } else {
-    // Restore prior theme (if any), else keep current selection from Appearance
     const prev = read(KEYS.prevTheme);
     if (prev && prev !== "contrast") {
       root.setAttribute("data-theme", prev);
     }
+  }
+}
+
+/* -------------------------- Animations --------------------------- */
+function refreshAnimeWidget() {
+  // If widget script loaded, re-mount to apply new settings immediately
+  try {
+    window.ANIME_WIDGET?.refresh?.();
+  } catch {}
+}
+
+function wireAnimations() {
+  if (animeEnabled) {
+    const on = read(KEYS.animeOn) !== "0"; // default on
+    animeEnabled.checked = on;
+    animeEnabled.addEventListener("change", () => {
+      write(KEYS.animeOn, animeEnabled.checked ? "1" : "0");
+      refreshAnimeWidget();
+    });
+  }
+
+  if (animeSpeed) {
+    const spd = readIntClamp(KEYS.animeMotion, 60, 0, 100);
+    animeSpeed.value = String(spd);
+    animeSpeed.addEventListener("input", () => {
+      write(KEYS.animeMotion, String(parseInt(animeSpeed.value || "60", 10)));
+      refreshAnimeWidget();
+    });
+  }
+
+  if (animeSize) {
+    const size = readIntClamp(KEYS.animeSize, 140, 60, 320);
+    animeSize.value = String(size);
+    animeSize.addEventListener("input", () => {
+      write(KEYS.animeSize, String(parseInt(animeSize.value || "140", 10)));
+      refreshAnimeWidget();
+    });
+  }
+
+  if (animeName) {
+    const name = (read(KEYS.animeName) || "").trim();
+    animeName.value = name;
+    animeName.addEventListener("change", () => {
+      // allow empty (random) or *.json
+      const v = (animeName.value || "").trim();
+      write(KEYS.animeName, v);
+      refreshAnimeWidget();
+    });
   }
 }
 
@@ -181,6 +235,9 @@ function loadUIFromStorage() {
   applyAppearance({
     ...getAppearanceState(),
   });
+
+  // Animations (values are placed in controls inside wireAnimations)
+  refreshAnimeWidget(); // ensure dock reflects whatever is stored
 }
 
 /* ----------------------- Wire Event Handlers --------------------- */
@@ -223,11 +280,18 @@ function wireTabs() {
     tabButtons.forEach((btn) => {
       const active = btn.dataset.section === name;
       btn.setAttribute("aria-selected", String(active));
+      // Optional ARIA polish for keyboard nav
+      if (active) {
+        btn.setAttribute("tabindex", "0");
+      } else {
+        btn.setAttribute("tabindex", "-1");
+      }
     });
     // Sections
     sections.forEach((sec) => {
       const isActive = sec.id === `section-${name}`;
       sec.classList.toggle("is-hidden", !isActive);
+      sec.setAttribute("aria-hidden", String(!isActive));
     });
   }
 
@@ -256,6 +320,15 @@ function wireSaveAndBack() {
     if (startPageSelect) write(KEYS.startPage, startPageSelect.value);
     if (returnBehaviorSelect) write(KEYS.returnBehavior, returnBehaviorSelect.value);
 
+    // Animations (ensure current control values are saved)
+    if (animeEnabled) write(KEYS.animeOn, animeEnabled.checked ? "1" : "0");
+    if (animeSpeed)   write(KEYS.animeMotion, String(parseInt(animeSpeed.value || "60", 10)));
+    if (animeSize)    write(KEYS.animeSize, String(parseInt(animeSize.value || "140", 10)));
+    if (animeName)    write(KEYS.animeName, (animeName.value || "").trim());
+
+    // Apply to the live widget
+    refreshAnimeWidget();
+
     // Navigate per rules
     navigateBack({ onSave: true });
   };
@@ -276,6 +349,9 @@ document.addEventListener("DOMContentLoaded", () => {
       // You could enable a "Save" highlight here if desired
     },
   });
+
+  // Wire animations (new)
+  wireAnimations();
 
   // Load saved values and apply to UI
   loadUIFromStorage();

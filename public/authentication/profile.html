@@ -5,19 +5,27 @@
     <title>Account — Maduwa Paint World</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- THEME BOOTSTRAP: apply saved theme & accent before first paint -->
+    <!-- THEME / ACCENT / MOTION / FONT BOOTSTRAP: apply before first paint -->
     <script>
       (function () {
+        const root = document.documentElement;
         const theme = localStorage.getItem("app.theme") || "light";
         const hue = localStorage.getItem("app.accentHue");
-        const root = document.documentElement;
+        const motion = localStorage.getItem("app.motion") || "auto"; // 'auto' | 'reduced'
+        const scale = Number(localStorage.getItem("app.fontScale") || "1");
+
         root.setAttribute("data-theme", theme);
+        root.setAttribute("data-motion", motion);
         if (hue) root.style.setProperty("--accent-h", hue);
+        if (Number.isFinite(scale) && scale > 0) {
+          root.style.fontSize = Math.round(scale * 100) + "%";
+        }
       })();
     </script>
 
-    <!-- Global theme tokens -->
+    <!-- Global theme tokens & utilities (tilt/parallax classes) -->
     <link rel="stylesheet" href="../css/themes.css" />
+
     <!-- Page styles -->
     <link rel="stylesheet" href="style.css" />
   </head>
@@ -337,8 +345,63 @@
       </section>
     </main>
 
-    <!-- Theme helper -->
+    <!-- Optional: preview dock for the anime widget on this page -->
+    <div id="animeDock" aria-hidden="true"></div>
+
+    <!-- Core theme helper (reads/writes app.theme + dispatches 'themechange') -->
     <script type="module" src="../css/theme.js"></script>
+
+    <!-- Lottie (must come before the anime widget) -->
+    <script
+      src="https://unpkg.com/lottie-web/build/player/lottie.min.js"
+      defer
+    ></script>
+
+    <!-- Anime buddy widget (IIFE; reads app.anime* keys and mounts into #animeDock) -->
+    <script src="../css/anime-widget.js" defer></script>
+
+    <!-- Tiny tilt enhancer (optional). Uses .tilt + CSS vars; reduced-motion safe -->
+    <script>
+      (function () {
+        function shouldReduce() {
+          return (
+            document.documentElement.getAttribute("data-motion") ===
+              "reduced" ||
+            (window.matchMedia &&
+              window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+          );
+        }
+        if (shouldReduce()) return;
+
+        const MAX_DEG = 6; // softer tilt
+        const els = document.querySelectorAll(".tilt");
+        els.forEach((el) => {
+          el.addEventListener("pointermove", (e) => {
+            const r = el.getBoundingClientRect();
+            const cx = r.left + r.width / 2;
+            const cy = r.top + r.height / 2;
+            const dx = (e.clientX - cx) / (r.width / 2);
+            const dy = (e.clientY - cy) / (r.height / 2);
+            // invert Y for natural tilt
+            el.style.setProperty(
+              "--tilt-x",
+              (-dy * MAX_DEG).toFixed(2) + "deg"
+            );
+            el.style.setProperty("--tilt-y", (dx * MAX_DEG).toFixed(2) + "deg");
+          });
+          el.addEventListener("pointerleave", () => {
+            el.style.removeProperty("--tilt-x");
+            el.style.removeProperty("--tilt-y");
+          });
+        });
+
+        // Respect runtime motion changes
+        window.addEventListener("themechange", () => {
+          // nothing needed for tilt here; placeholder if you later theme-guard tilt
+        });
+      })();
+    </script>
+
     <!-- Page logic -->
     <script type="module" src="./profile.js"></script>
   </body>

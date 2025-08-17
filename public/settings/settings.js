@@ -6,6 +6,7 @@ import { THEMES, getTheme, setTheme } from '../css/theme.js';
 
 /* ---------- Storage Keys ---------- */
 export const ACCENT_KEY = 'app.accentHue';
+const THEME_KEY = 'app.theme';
 
 /* ---------- State ---------- */
 let selectedTheme = getTheme();
@@ -27,6 +28,8 @@ export function initAppearanceUI({
   const grid = document.getElementById(gridId);
   if (grid) {
     buildThemeGrid(grid, onChange);
+    // reflect initial selection
+    syncThemeGridSelection(grid);
   }
 
   // Wire the accent hue picker
@@ -46,6 +49,34 @@ export function initAppearanceUI({
       }
     });
   }
+
+  // Keep UI in sync with changes coming from other tabs/windows
+  window.addEventListener('storage', (e) => {
+    if (e.key === THEME_KEY && e.newValue) {
+      if (THEMES.includes(e.newValue)) {
+        selectedTheme = e.newValue;
+        document.documentElement.setAttribute('data-theme', selectedTheme);
+        if (grid) syncThemeGridSelection(grid);
+        if (typeof onChange === 'function') onChange(getAppearanceState());
+      }
+    }
+    if (e.key === ACCENT_KEY && e.newValue) {
+      const hv = readAccentHue();
+      updateAccentHue(hv, preview, /*announce*/ false);
+      if (picker) picker.value = String(hv);
+      if (typeof onChange === 'function') onChange(getAppearanceState());
+    }
+  });
+
+  // Also respect in-page custom events dispatched by theme.js
+  window.addEventListener('themechange', (ev) => {
+    const t = ev?.detail?.theme;
+    if (t && THEMES.includes(t)) {
+      selectedTheme = t;
+      if (grid) syncThemeGridSelection(grid);
+      if (typeof onChange === 'function') onChange(getAppearanceState());
+    }
+  });
 }
 
 export function getAppearanceState() {
@@ -54,9 +85,10 @@ export function getAppearanceState() {
 
 export function applyAppearance(state) {
   if (state?.theme) {
-    // Apply only (no persist)
-    document.documentElement.setAttribute('data-theme', state.theme);
-    selectedTheme = state.theme;
+    // Validate theme against known list
+    const t = THEMES.includes(state.theme) ? state.theme : getTheme();
+    document.documentElement.setAttribute('data-theme', t);
+    selectedTheme = t;
   }
   if (Number.isFinite(state?.accentHue)) {
     document.documentElement.style.setProperty('--accent-h', String(clampHue(state.accentHue)));
@@ -88,6 +120,11 @@ function buildThemeGrid(grid, onChange) {
     grape:      ['#fffaff','#fbf3ff','#ecd8ff','#7c3aed','#2a1039'],
     sunflower:  ['#fffef7','#fff7d6','#fde68a','#b45309','#1e1b04'],
     contrast:   ['#000000','#000000','#ffffff','#00aaff','#ffffff'],
+    // New calm themes
+    slate:      ['#f7f8fb','#eef1f6','#d7dde8','#3b82f6','#1b2430'],
+    emerald:    ['#f6fff9','#ebfff3','#c9ead8','#059669','#0f2e1f'],
+    rose:       ['#fff7fa','#ffeff5','#ffd0dd','#e11d48','#321520'],
+    copper:     ['#fbf7f3','#f3ebe4','#e1d2c6','#b45309','#2b1f18'],
   };
 
   THEMES.forEach((theme) => {
@@ -115,14 +152,7 @@ function buildThemeGrid(grid, onChange) {
 
       selectedTheme = theme;
       // Update UI state
-      for (const child of grid.children) {
-        child.setAttribute('aria-pressed', 'false');
-        const check = child.querySelector('.check');
-        if (check) check.style.opacity = 0;
-      }
-      btn.setAttribute('aria-pressed', 'true');
-      const check = btn.querySelector('.check');
-      if (check) check.style.opacity = 1;
+      syncThemeGridSelection(grid);
 
       // Apply immediately (non-persistent until Save)
       document.documentElement.setAttribute('data-theme', selectedTheme);
@@ -134,6 +164,15 @@ function buildThemeGrid(grid, onChange) {
 
     grid.appendChild(btn);
   });
+}
+
+function syncThemeGridSelection(grid) {
+  for (const child of grid.children) {
+    const isActive = child.getAttribute('data-theme-name') === selectedTheme;
+    child.setAttribute('aria-pressed', String(isActive));
+    const check = child.querySelector('.check');
+    if (check) check.style.opacity = isActive ? 1 : 0;
+  }
 }
 
 function updateAccentHue(hue, previewEl, announce) {
@@ -165,11 +204,17 @@ function titleCase(s) {
 
 /* ---------- Accent Hue Persistence ---------- */
 function readAccentHue() {
-  const raw = localStorage.getItem(ACCENT_KEY);
-  const val = Number(raw);
-  return Number.isFinite(val) ? clampHue(val) : 210; // default matches themes.css
+  try {
+    const raw = localStorage.getItem(ACCENT_KEY);
+    const val = Number(raw);
+    return Number.isFinite(val) ? clampHue(val) : 210; // default matches themes.css
+  } catch {
+    return 210;
+  }
 }
 
 function writeAccentHue(hue) {
-  localStorage.setItem(ACCENT_KEY, String(clampHue(hue)));
+  try {
+    localStorage.setItem(ACCENT_KEY, String(clampHue(hue)));
+  } catch {}
 }

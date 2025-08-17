@@ -39,6 +39,10 @@
   --table-header-bg:  var(--surface-2);
   --table-row-alt:    var(--surface);
   --table-hover:      var(--accent-100);
+
+  /* animation buddy layout helpers */
+  --anime-gap: 0px;                 /* extra bottom padding when buddy is shown */
+  --anime-size: 140px;              /* default buddy box size; updated by JS */
 }
 
 /* --------------------------------------------------------------
@@ -48,6 +52,10 @@ html, body {
   background: var(--bg);
   color: var(--text);
 }
+
+/* reserve a little space at the bottom so the buddy never overlaps buttons */
+body { padding-bottom: var(--anime-gap); }
+
 a { color: var(--link); }
 
 .card {
@@ -90,12 +98,33 @@ input, select, textarea {
 }
 input::placeholder, textarea::placeholder { color: var(--muted); }
 
+/* Accessible focus ring */
+:where(button,.btn,input,select,textarea):focus { outline: none; }
+:where(button,.btn,input,select,textarea):focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+  border-color: var(--accent);
+}
+
+/* --------------------------------------------------------------
+   2.5) Animation buddy safety (never blocks clicks, stays behind UI)
+   -------------------------------------------------------------- */
+#animeDock, #animeDock * { pointer-events: none !important; }
+#animeDock {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1; /* intentionally low so sticky bars and dialogs are above */
+  width: var(--anime-size);
+  height: var(--anime-size);
+}
+
 /* --------------------------------------------------------------
    3) Theme presets (apply with <html data-theme="dark"> etc.)
    -------------------------------------------------------------- */
 
 /* Light (default) */
 :root[data-theme="light"] {
+  color-scheme: light;
   --bg:        #ffffff;
   --surface:   #f7f8fa;
   --surface-2: #eef1f6;
@@ -119,6 +148,7 @@ input::placeholder, textarea::placeholder { color: var(--muted); }
 
 /* Dark */
 :root[data-theme="dark"] {
+  color-scheme: dark;
   --bg:        #0f172a;
   --surface:   #111827;
   --surface-2: #0b1220;
@@ -141,6 +171,7 @@ input::placeholder, textarea::placeholder { color: var(--muted); }
 
 /* Midnight (almost black + teal accent) */
 :root[data-theme="midnight"] {
+  color-scheme: dark;
   --bg:#0a0a0b; --surface:#121214; --surface-2:#1a1b1e;
   --text:#e7e7ea; --muted:#a1a1aa; --link:#67e8f9;
   --border:#232427;
@@ -152,6 +183,7 @@ input::placeholder, textarea::placeholder { color: var(--muted); }
 
 /* Forest (earthy light) */
 :root[data-theme="forest"] {
+  color-scheme: light;
   --bg:#fcfdf9; --surface:#f1f6ee; --surface-2:#e6efe3;
   --text:#1e2a1f; --muted:#4d5b4f; --link:#2f855a;
   --border:#dbe7d6;
@@ -163,6 +195,7 @@ input::placeholder, textarea::placeholder { color: var(--muted); }
 
 /* Ocean (cool light) */
 :root[data-theme="ocean"] {
+  color-scheme: light;
   --bg:#fbfdff; --surface:#f1f6ff; --surface-2:#e8f0ff;
   --text:#112233; --muted:#56657a; --link:#2563eb;
   --border:#d9e2f2;
@@ -174,6 +207,7 @@ input::placeholder, textarea::placeholder { color: var(--muted); }
 
 /* Grape (playful purple) */
 :root[data-theme="grape"] {
+  color-scheme: light;
   --bg:#fffaff; --surface:#fbf3ff; --surface-2:#f5eaff;
   --text:#2a1039; --muted:#654b73; --link:#7c3aed;
   --border:#ecd8ff;
@@ -185,6 +219,7 @@ input::placeholder, textarea::placeholder { color: var(--muted); }
 
 /* Sunflower (high-contrast light, yellow accent) */
 :root[data-theme="sunflower"] {
+  color-scheme: light;
   --bg:#fffef7; --surface:#fff7d6; --surface-2:#ffefad;
   --text:#1e1b04; --muted:#544f19; --link:#b45309;
   --border:#fde68a;
@@ -199,6 +234,7 @@ input::placeholder, textarea::placeholder { color: var(--muted); }
 
 /* High contrast (accessibility) */
 :root[data-theme="contrast"] {
+  color-scheme: dark;
   --bg:#000; --surface:#000; --surface-2:#000;
   --text:#fff; --muted:#ddd; --link:#0af;
   --border:#fff;
@@ -210,12 +246,47 @@ input::placeholder, textarea::placeholder { color: var(--muted); }
   --table-border:#fff; --table-header-bg:#111; --table-row-alt:#000;
 }
 
+/* Slate (cool gray, calm) */
+:root[data-theme="slate"]{
+  color-scheme: light;
+  --bg:#f7f8fb; --surface:#eef1f6; --surface-2:#e7ebf3;
+  --text:#1b2430; --muted:#5a6472; --link:#3b82f6;
+  --border:#d7dde8; --accent-h:220; --on-accent:#ffffff;
+  --table-border:#cbd5e1; --table-header-bg:#e5e9f2; --table-row-alt:#f9fbff;
+}
+
+/* Emerald (fresh green, gentle) */
+:root[data-theme="emerald"]{
+  color-scheme: light;
+  --bg:#f6fff9; --surface:#ebfff3; --surface-2:#ddfbea;
+  --text:#0f2e1f; --muted:#426c56; --link:#059669;
+  --border:#c9ead8; --accent-h:150; --on-accent:#ffffff;
+  --table-border:#bfe5d1; --table-header-bg:#e2fbef; --table-row-alt:#f7fffb;
+}
+
+/* Rose (soft pink accent) */
+:root[data-theme="rose"]{
+  color-scheme: light;
+  --bg:#fff7fa; --surface:#ffeff5; --surface-2:#ffe3ec;
+  --text:#321520; --muted:#6a4251; --link:#e11d48;
+  --border:#ffd0dd; --accent-h:350; --on-accent:#ffffff;
+  --table-border:#f7c2d0; --table-header-bg:#ffe3ee; --table-row-alt:#fff9fb;
+}
+
+/* Copper (warm, pro look) */
+:root[data-theme="copper"]{
+  color-scheme: light;
+  --bg:#fbf7f3; --surface:#f3ebe4; --surface-2:#eaddd2;
+  --text:#2b1f18; --muted:#6a5549; --link:#b45309;
+  --border:#e1d2c6; --accent-h:22; --on-accent:#111;
+  --table-border:#d7c6b6; --table-header-bg:#efe5db; --table-row-alt:#f9f4ef;
+}
+
 /* --------------------------------------------------------------
    4) Theme component base (global rescue)
-   Put this near the END so it can fix pages with old hard-coded colors.
    -------------------------------------------------------------- */
 
-/* Headings & basic text */
+/* Headings and basic text */
 h1, h2, h3, h4, h5, h6,
 p, span, label, small, strong {
   color: var(--text);
@@ -282,4 +353,26 @@ table .badge.accent, table .pill.accent, table .tag.accent {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--on-accent);
+}
+
+/* --------------------------------------------------------------
+   5) Motion utilities (opt-in, reduced-motion safe)
+   -------------------------------------------------------------- */
+
+/* Subtle 3D tilt; JS will update --tilt-x/--tilt-y */
+.tilt { transform-style: preserve-3d; transition: transform .15s ease; }
+.tilt:hover { transform: perspective(800px) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg)) translateY(-2px); }
+
+/* Respect reduced motion (via system or app data-attr) */
+@media (prefers-reduced-motion: reduce) {
+  .tilt:hover { transform: none; }
+}
+:root[data-motion="reduced"] .tilt:hover { transform: none; }
+
+/* Gentle parallax helper (opt-in): add .bg-parallax to a container */
+.bg-parallax {
+  background-attachment: fixed;
+  background-image:
+    radial-gradient(1000px 600px at 120% -10%, color-mix(in srgb, var(--accent) 18%, transparent), transparent),
+    radial-gradient(800px 500px at -10% 110%, color-mix(in srgb, var(--accent) 12%, transparent), transparent);
 }
