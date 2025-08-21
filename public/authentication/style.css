@@ -1,4 +1,4 @@
-/* style.css
+/* style.css 
    Shared styles for signup, login, role-select, dashboard, admin pages
    Theme-aware (uses /public/css/themes.css tokens)
    ───────────────────────────────────────────────────────────── */
@@ -105,11 +105,9 @@ header {
 .back-btn { margin-top: 2em; background: transparent; color: var(--accent); border: 1px solid var(--accent); }
 
 /* =======================================================================
-   ADVANCED LOGIN THEME (scoped to the new login page only)
-   Applies when <body class="auth-body"> … </body>
+   ADVANCED LOGIN/REGISTER THEME (scoped to <body class="auth-body">)
    ======================================================================= */
 
-/* Reset/override global layout for login page only */
 .auth-body {
   margin: 0;
   max-width: none;
@@ -151,7 +149,6 @@ header {
     linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
   background-size: 40px 40px, 40px 40px;
-  /* FIX: provide standard 'mask' along with vendor prefix */
   mask-image: radial-gradient(1000px 600px at 50% 40%, rgba(255,255,255,0.85), transparent 80%);
   -webkit-mask-image: radial-gradient(1000px 600px at 50% 40%, rgba(255,255,255,0.85), transparent 80%);
 }
@@ -246,15 +243,29 @@ header {
   border-color: var(--success);
 }
 .btn.ghost   { background: transparent; border: 1px dashed var(--border); color: var(--text); }
+
+/* OAuth button specifics (Google/Apple per brand guidance) */
+.btn.oauth svg { width: 18px; height: 18px; display: inline-block; }
+.btn.oauth span { line-height: 1; }
+
+/* Google: light button with dark text */
 .btn.oauth.google {
   background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(240,244,255,.96));
   color: #0b1220;
   border-color: rgba(0,0,0,.08);
 }
-.btn.oauth.apple  { background: #0b0b0b; color: #fafafa; border-color: #141414; }
+
+/* Apple: use high-contrast LIGHT variant (readable on dark or tinted panels) */
+.btn.oauth.apple {
+  background: #ffffff;
+  color: #0b1220;              /* dark text for contrast */
+  border-color: rgba(0,0,0,.12);
+}
+
+/* Focus ring for all buttons */
 .btn:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 40%, transparent); }
 
-/* Simple icon placeholders */
+/* Simple icon placeholders (kept for any legacy usage) */
 .icon { width: 18px; height: 18px; display: inline-block; border-radius: 4px; }
 .i-google { background: conic-gradient(from 45deg, #ea4335 0 25%, #fbbc05 25% 50%, #34a853 50% 75%, #4285f4 75% 100%); border-radius: 50%; }
 /* FIX: add standard 'mask' along with the prefixed version */

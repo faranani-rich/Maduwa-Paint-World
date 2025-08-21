@@ -2,9 +2,19 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Maduwa Paint World — Sign In</title>
+    <title>Maduwa Paint World - Sign In</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0b1220" />
+
+    <!-- Trust/Security Meta (safe, non-breaking) -->
+    <meta
+      http-equiv="Referrer-Policy"
+      content="strict-origin-when-cross-origin"
+    />
+    <meta
+      http-equiv="Permissions-Policy"
+      content="geolocation=(), microphone=(), camera=()"
+    />
 
     <!-- THEME / ACCENT / MOTION / FONT BOOTSTRAP: apply before first paint -->
     <script>
@@ -12,9 +22,8 @@
         const root = document.documentElement;
         const theme = localStorage.getItem("app.theme") || "light";
         const hue = localStorage.getItem("app.accentHue");
-        const motion = localStorage.getItem("app.motion") || "auto"; // 'auto' | 'reduced'
+        const motion = localStorage.getItem("app.motion") || "auto";
         const scale = Number(localStorage.getItem("app.fontScale") || "1");
-
         root.setAttribute("data-theme", theme);
         root.setAttribute("data-motion", motion);
         if (hue) root.style.setProperty("--accent-h", hue);
@@ -24,10 +33,9 @@
       })();
     </script>
 
-    <!-- Global theme tokens & utilities (tilt/parallax classes) -->
+    <!-- Global theme tokens -->
     <link rel="stylesheet" href="../css/themes.css" />
-
-    <!-- Main stylesheet -->
+    <!-- Auth page stylesheet -->
     <link rel="stylesheet" href="style.css" />
   </head>
   <body class="auth-body">
@@ -44,7 +52,7 @@
       </p>
     </noscript>
 
-    <!-- Decorative background -->
+    <!-- Decorative background (CSS only; no external scripts) -->
     <div class="bg fx-orbs" aria-hidden="true">
       <div class="orb orb-a"></div>
       <div class="orb orb-b"></div>
@@ -62,13 +70,14 @@
           </div>
           <h1 class="brand-title">Maduwa Paint World</h1>
           <p class="brand-tagline">
-            We don't just make paint - we excel in chemistry.
+            Secure portal for customers and employees.
           </p>
           <ul class="highlights">
-            <li>Secure login: Google, Apple, Email, or SMS</li>
-            <li>One account, multiple sign-in methods</li>
-            <li>Customer & employee portals</li>
+            <li>Sign in with Google, Apple, Email, or SMS</li>
+            <li>Customers see project progress</li>
+            <li>Employees manage operations</li>
           </ul>
+          <p class="tiny muted">Need help? Email rodneymaduwa@gmail.com</p>
         </div>
       </section>
 
@@ -76,30 +85,65 @@
       <section class="auth-pane">
         <div class="auth-card glass surface-raise">
           <header class="auth-header">
-            <h2>Welcome back</h2>
+            <h2>Sign in to your account</h2>
             <p class="muted">Choose a sign-in method to continue</p>
           </header>
 
-          <!-- OAuth row -->
-          <div class="oauth-row" role="group" aria-label="Single-sign-on">
+          <!-- OAuth row (official-style buttons, inline SVG icons) -->
+          <div class="oauth-row" role="group" aria-label="Single sign-on">
+            <!-- Google -->
             <button
               id="googleBtn"
               class="btn oauth google"
-              aria-label="Continue with Google"
+              aria-label="Sign in with Google"
             >
-              <span class="icon i-google" aria-hidden="true"></span>
-              <span>Continue with Google</span>
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 48 48"
+                width="18"
+                height="18"
+              >
+                <path
+                  fill="#FFC107"
+                  d="M43.6 20.5H42V20H24v8h11.3C33.9 31.9 29.5 35 24 35c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.3 0 6.3 1.2 8.6 3.3l5.7-5.7C34.6 3.2 29.6 1 24 1 11.8 1 2 10.8 2 23s9.8 22 22 22c12.1 0 21-8.5 21-20 0-1.3-.1-2.2-.4-3.5z"
+                />
+                <path
+                  fill="#FF3D00"
+                  d="M6.3 14.7l6.6 4.8C14.5 16.6 18.9 13 24 13c3.3 0 6.3 1.2 8.6 3.3l5.7-5.7C34.6 7.2 29.6 5 24 5c-7.7 0-14.3 4.4-17.7 10.7z"
+                />
+                <path
+                  fill="#4CAF50"
+                  d="M24 43c5.3 0 10.2-1.8 13.9-4.9l-6.4-5c-2.1 1.5-4.8 2.4-7.5 2.4-5.4 0-9.9-3.5-11.5-8.3l-6.6 5.1C9.2 38.8 16 43 24 43z"
+                />
+                <path
+                  fill="#1976D2"
+                  d="M43.6 20.5H42V20H24v8h11.3c-1 2.9-3.2 5.2-6.1 6.6l.1.1 6.4 5c-.4.3 6.3-3.7 6.3-11.7 0-1.3-.1-2.2-.4-3.5z"
+                />
+              </svg>
+              <span>Sign in with Google</span>
             </button>
 
+            <!-- Apple -->
             <button
               id="appleBtn"
               class="btn oauth apple"
-              aria-label="Continue with Apple"
+              aria-label="Sign in with Apple"
             >
-              <span class="icon i-apple" aria-hidden="true"></span>
-              <span>Continue with Apple</span>
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+              >
+                <path
+                  d="M16.365 1.43c0 1.14-.465 2.197-1.233 2.99-.79.814-2.1 1.45-3.2 1.356-.15-1.094.457-2.25 1.22-3.04.82-.846 2.24-1.45 3.21-1.306zM20.66 17.26c-.57 1.31-.83 1.89-1.55 3.05-1.01 1.62-2.43 3.63-4.21 3.66-1.59.03-2-.95-4.15-.94-2.14.01-2.6.98-4.19.95-1.78-.03-3.15-1.84-4.16-3.45-2.86-4.55-3.16-9.9-1.4-12.73 1.26-2 3.26-3.17 5.22-3.17 2.43 0 3.96 1.05 5.98 1.05 1.98 0 3.18-1.06 5.96-1.06 1.76 0 3.62.96 4.78 2.59-4.16 2.29-3.47 8.31-.29 10.56z"
+                  fill="currentColor"
+                />
+              </svg>
+              <span>Sign in with Apple</span>
             </button>
 
+            <!-- Guest (optional) -->
             <button
               id="guestBtn"
               class="btn ghost"
@@ -230,7 +274,7 @@
                     type="button"
                     class="btn success"
                   >
-                    Verify & Sign in
+                    Verify &amp; Sign in
                   </button>
                   <button id="resendCodeBtn" type="button" class="btn ghost">
                     Resend
@@ -259,8 +303,27 @@
           <footer class="auth-footer">
             <p class="note">
               By continuing you agree to our
-              <a href="#" class="link">Terms</a> and
-              <a href="#" class="link">Privacy Policy</a>.
+              <a href="../legal/terms.html" class="link">Terms</a> and
+              <a href="../legal/privacy.html" class="link">Privacy Policy</a>.
+            </p>
+
+            <!-- Mandatory reCAPTCHA disclosure for Phone Auth -->
+            <p class="tiny legal-note">
+              This site is protected by reCAPTCHA and the Google
+              <a
+                href="https://policies.google.com/privacy"
+                target="_blank"
+                rel="noopener"
+                >Privacy Policy</a
+              >
+              and
+              <a
+                href="https://policies.google.com/terms"
+                target="_blank"
+                rel="noopener"
+                >Terms of Service</a
+              >
+              apply.
             </p>
           </footer>
         </div>
@@ -270,11 +333,21 @@
           <p class="tiny">
             New here? <a href="register.html" class="link">Create an account</a>
           </p>
+          <p class="tiny">
+            Back to site: <a href="../index.html" class="link">Home</a>
+          </p>
         </div>
       </section>
     </main>
 
-    <!-- Tab switcher (no framework) -->
+    <!-- Core theme helper -->
+    <script type="module" src="../css/theme.js"></script>
+
+    <!-- No external animation/CDN scripts on auth pages for compliance -->
+    <!-- Your login logic -->
+    <script type="module" src="./login.js"></script>
+
+    <!-- Simple tab switcher (lightweight, safe) -->
     <script>
       (function () {
         const tabEmail = document.getElementById("tab-email");
@@ -282,8 +355,8 @@
         const panelEmail = document.getElementById("panel-email");
         const panelPhone = document.getElementById("panel-phone");
 
-        function activate(tab) {
-          const isEmail = tab === "email";
+        function activate(which) {
+          const isEmail = which === "email";
           tabEmail.classList.toggle("active", isEmail);
           tabPhone.classList.toggle("active", !isEmail);
           panelEmail.toggleAttribute("hidden", !isEmail);
@@ -300,61 +373,5 @@
         tabPhone.addEventListener("click", () => activate("phone"));
       })();
     </script>
-
-    <!-- Core theme helper (reads/writes app.theme + dispatches 'themechange') -->
-    <script type="module" src="../css/theme.js"></script>
-
-    <!-- Lottie (must come before the anime widget) -->
-    <script
-      src="https://unpkg.com/lottie-web/build/player/lottie.min.js"
-      defer
-    ></script>
-
-    <!-- Anime buddy widget (IIFE; reads app.anime* keys and mounts into #animeDock) -->
-    <script src="../css/anime-widget.js" defer></script>
-
-    <!-- Tiny tilt enhancer (optional). Uses .tilt + CSS vars; reduced-motion safe -->
-    <script>
-      (function () {
-        function shouldReduce() {
-          return (
-            document.documentElement.getAttribute("data-motion") ===
-              "reduced" ||
-            (window.matchMedia &&
-              window.matchMedia("(prefers-reduced-motion: reduce)").matches)
-          );
-        }
-        if (shouldReduce()) return;
-
-        const MAX_DEG = 6; // softer tilt
-        const els = document.querySelectorAll(".tilt");
-        els.forEach((el) => {
-          el.addEventListener("pointermove", (e) => {
-            const r = el.getBoundingClientRect();
-            const cx = r.left + r.width / 2;
-            const cy = r.top + r.height / 2;
-            const dx = (e.clientX - cx) / (r.width / 2);
-            const dy = (e.clientY - cy) / (r.height / 2);
-            // invert Y for natural tilt
-            el.style.setProperty(
-              "--tilt-x",
-              (-dy * MAX_DEG).toFixed(2) + "deg"
-            );
-            el.style.setProperty("--tilt-y", (dx * MAX_DEG).toFixed(2) + "deg");
-          });
-          el.addEventListener("pointerleave", () => {
-            el.style.removeProperty("--tilt-x");
-            el.style.removeProperty("--tilt-y");
-          });
-        });
-
-        // Respect runtime motion changes
-        window.addEventListener("themechange", () => {
-          // nothing needed for tilt here; placeholder if you later theme-guard tilt
-        });
-      })();
-    </script>
-    <!-- Your login logic -->
-    <script type="module" src="./login.js"></script>
   </body>
 </html>

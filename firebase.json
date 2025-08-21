@@ -6,11 +6,10 @@
       "**/.*",
       "**/node_modules/**"
     ],
-    "redirects": [
+    "rewrites": [
       {
         "source": "/",
-        "destination": "/authentication/login.html",
-        "type": 302      
+        "destination": "/index.html"
       }
     ]
   }
