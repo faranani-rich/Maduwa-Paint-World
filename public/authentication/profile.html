@@ -11,7 +11,7 @@
         const root = document.documentElement;
         const theme = localStorage.getItem("app.theme") || "light";
         const hue = localStorage.getItem("app.accentHue");
-        const motion = localStorage.getItem("app.motion") || "auto"; // 'auto' | 'reduced'
+        const motion = localStorage.getItem("app.motion") || "auto";
         const scale = Number(localStorage.getItem("app.fontScale") || "1");
 
         root.setAttribute("data-theme", theme);
@@ -23,9 +23,8 @@
       })();
     </script>
 
-    <!-- Global theme tokens & utilities (tilt/parallax classes) -->
+    <!-- Global theme tokens -->
     <link rel="stylesheet" href="../css/themes.css" />
-
     <!-- Page styles -->
     <link rel="stylesheet" href="style.css" />
   </head>
@@ -213,7 +212,6 @@
           <!-- Providers -->
           <section class="form vstack">
             <p class="note" id="providerList">Connected: …</p>
-
             <div class="row">
               <button id="linkGoogleBtn" class="btn" style="width: auto">
                 Link Google
@@ -226,80 +224,6 @@
                 Unlink Google
               </button>
             </div>
-
-            <form class="vstack" novalidate onsubmit="return false;">
-              <div class="row" style="gap: 16px">
-                <label class="field" style="flex: 1">
-                  <span class="label">Phone (current)</span>
-                  <input id="phoneCurrent" type="tel" disabled />
-                </label>
-              </div>
-
-              <div class="row" style="gap: 16px">
-                <label class="field" style="flex: 1">
-                  <span class="label">Phone number to link</span>
-                  <input
-                    id="phoneInput"
-                    type="tel"
-                    inputmode="tel"
-                    autocomplete="tel"
-                    autocapitalize="none"
-                    spellcheck="false"
-                    placeholder="+27 6X XXX XXXX"
-                  />
-                </label>
-                <button id="linkPhoneStartBtn" class="btn" style="width: auto">
-                  Link phone - send code
-                </button>
-              </div>
-
-              <div id="phoneCodeRow" class="code-row" hidden>
-                <label class="field">
-                  <span class="label">6-digit code</span>
-                  <input
-                    id="phoneCodeInput"
-                    type="text"
-                    inputmode="numeric"
-                    pattern="\\d{6}"
-                    maxlength="6"
-                    autocomplete="one-time-code"
-                    placeholder="123456"
-                    autocapitalize="none"
-                    spellcheck="false"
-                  />
-                </label>
-                <div class="row">
-                  <button
-                    id="linkPhoneConfirmBtn"
-                    class="btn success"
-                    style="width: auto"
-                  >
-                    Verify & Link
-                  </button>
-                  <button
-                    id="resendPhoneBtn"
-                    class="btn ghost"
-                    style="width: auto"
-                  >
-                    Resend
-                  </button>
-                  <button
-                    id="unlinkPhoneBtn"
-                    class="btn ghost"
-                    style="width: auto"
-                  >
-                    Unlink phone
-                  </button>
-                </div>
-              </div>
-
-              <!-- Required by Firebase Phone Auth (invisible is fine) -->
-              <div
-                id="recaptcha-container-profile"
-                class="recaptcha-slot"
-                aria-hidden="true"
-              ></div>
-            </form>
           </section>
 
           <div class="divider" role="separator" aria-label="danger zone">
@@ -348,19 +272,16 @@
     <!-- Optional: preview dock for the anime widget on this page -->
     <div id="animeDock" aria-hidden="true"></div>
 
-    <!-- Core theme helper (reads/writes app.theme + dispatches 'themechange') -->
+    <!-- Core theme helper -->
     <script type="module" src="../css/theme.js"></script>
-
     <!-- Lottie (must come before the anime widget) -->
     <script
       src="https://unpkg.com/lottie-web/build/player/lottie.min.js"
       defer
     ></script>
-
-    <!-- Anime buddy widget (IIFE; reads app.anime* keys and mounts into #animeDock) -->
+    <!-- Anime buddy widget -->
     <script src="../css/anime-widget.js" defer></script>
-
-    <!-- Tiny tilt enhancer (optional). Uses .tilt + CSS vars; reduced-motion safe -->
+    <!-- Tiny tilt enhancer -->
     <script>
       (function () {
         function shouldReduce() {
@@ -373,7 +294,7 @@
         }
         if (shouldReduce()) return;
 
-        const MAX_DEG = 6; // softer tilt
+        const MAX_DEG = 6;
         const els = document.querySelectorAll(".tilt");
         els.forEach((el) => {
           el.addEventListener("pointermove", (e) => {
@@ -382,7 +303,6 @@
             const cy = r.top + r.height / 2;
             const dx = (e.clientX - cx) / (r.width / 2);
             const dy = (e.clientY - cy) / (r.height / 2);
-            // invert Y for natural tilt
             el.style.setProperty(
               "--tilt-x",
               (-dy * MAX_DEG).toFixed(2) + "deg"
@@ -393,11 +313,6 @@
             el.style.removeProperty("--tilt-x");
             el.style.removeProperty("--tilt-y");
           });
-        });
-
-        // Respect runtime motion changes
-        window.addEventListener("themechange", () => {
-          // nothing needed for tilt here; placeholder if you later theme-guard tilt
         });
       })();
     </script>

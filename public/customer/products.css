@@ -1,0 +1,258 @@
+/* /public/customer/products.css  (contrast-safe)
+   Theme-aware styles for the Browse Products page.
+   Uses tokens from ../css/themes.css. */
+
+/* ---------- Utilities & hard hides ---------- */
+[hidden]{ display:none !important; }
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+
+/* ---------- Local surface tokens ----------
+   - We compute elevated surfaces that are readable in both light & dark themes.
+   - If color-mix is supported, it lightens/darkens the base bg; otherwise the first
+     background declared below (var(--bg2)) is used as a safe fallback.
+*/
+:root{
+  --gap: 14px;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow-md: 0 10px 30px rgba(3,8,20,.12);
+  --ring: 0 0 0 3px rgba(108,198,255,.35);
+
+  /* Elevated surfaces + text color for surfaces */
+  --surface: var(--bg2, #0e1630);
+  --surface-elev: var(--bg2, #0e1630);
+  --on-surface: var(--text, #e8eefc);
+}
+
+/* If user is on a light theme, prefer solid white surfaces with dark text */
+html[data-theme="light"],
+html[data-theme="sunflower"],
+html[data-theme="contrast"]{
+  --surface: #ffffff;
+  --surface-elev: #ffffff;
+  --on-surface: #0b1220;
+}
+
+/* If color-mix is available, refine surfaces from the current bg to ensure contrast */
+@supports (background: color-mix(in srgb, white 10%, black)) {
+  :root{
+    /* Pull the page bg toward white for elevation (works for dark & light) */
+    --surface:      color-mix(in srgb, var(--bg) 80%, white 20%);
+    --surface-elev: color-mix(in srgb, var(--bg) 70%, white 30%);
+    /* Keep text from the theme unless it ends up too light in light themes (handled above) */
+  }
+}
+
+/* ---------- Page base ---------- */
+body.products-body{
+  margin:0;
+  background: var(--bg, #0b1220);
+  color: var(--text, #0b1220);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+/* ---------- Topbar ---------- */
+.topbar{
+  display:flex; align-items:center; gap:12px;
+  padding:14px 18px;
+  border-bottom:1px solid var(--border, rgba(0,0,0,.12));
+  backdrop-filter: blur(6px);
+}
+.topbar .spacer{ flex:1; }
+.topbar .link{
+  color: var(--text, #0b1220); text-decoration:none; opacity:.9;
+  padding:8px 10px; border-radius:12px;
+}
+.topbar .link:hover, .topbar .link:focus{ outline:none; box-shadow:var(--ring); }
+
+/* ---------- Hero + Toolbar ---------- */
+.hero{ padding:10px 18px 0 18px; }
+.hero h1{ margin:6px 0 2px; font-size: clamp(22px, 3vw, 28px); }
+.subtitle{ color:var(--muted, #6b7280); margin:0 0 10px; }
+
+.toolbar{
+  position: sticky; top: 0; z-index: 5;
+  display:flex; flex-wrap:wrap; gap:var(--gap);
+  padding:10px 0 14px;
+  background: linear-gradient(180deg, var(--bg, #fff) 75%, transparent);
+}
+.toolbar input[type="search"], .toolbar select{
+  background: var(--glass2, rgba(0,0,0,.04));
+  color: var(--text, #0b1220);
+  border:1px solid var(--border, rgba(0,0,0,.12));
+  border-radius:12px; padding:10px 12px; min-width:180px;
+}
+.visually-hidden{ position:absolute !important; width:1px; height:1px; overflow:hidden; clip: rect(1px,1px,1px,1px); }
+
+/* ---------- Grid ---------- */
+.content{ padding:10px 18px 64px; }
+.grid{ display:grid; gap:var(--gap); grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.empty{ color:var(--muted, #6b7280); margin:20px 0; }
+
+/* ---------- Cards ---------- */
+.card{
+  border:1px solid var(--border, rgba(0,0,0,.12));
+  background: linear-gradient(180deg, var(--glass, rgba(0,0,0,.04)), var(--glass2, rgba(0,0,0,.02)));
+  border-radius:var(--radius); padding:14px;
+  display:grid; gap:10px; box-shadow:var(--shadow-md);
+  transform: perspective(800px) rotateX(var(--tilt-x,0)) rotateY(var(--tilt-y,0));
+  transition: transform .18s ease;
+}
+.card:hover{ transform: translateY(-2px) perspective(800px) rotateX(var(--tilt-x,0)) rotateY(var(--tilt-y,0)); }
+
+.card-top{ display:grid; gap:6px; }
+.card-title{ margin:0; font-size:1.05rem; line-height:1.2; }
+.card-sub{ margin:0; color:var(--muted, #6b7280); font-size:.92rem; }
+
+.badges{ list-style:none; display:flex; flex-wrap:wrap; gap:8px; margin:0; padding:0; }
+.badges li{
+  border:1px solid var(--border, rgba(0,0,0,.12));
+  background: var(--glass2, rgba(0,0,0,.04));
+  padding:4px 10px; border-radius:999px; font-size:.82rem; color:inherit;
+}
+
+.card-price{ display:flex; align-items:baseline; gap:8px; }
+.card-price .label{ color:var(--muted, #6b7280); font-size:.86rem; }
+.card-price .value{ font-size:1.15rem; }
+.card-price .unit{ color:var(--muted, #6b7280); font-size:.86rem; }
+
+.card-actions{ display:flex; gap:10px; }
+.btn{
+  appearance:none; border:1px solid var(--border, rgba(0,0,0,.12));
+  background: var(--glass2, rgba(0,0,0,.04));
+  color: inherit;
+  padding:10px 12px; border-radius:12px; cursor:pointer;
+}
+.btn:hover{ filter:brightness(1.05); }
+.btn:focus{ outline:none; box-shadow:var(--ring); }
+.btn.primary{ background:var(--primary, #2563eb); color:#051018; border-color: transparent; }
+.btn.ghost{ background:transparent; }
+.btn.danger{ background:var(--danger, #dc2626); border-color:transparent; color:#fff; }
+
+/* ---------- Floating button ---------- */
+.fab{
+  position:fixed; right:18px; bottom:18px; z-index:8;
+  border:none; border-radius:999px; padding:12px 16px;
+  background:var(--accent, #22c55e); color:#03121a; cursor:pointer;
+  box-shadow:var(--shadow-md);
+}
+
+/* ---------- Quote Panel (now solid, high-contrast) ---------- */
+.quote-panel{
+  position:fixed; top:0; right:0; height:100%; width:min(380px, 92vw);
+  /* Fallback first, then color-mix if supported */
+  background: var(--surface-elev);
+  background: color-mix(in srgb, var(--bg) 70%, white 30%);
+  color: var(--on-surface);
+  border-left:1px solid var(--border, rgba(0,0,0,.12));
+  box-shadow:var(--shadow-md);
+  display:grid; grid-template-rows: auto 1fr auto; z-index:9;
+}
+.quote-header{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 14px; border-bottom:1px solid var(--border, rgba(0,0,0,.12));
+  color: var(--on-surface);
+}
+.icon-btn{
+  background:transparent; border:1px solid var(--border, rgba(0,0,0,.12));
+  color: var(--on-surface); border-radius:10px; padding:6px 10px; cursor:pointer;
+}
+.quote-body{ padding:10px 14px; overflow:auto; color: var(--on-surface); }
+.quote-list{ list-style:none; margin:0; padding:0; display:grid; gap:10px; }
+.quote-item{
+  border:1px solid var(--border, rgba(0,0,0,.12));
+  background: var(--glass, rgba(0,0,0,.04));
+  border-radius:var(--radius-sm); padding:10px; display:grid; gap:6px;
+}
+.quote-item .row{ display:flex; justify-content:space-between; gap:10px; }
+.quote-total{ margin-top:12px; display:flex; justify-content:space-between; font-size:1.05rem; }
+.quote-footer{
+  display:flex; gap:10px; padding:12px 14px; border-top:1px solid var(--border, rgba(0,0,0,.12));
+}
+
+/* Bottom-docked on mobile */
+@media (max-width: 720px){
+  .quote-panel{
+    width:100%; height:min(62vh, 560px); top:auto; bottom:0; right:0; left:0;
+    border-left:none; border-top:1px solid var(--border, rgba(0,0,0,.12));
+    border-radius:16px 16px 0 0;
+  }
+}
+
+/* ---------- Product Dialog (solid, high-contrast) ---------- */
+.product-dialog{
+  width:min(920px, 96vw); max-height:90vh;
+  border:1px solid var(--border, rgba(0,0,0,.12));
+  border-radius:18px; padding:0;
+  /* Fallback, then color-mix */
+  background: var(--surface);
+  background: color-mix(in srgb, var(--bg) 78%, white 22%);
+  color: var(--on-surface);
+  z-index: 10;
+}
+.product-dialog::backdrop{
+  background: rgba(0,0,0,.55);
+}
+.pd-head{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 14px; border-bottom:1px solid var(--border, rgba(0,0,0,.12));
+  color: var(--on-surface);
+}
+.pd-content{ padding:12px 14px; display:grid; gap:12px; color: var(--on-surface); }
+.pd-tagline{ color: color-mix(in srgb, var(--on-surface) 70%, transparent); margin:0; }
+
+.chips{ list-style:none; display:flex; flex-wrap:wrap; gap:8px; margin:0; padding:0; }
+.chips li{
+  border:1px solid var(--border, rgba(0,0,0,.12));
+  background: var(--glass2, rgba(0,0,0,.04));
+  padding:4px 10px; border-radius:999px; font-size:.82rem;
+  color: var(--on-surface);
+}
+
+/* Tabs */
+.tabs{ display:flex; gap:10px; border-bottom:1px solid var(--border, rgba(0,0,0,.12)); }
+.tab{
+  background:transparent; color: var(--on-surface);
+  border:1px solid transparent; padding:8px 12px; border-radius:10px 10px 0 0; cursor:pointer;
+}
+.tab.is-active{ border-color:var(--border, rgba(0,0,0,.12)); border-bottom-color:transparent;
+  background: var(--glass2, rgba(0,0,0,.06)); }
+.tab-panel{ display:none; padding:12px 0; color: var(--on-surface); }
+.tab-panel.is-active{ display:block; }
+
+/* Specs */
+.specs{ display:grid; grid-template-columns: 1fr 1fr; gap:8px 16px; margin:0; }
+.specs dt{ color: color-mix(in srgb, var(--on-surface) 70%, transparent); }
+.specs dd{ margin:0; }
+
+/* Care bullets & links */
+.bullets{ margin:0; padding-left:18px; }
+.pair-with h4{ margin:6px 0; }
+.link-list{ list-style:none; margin:0; padding:0; display:grid; gap:6px; }
+.link-list a{ color:var(--primary, #2563eb); text-decoration:none; }
+.link-list a:hover{ text-decoration:underline; }
+
+/* Dialog footer */
+.pd-foot{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:14px; padding:12px 14px; border-top:1px solid var(--border, rgba(0,0,0,.12));
+  color: var(--on-surface);
+}
+.price{ display:flex; align-items:baseline; gap:8px; }
+.price .per{ color: color-mix(in srgb, var(--on-surface) 70%, transparent); }
+.price .unit{ color: color-mix(in srgb, var(--on-surface) 70%, transparent); font-size:.9rem; }
+
+/* ---------- Skeleton ---------- */
+.skeleton{ position:relative; overflow:hidden; background:var(--glass2, rgba(0,0,0,.06)); border-radius:8px; }
+.skeleton::after{
+  content:""; position:absolute; inset:0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent);
+  transform: translateX(-100%); animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer{ to{ transform: translateX(100%); } }
+
+@media (prefers-reduced-motion: reduce){
+  .card, .fab{ transition: none; }
+  .skeleton::after{ animation: none; }
+}

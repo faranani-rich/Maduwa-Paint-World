@@ -6,11 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0b1220" />
 
+    <!-- Keep auth pages out of search; point bots to home -->
+    <meta name="robots" content="noindex,nofollow,noarchive" />
+    <link rel="canonical" href="/index.html" />
+
     <!-- Trust/Security Meta -->
-    <meta
-      http-equiv="Referrer-Policy"
-      content="strict-origin-when-cross-origin"
-    />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta
       http-equiv="Permissions-Policy"
       content="geolocation=(), microphone=(), camera=()"
@@ -64,7 +65,11 @@
       <!-- Brand / left column -->
       <section class="brand-pane">
         <div class="brand-card glass">
-          <div class="logo-mark" aria-hidden="true">
+          <div
+            class="logo-mark"
+            role="img"
+            aria-label="Maduwa Paint World logo"
+          >
             <span class="logo-dot"></span>
             <span class="logo-stem"></span>
           </div>
@@ -74,7 +79,7 @@
             updated.
           </p>
           <ul class="highlights">
-            <li>Use Email/Password or Phone (SMS)</li>
+            <li>Use Email &amp; Password</li>
             <li>Or continue with Google or Apple</li>
             <li>One account — multiple sign‑in methods</li>
           </ul>
@@ -161,34 +166,12 @@
             <span>or</span>
           </div>
 
-          <!-- Tabs: Email | Phone -->
-          <div class="tabs" role="tablist" aria-label="Registration options">
-            <button
-              class="tab active"
-              role="tab"
-              aria-selected="true"
-              aria-controls="panel-email"
-              id="tab-email"
-            >
-              Email
-            </button>
-            <button
-              class="tab"
-              role="tab"
-              aria-selected="false"
-              aria-controls="panel-phone"
-              id="tab-phone"
-            >
-              Phone (SMS)
-            </button>
-          </div>
-
-          <!-- Email registration -->
+          <!-- Email registration only -->
           <section
             id="panel-email"
             class="panel active"
-            role="tabpanel"
-            aria-labelledby="tab-email"
+            role="region"
+            aria-label="Email registration"
           >
             <form class="form vstack" novalidate onsubmit="return false;">
               <label class="field">
@@ -196,6 +179,7 @@
                 <input
                   type="text"
                   id="nameInput"
+                  name="name"
                   placeholder="Your name"
                   autocomplete="name"
                 />
@@ -206,8 +190,9 @@
                 <input
                   type="email"
                   id="emailInput"
+                  name="email"
                   placeholder="you@example.com"
-                  autocomplete="email"
+                  autocomplete="username email"
                   required
                 />
               </label>
@@ -217,9 +202,11 @@
                 <input
                   type="password"
                   id="passwordInput"
+                  name="new-password"
                   placeholder="••••••••"
                   autocomplete="new-password"
                   required
+                  minlength="8"
                 />
               </label>
 
@@ -228,9 +215,11 @@
                 <input
                   type="password"
                   id="confirmPasswordInput"
+                  name="confirm-password"
                   placeholder="••••••••"
                   autocomplete="new-password"
                   required
+                  minlength="8"
                 />
               </label>
 
@@ -260,78 +249,6 @@
             </form>
           </section>
 
-          <!-- Phone registration (SMS) -->
-          <section
-            id="panel-phone"
-            class="panel"
-            role="tabpanel"
-            aria-labelledby="tab-phone"
-            hidden
-          >
-            <form class="form vstack" novalidate onsubmit="return false;">
-              <label class="field">
-                <span class="label">Phone number</span>
-                <input
-                  type="tel"
-                  id="phoneInputReg"
-                  inputmode="tel"
-                  autocomplete="tel"
-                  placeholder="+27 6X XXX XXXX"
-                />
-              </label>
-
-              <div class="row">
-                <button id="phoneStartBtnReg" type="button" class="btn primary">
-                  Send code
-                </button>
-              </div>
-
-              <div id="codeRowReg" class="code-row" hidden>
-                <label class="field">
-                  <span class="label">6-digit code</span>
-                  <input
-                    type="text"
-                    id="codeInputReg"
-                    inputmode="numeric"
-                    pattern="\\d{6}"
-                    maxlength="6"
-                    placeholder="123456"
-                  />
-                </label>
-
-                <label class="field">
-                  <span class="label">Display name (optional)</span>
-                  <input
-                    type="text"
-                    id="nameInputPhone"
-                    placeholder="Your name"
-                    autocomplete="name"
-                  />
-                </label>
-
-                <div class="row">
-                  <button
-                    id="phoneConfirmBtnReg"
-                    type="button"
-                    class="btn success"
-                  >
-                    Verify &amp; Create account
-                  </button>
-                  <button id="resendCodeBtnReg" type="button" class="btn ghost">
-                    Resend
-                  </button>
-                </div>
-              </div>
-
-              <!-- Required by Firebase Phone Auth (can be invisible) -->
-              <div
-                id="recaptcha-container-reg"
-                class="recaptcha-slot"
-                aria-hidden="true"
-              ></div>
-            </form>
-          </section>
-
           <!-- Status / error messages -->
           <div
             id="regMessage"
@@ -345,26 +262,14 @@
             <p class="note">
               Already have an account?
               <a href="login.html" class="link">Back to login</a> • Back to
-              site: <a href="../index.html" class="link">Home</a>
+              site:
+              <a href="../index.html" class="link">Home</a>
             </p>
-
-            <!-- Mandatory reCAPTCHA disclosure for Phone Auth -->
-            <p class="tiny legal-note">
-              This site is protected by reCAPTCHA and the Google
-              <a
-                href="https://policies.google.com/privacy"
-                target="_blank"
-                rel="noopener"
-                >Privacy Policy</a
+            <p class="tiny muted">
+              © 2025 Maduwa Paint World (Pty) Ltd • +27 79 407 1053 •
+              <a href="mailto:rodneymaduwa@gmail.com" class="link"
+                >rodneymaduwa@gmail.com</a
               >
-              and
-              <a
-                href="https://policies.google.com/terms"
-                target="_blank"
-                rel="noopener"
-                >Terms of Service</a
-              >
-              apply.
             </p>
           </footer>
         </div>
@@ -379,35 +284,6 @@
 
     <!-- Core theme helper -->
     <script type="module" src="../css/theme.js"></script>
-
-    <!-- Keep auth pages minimal — no external animation/CDN scripts -->
-
-    <!-- Tiny tab toggle helper -->
-    <script>
-      (function () {
-        const tabEmail = document.getElementById("tab-email");
-        const tabPhone = document.getElementById("tab-phone");
-        const panelEmail = document.getElementById("panel-email");
-        const panelPhone = document.getElementById("panel-phone");
-
-        function activate(which) {
-          const isEmail = which === "email";
-          tabEmail.classList.toggle("active", isEmail);
-          tabPhone.classList.toggle("active", !isEmail);
-          panelEmail.toggleAttribute("hidden", !isEmail);
-          panelPhone.toggleAttribute("hidden", isEmail);
-          panelEmail.classList.toggle("active", isEmail);
-          panelPhone.classList.toggle("active", !isEmail);
-          (isEmail
-            ? document.getElementById("emailInput")
-            : document.getElementById("phoneInputReg")
-          )?.focus();
-        }
-
-        tabEmail.addEventListener("click", () => activate("email"));
-        tabPhone.addEventListener("click", () => activate("phone"));
-      })();
-    </script>
 
     <!-- Your registration logic -->
     <script type="module" src="./register.js"></script>

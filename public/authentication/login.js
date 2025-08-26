@@ -17,11 +17,9 @@ import {
   guestBrowse,
   logout,
   initAuthListener,
-  deleteAccount,         // Only used if you place a delete button on this page
+  deleteAccount,   // Only used if you place a delete button on this page
   emailLogin,
-  phoneLoginStart,       // Uses Firebase signInWithPhoneNumber under the hood
-  phoneLoginConfirm,     // Confirms the code
-  sendReset,             // Forgot password
+  sendReset,       // Forgot password
 } from "./auth.js";
 
 /* ---------------- Role Check Helpers ---------------- */
@@ -99,7 +97,7 @@ function friendlyError(e) {
   const code = e?.code || "";
   switch (code) {
     case "auth/invalid-login-credentials":
-      return "Wrong email/password or no password set for this account. If you signed up with Google first, use 'Forgot password' to set one.";
+      return "Wrong email/password or no password set for this account. If you signed up with Google first, use ‘Forgot password’ to set one.";
     case "auth/user-not-found":
       return "No account found with that email.";
     case "auth/wrong-password":
@@ -108,63 +106,29 @@ function friendlyError(e) {
       return "Too many attempts. Please try again later.";
     case "auth/invalid-email":
       return "Please enter a valid email address.";
-    case "auth/invalid-phone-number":
-      return "Enter a valid phone number in international format (e.g. +27…).";
-    case "auth/missing-verification-code":
-    case "auth/invalid-verification-code":
-      return "Invalid or expired code. Request a new one.";
-    case "auth/code-expired":
-      return "Code expired. Request a new one.";
-    case "auth/quota-exceeded":
-      return "SMS quota exceeded. Try again later or use email/Google.";
-    case "auth/app-not-authorized":
-      return "This domain isn’t authorized for Phone auth. Add it in Firebase → Auth → Settings → Authorized domains.";
+    case "auth/requires-recent-login":
+      return "Please re-authenticate to continue.";
     default:
       return e?.message || "Something went wrong.";
   }
 }
 
-/* Ensure recaptcha container exists (for phoneLoginStart) */
-function ensureRecaptchaContainer() {
-  const id = "recaptcha-container";
-  let el = document.getElementById(id);
-  if (!el) {
-    el = document.createElement("div");
-    el.id = id;
-    // Keep it in the DOM; invisible reCAPTCHA still needs the node present
-    el.style.minHeight = "1px";
-    el.style.minWidth = "1px";
-    document.body.appendChild(el);
-  }
-  return el;
-}
-
 /* ---------------- MAIN INIT ---------------- */
 function init() {
   // Buttons
-  const googleBtn       = qs("googleBtn");
-  const appleBtn        = qs("appleBtn");
-  const guestBtn        = qs("guestBtn");
-  const emailBtn        = qs("emailLoginBtn");
-  const forgotPwBtn     = qs("forgotPwBtn");
-
-  // Phone SMS buttons/elements
-  const phoneStartBtn   = qs("phoneStartBtn");
-  const phoneConfirmBtn = qs("phoneConfirmBtn");
-  const resendCodeBtn   = qs("resendCodeBtn");
-  const codeRow         = qs("codeRow");
+  const googleBtn   = qs("googleBtn");
+  const appleBtn    = qs("appleBtn");
+  const guestBtn    = qs("guestBtn");
+  const emailBtn    = qs("emailLoginBtn");
+  const forgotPwBtn = qs("forgotPwBtn");
 
   // Inputs
-  const emailInput      = qs("emailInput");
-  const passwordInput   = qs("passwordInput");
-  const phoneInput      = qs("phoneInput");
-  const codeInput       = qs("codeInput");
+  const emailInput    = qs("emailInput");
+  const passwordInput = qs("passwordInput");
 
   // (Optional) present on some screens
-  const logoutBtn       = qs("logoutBtn");
-  const deleteBtn       = qs("deleteBtn");
-
-  let phoneConfirmation = null; // stores ConfirmationResult from phoneLoginStart
+  const logoutBtn = qs("logoutBtn");
+  const deleteBtn = qs("deleteBtn");
 
   /* 1) Auth Listener: auto-redirect once logged in */
   initAuthListener((payload) => {
@@ -196,7 +160,7 @@ function init() {
       } catch (err) {
         toast(friendlyError(err), "err");
       } finally {
-        setLoading(googleBtn, false, "Continue with Google");
+        setLoading(googleBtn, false, "Sign in with Google");
       }
     });
   }
@@ -211,7 +175,7 @@ function init() {
       } catch (err) {
         toast(friendlyError(err), "err");
       } finally {
-        setLoading(appleBtn, false, "Continue with Apple");
+        setLoading(appleBtn, false, "Sign in with Apple");
       }
     });
   }
@@ -277,79 +241,7 @@ function init() {
     });
   }
 
-  /* 7) Phone (SMS) login — optional */
-  if (phoneStartBtn && phoneInput) {
-    phoneStartBtn.addEventListener("click", async () => {
-      const phone = (phoneInput.value || "").trim();
-      if (!phone || !phone.startsWith("+")) {
-        toast("Please enter your phone number in international format (e.g. +27…)", "err");
-        return;
-      }
-      ensureRecaptchaContainer();
-      setLoading(phoneStartBtn, true);
-      try {
-        // Start SMS flow (uses #recaptcha-container in the DOM)
-        phoneConfirmation = await phoneLoginStart(phone, "recaptcha-container");
-        codeRow?.removeAttribute("hidden");
-        toast("Code sent. Check your SMS.", "ok");
-        codeInput?.focus();
-      } catch (err) {
-        toast(friendlyError(err), "err");
-      } finally {
-        setLoading(phoneStartBtn, false, "Send code");
-      }
-    });
-  }
-
-  if (phoneConfirmBtn) {
-    phoneConfirmBtn.addEventListener("click", async () => {
-      if (!phoneConfirmation) {
-        toast("Please request a code first.", "err");
-        return;
-      }
-      const code = (codeInput?.value || "").trim();
-      if (!code) {
-        toast("Please enter the 6-digit code.", "err");
-        return;
-      }
-      setLoading(phoneConfirmBtn, true);
-      try {
-        await phoneLoginConfirm(phoneConfirmation, code);
-        toast("Phone verified. Signing you in…", "ok");
-      } catch (err) {
-        toast(friendlyError(err), "err");
-      } finally {
-        setLoading(phoneConfirmBtn, false, "Verify & Sign in");
-      }
-    });
-
-    // Enter key on code field triggers verify
-    codeInput?.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") phoneConfirmBtn.click();
-    });
-  }
-
-  if (resendCodeBtn && phoneInput) {
-    resendCodeBtn.addEventListener("click", async () => {
-      const phone = (phoneInput.value || "").trim();
-      if (!phone || !phone.startsWith("+")) {
-        toast("Enter your phone number first (e.g. +27…)", "err");
-        return;
-      }
-      ensureRecaptchaContainer();
-      setLoading(resendCodeBtn, true);
-      try {
-        phoneConfirmation = await phoneLoginStart(phone, "recaptcha-container");
-        toast("Code re-sent. Check your SMS.", "ok");
-      } catch (err) {
-        toast(friendlyError(err), "err");
-      } finally {
-        setLoading(resendCodeBtn, false, "Resend");
-      }
-    });
-  }
-
-  /* 8) Optional logout & delete (if you placed these buttons on this page) */
+  /* 7) Optional logout & delete (if you placed these buttons on this page) */
   if (logoutBtn) {
     logoutBtn.addEventListener("click", async () => {
       try {

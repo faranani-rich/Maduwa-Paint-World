@@ -13,13 +13,11 @@ import {
   serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
 
-// New helpers from our updated auth.js
+// Helpers from auth.js (no phone imports)
 import {
   googleLogin,
   appleLogin,
   guestBrowse,
-  phoneLoginStart,
-  phoneLoginConfirm,
   saveProfile,
 } from "./auth.js";
 
@@ -32,9 +30,7 @@ function onReady(fn) {
   }
 }
 
-function qs(id) {
-  return document.getElementById(id);
-}
+const qs = (id) => document.getElementById(id);
 
 function setLoading(el, loading, labelWhenDone) {
   if (!el) return;
@@ -68,13 +64,6 @@ function friendlyError(e) {
       return "Password should be at least 6 characters.";
     case "auth/too-many-requests":
       return "Too many attempts. Please try again later.";
-    case "auth/quota-exceeded":
-      return "SMS quota exceeded. Try again later or use email/Google.";
-    case "auth/invalid-phone-number":
-      return "Please enter a valid phone number in international format (e.g. +27...).";
-    case "auth/missing-verification-code":
-    case "auth/invalid-verification-code":
-      return "The code is invalid or expired. Please request a new one.";
     default:
       return e?.message || "Something went wrong.";
   }
@@ -112,17 +101,6 @@ onReady(() => {
   const termsChk = qs("termsChk");
   const registerBtn = qs("registerBtn");
 
-  // Phone panel elements
-  const phoneInputReg = qs("phoneInputReg");
-  const phoneStartBtnReg = qs("phoneStartBtnReg");
-  const codeRowReg = qs("codeRowReg");
-  const codeInputReg = qs("codeInputReg");
-  const phoneConfirmBtnReg = qs("phoneConfirmBtnReg");
-  const resendCodeBtnReg = qs("resendCodeBtnReg");
-  const nameInputPhone = qs("nameInputPhone");
-
-  let phoneConfirmation = null; // stores ConfirmationResult
-
   /* ===== OAuth flows ===== */
   if (googleBtn) {
     googleBtn.addEventListener("click", async () => {
@@ -130,7 +108,6 @@ onReady(() => {
       try {
         await googleLogin();
         toast("Welcome! Account ready.", "ok");
-        // Redirect after a short delay (adjust path if needed)
         setTimeout(() => (window.location.href = "./login.html"), 600);
       } catch (e) {
         toast(friendlyError(e), "err");
@@ -212,6 +189,12 @@ onReady(() => {
           name: name || user.displayName || (email ? email.split("@")[0] : "Unknown"),
         });
 
+        // Optional: also sync into auth profile helper (kept for consistency)
+        if (name) {
+          try { await saveProfile({ displayName: name }); } catch {}
+
+        }
+
         toast("Account created successfully!", "ok");
         // Redirect (your login will auto-redirect if already signed in)
         setTimeout(() => (window.location.href = "./login.html"), 700);
@@ -219,86 +202,6 @@ onReady(() => {
         toast(friendlyError(e), "err");
       } finally {
         setLoading(registerBtn, false, "Create account");
-      }
-    });
-  }
-
-  /* ===== Phone registration (SMS) ===== */
-  if (phoneStartBtnReg) {
-    phoneStartBtnReg.addEventListener("click", async () => {
-      const phone = (phoneInputReg?.value || "").trim();
-      if (!phone) {
-        toast("Please enter your phone number in international format (e.g. +27...)", "err");
-        return;
-      }
-      setLoading(phoneStartBtnReg, true);
-      try {
-        // Start SMS flow (uses #recaptcha-container-reg)
-        phoneConfirmation = await phoneLoginStart(phone, "recaptcha-container-reg");
-        codeRowReg.removeAttribute("hidden");
-        toast("Code sent. Check your SMS.", "ok");
-      } catch (e) {
-        toast(friendlyError(e), "err");
-      } finally {
-        setLoading(phoneStartBtnReg, false, "Send code");
-      }
-    });
-  }
-
-  if (phoneConfirmBtnReg) {
-    phoneConfirmBtnReg.addEventListener("click", async () => {
-      if (!phoneConfirmation) {
-        toast("Please request a code first.", "err");
-        return;
-      }
-      const code = (codeInputReg?.value || "").trim();
-      if (!code) {
-        toast("Please enter the 6-digit code.", "err");
-        return;
-      }
-      setLoading(phoneConfirmBtnReg, true);
-      try {
-        // Confirm sign-in with code
-        const user = await phoneLoginConfirm(phoneConfirmation, code);
-
-        // Optional: store display name if provided
-        const displayName = (nameInputPhone?.value || "").trim();
-        if (displayName) {
-          await saveProfile({ displayName });
-        }
-
-        // Ensure a Firestore profile exists with phone
-        await writeUserDoc(user.uid, {
-          phone: user.phoneNumber || null,
-          name: displayName || user.displayName || "Unknown",
-          email: user.email || null,
-        });
-
-        toast("Phone verified and account created!", "ok");
-        setTimeout(() => (window.location.href = "./login.html"), 700);
-      } catch (e) {
-        toast(friendlyError(e), "err");
-      } finally {
-        setLoading(phoneConfirmBtnReg, false, "Verify & Create account");
-      }
-    });
-  }
-
-  if (resendCodeBtnReg) {
-    resendCodeBtnReg.addEventListener("click", async () => {
-      const phone = (phoneInputReg?.value || "").trim();
-      if (!phone) {
-        toast("Enter your phone number first.", "err");
-        return;
-      }
-      setLoading(resendCodeBtnReg, true);
-      try {
-        phoneConfirmation = await phoneLoginStart(phone, "recaptcha-container-reg");
-        toast("Code re-sent. Check your SMS.", "ok");
-      } catch (e) {
-        toast(friendlyError(e), "err");
-      } finally {
-        setLoading(resendCodeBtnReg, false, "Resend");
       }
     });
   }

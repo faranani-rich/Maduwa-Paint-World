@@ -1,5 +1,11 @@
 {
   "projects": {
     "default": "maduwa-paint-world"
-  }
+  },
+  "targets": {
+    "maduwa-paint-world": {
+      "hosting": {}
+    }
+  },
+  "etags": {}
 }

@@ -6,11 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0b1220" />
 
+    <!-- Indexing: keep auth pages out of search -->
+    <meta name="robots" content="noindex,nofollow,noarchive" />
+    <link rel="canonical" href="/index.html" />
+
     <!-- Trust/Security Meta (safe, non-breaking) -->
-    <meta
-      http-equiv="Referrer-Policy"
-      content="strict-origin-when-cross-origin"
-    />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta
       http-equiv="Permissions-Policy"
       content="geolocation=(), microphone=(), camera=()"
@@ -64,7 +65,11 @@
       <!-- Brand / left column -->
       <section class="brand-pane">
         <div class="brand-card glass">
-          <div class="logo-mark" aria-hidden="true">
+          <div
+            class="logo-mark"
+            role="img"
+            aria-label="Maduwa Paint World logo"
+          >
             <span class="logo-dot"></span>
             <span class="logo-stem"></span>
           </div>
@@ -73,11 +78,20 @@
             Secure portal for customers and employees.
           </p>
           <ul class="highlights">
-            <li>Sign in with Google, Apple, Email, or SMS</li>
-            <li>Customers see project progress</li>
+            <li>Sign in with Google, Apple, or Email</li>
+            <li>Customers track project progress</li>
             <li>Employees manage operations</li>
           </ul>
-          <p class="tiny muted">Need help? Email rodneymaduwa@gmail.com</p>
+          <p class="tiny muted">
+            Official Maduwa Paint World sign‑in. If you weren’t expecting to
+            sign in, please return to the
+            <a href="../index.html" class="link">home page</a>. We never ask for
+            banking details or software downloads.
+          </p>
+          <p class="tiny muted">
+            Need help? Email
+            <a href="mailto:rodneymaduwa@gmail.com">rodneymaduwa@gmail.com</a>
+          </p>
         </div>
       </section>
 
@@ -86,7 +100,7 @@
         <div class="auth-card glass surface-raise">
           <header class="auth-header">
             <h2>Sign in to your account</h2>
-            <p class="muted">Choose a sign-in method to continue</p>
+            <p class="muted">Choose a sign‑in method to continue</p>
           </header>
 
           <!-- OAuth row (official-style buttons, inline SVG icons) -->
@@ -158,34 +172,12 @@
             <span>or</span>
           </div>
 
-          <!-- Tabs: Email | Phone -->
-          <div class="tabs" role="tablist" aria-label="Sign-in options">
-            <button
-              class="tab active"
-              role="tab"
-              aria-selected="true"
-              aria-controls="panel-email"
-              id="tab-email"
-            >
-              Email
-            </button>
-            <button
-              class="tab"
-              role="tab"
-              aria-selected="false"
-              aria-controls="panel-phone"
-              id="tab-phone"
-            >
-              Phone (SMS)
-            </button>
-          </div>
-
-          <!-- Email panel -->
+          <!-- Email only -->
           <section
             id="panel-email"
             class="panel active"
-            role="tabpanel"
-            aria-labelledby="tab-email"
+            role="region"
+            aria-label="Email sign-in"
           >
             <form class="form vstack" novalidate onsubmit="return false;">
               <label class="field">
@@ -193,7 +185,8 @@
                 <input
                   type="email"
                   id="emailInput"
-                  autocomplete="email"
+                  name="email"
+                  autocomplete="username email"
                   autocapitalize="none"
                   spellcheck="false"
                   placeholder="you@example.com"
@@ -206,6 +199,7 @@
                 <input
                   type="password"
                   id="passwordInput"
+                  name="password"
                   autocomplete="current-password"
                   autocapitalize="none"
                   spellcheck="false"
@@ -225,72 +219,6 @@
             </form>
           </section>
 
-          <!-- Phone panel -->
-          <section
-            id="panel-phone"
-            class="panel"
-            role="tabpanel"
-            aria-labelledby="tab-phone"
-            hidden
-          >
-            <form class="form vstack" novalidate onsubmit="return false;">
-              <label class="field">
-                <span class="label">Phone number</span>
-                <input
-                  type="tel"
-                  id="phoneInput"
-                  inputmode="tel"
-                  autocomplete="tel"
-                  autocapitalize="none"
-                  spellcheck="false"
-                  placeholder="+27 6X XXX XXXX"
-                />
-              </label>
-
-              <div class="row">
-                <button id="phoneStartBtn" type="button" class="btn primary">
-                  Send code
-                </button>
-              </div>
-
-              <div id="codeRow" class="code-row" hidden>
-                <label class="field">
-                  <span class="label">6-digit code</span>
-                  <input
-                    type="text"
-                    id="codeInput"
-                    inputmode="numeric"
-                    pattern="\\d{6}"
-                    maxlength="6"
-                    autocomplete="one-time-code"
-                    placeholder="123456"
-                    autocapitalize="none"
-                    spellcheck="false"
-                  />
-                </label>
-                <div class="row">
-                  <button
-                    id="phoneConfirmBtn"
-                    type="button"
-                    class="btn success"
-                  >
-                    Verify &amp; Sign in
-                  </button>
-                  <button id="resendCodeBtn" type="button" class="btn ghost">
-                    Resend
-                  </button>
-                </div>
-              </div>
-
-              <!-- Required by Firebase Phone Auth (can be invisible) -->
-              <div
-                id="recaptcha-container"
-                class="recaptcha-slot"
-                aria-hidden="true"
-              ></div>
-            </form>
-          </section>
-
           <!-- Status / error messages -->
           <div
             id="authMessage"
@@ -306,24 +234,11 @@
               <a href="../legal/terms.html" class="link">Terms</a> and
               <a href="../legal/privacy.html" class="link">Privacy Policy</a>.
             </p>
-
-            <!-- Mandatory reCAPTCHA disclosure for Phone Auth -->
-            <p class="tiny legal-note">
-              This site is protected by reCAPTCHA and the Google
-              <a
-                href="https://policies.google.com/privacy"
-                target="_blank"
-                rel="noopener"
-                >Privacy Policy</a
+            <p class="tiny muted">
+              © 2025 Maduwa Paint World (Pty) Ltd • +27 79 407 1053 •
+              <a href="mailto:rodneymaduwa@gmail.com" class="link"
+                >rodneymaduwa@gmail.com</a
               >
-              and
-              <a
-                href="https://policies.google.com/terms"
-                target="_blank"
-                rel="noopener"
-                >Terms of Service</a
-              >
-              apply.
             </p>
           </footer>
         </div>
@@ -343,35 +258,7 @@
     <!-- Core theme helper -->
     <script type="module" src="../css/theme.js"></script>
 
-    <!-- No external animation/CDN scripts on auth pages for compliance -->
     <!-- Your login logic -->
     <script type="module" src="./login.js"></script>
-
-    <!-- Simple tab switcher (lightweight, safe) -->
-    <script>
-      (function () {
-        const tabEmail = document.getElementById("tab-email");
-        const tabPhone = document.getElementById("tab-phone");
-        const panelEmail = document.getElementById("panel-email");
-        const panelPhone = document.getElementById("panel-phone");
-
-        function activate(which) {
-          const isEmail = which === "email";
-          tabEmail.classList.toggle("active", isEmail);
-          tabPhone.classList.toggle("active", !isEmail);
-          panelEmail.toggleAttribute("hidden", !isEmail);
-          panelPhone.toggleAttribute("hidden", isEmail);
-          panelEmail.classList.toggle("active", isEmail);
-          panelPhone.classList.toggle("active", !isEmail);
-          (isEmail
-            ? document.getElementById("emailInput")
-            : document.getElementById("phoneInput")
-          )?.focus();
-        }
-
-        tabEmail.addEventListener("click", () => activate("email"));
-        tabPhone.addEventListener("click", () => activate("phone"));
-      })();
-    </script>
   </body>
 </html>

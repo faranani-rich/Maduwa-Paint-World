@@ -1,0 +1,346 @@
+<!-- /public/customer/products.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Browse Products - Maduwa Paint World</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- THEME / ACCENT / MOTION / FONT BOOTSTRAP: apply before first paint -->
+    <script>
+      (function () {
+        const root = document.documentElement;
+        const theme = localStorage.getItem("app.theme") || "light";
+        const hue = localStorage.getItem("app.accentHue");
+        const motion = localStorage.getItem("app.motion") || "auto"; // 'auto' | 'reduced'
+        const scale = Number(localStorage.getItem("app.fontScale") || "1");
+
+        root.setAttribute("data-theme", theme);
+        root.setAttribute("data-motion", motion);
+        if (hue) root.style.setProperty("--accent-h", hue);
+        if (Number.isFinite(scale) && scale > 0) {
+          root.style.fontSize = Math.round(scale * 100) + "%";
+        }
+      })();
+    </script>
+
+    <!-- Global theme tokens & utilities (tilt/parallax classes) -->
+    <link rel="stylesheet" href="../css/themes.css" />
+
+    <link rel="stylesheet" href="products.css" />
+  </head>
+
+  <body class="products-body">
+    <noscript
+      ><p style="padding: 12px">
+        Please enable JavaScript to browse products.
+      </p></noscript
+    >
+
+    <!-- Top bar -->
+    <header class="site-header">
+      <nav class="topbar" aria-label="Primary">
+        <span class="spacer" aria-hidden="true"></span>
+        <a class="link" href="home.html">Back To Home</a>
+        <a class="link" href="dashboard.html">My Projects</a>
+      </nav>
+
+      <!-- Page hero + toolbar -->
+      <section class="hero">
+        <h1>Browse Products</h1>
+        <p class="subtitle">
+          Find the right paint or service for your project.
+        </p>
+
+        <!-- Sticky toolbar (wired by products.js) -->
+        <form
+          id="toolbar"
+          class="toolbar"
+          role="search"
+          onsubmit="return false;"
+        >
+          <label class="visually-hidden" for="q">Search products</label>
+          <input
+            id="q"
+            name="q"
+            type="search"
+            placeholder="Search by name, surface, or tag"
+            autocomplete="off"
+          />
+
+          <label class="visually-hidden" for="category">Category</label>
+          <select id="category" name="category">
+            <option value="">All categories</option>
+            <option value="paint-20l">Paints - 20 L</option>
+            <option value="service-sqm">Application services - per m²</option>
+          </select>
+
+          <label class="visually-hidden" for="finish">Finish</label>
+          <select id="finish" name="finish">
+            <option value="">Any finish</option>
+            <option value="matt">Matt</option>
+            <option value="silk">Silk</option>
+            <option value="gloss">Gloss</option>
+          </select>
+
+          <label class="visually-hidden" for="surface">Surface</label>
+          <select id="surface" name="surface">
+            <option value="">Any surface</option>
+            <option value="roof">Roof</option>
+            <option value="ceiling">Ceiling</option>
+            <option value="plaster">Plaster/walls</option>
+            <option value="pavement">Pavement</option>
+            <option value="floor">Floor</option>
+          </select>
+
+          <label class="visually-hidden" for="sort">Sort</label>
+          <select id="sort" name="sort">
+            <option value="name-asc">Sort: Name (A to Z)</option>
+            <option value="price-asc">Sort: Price (Low to High)</option>
+            <option value="price-desc">Sort: Price (High to Low)</option>
+            <option value="coverage-desc">Sort: Coverage (High to Low)</option>
+          </select>
+        </form>
+      </section>
+    </header>
+
+    <!-- Content -->
+    <main class="content" id="main">
+      <!-- Results grid -->
+      <section
+        id="results"
+        class="grid"
+        aria-live="polite"
+        aria-busy="true"
+      ></section>
+
+      <!-- Empty state -->
+      <p id="empty" class="empty" hidden>
+        No products match your filters. Try clearing filters or searching for
+        “roof”, “ceiling”, or “plaster”.
+      </p>
+    </main>
+
+    <!-- Floating Cart button (mobile) -->
+    <button id="fabCart" class="fab" aria-label="Open quote summary" hidden>
+      Quote
+    </button>
+
+    <!-- Quote panel (slides in; controlled by products.js) -->
+    <aside
+      id="quotePanel"
+      class="quote-panel"
+      aria-labelledby="quoteTitle"
+      hidden
+    >
+      <header class="quote-header">
+        <h2 id="quoteTitle">Quote summary</h2>
+        <button
+          id="btnCloseQuote"
+          class="icon-btn"
+          aria-label="Close quote panel"
+        >
+          ✕
+        </button>
+      </header>
+
+      <section class="quote-body">
+        <ul id="quoteItems" class="quote-list" aria-live="polite"></ul>
+        <div class="quote-total">
+          <span>Total</span>
+          <strong id="quoteTotal">R0.00</strong>
+        </div>
+      </section>
+
+      <footer class="quote-footer">
+        <button
+          id="btnRequestQuote"
+          class="btn primary"
+          data-whatsapp="+27794071053,+27615241624"
+        >
+          Request quote (WhatsApp)
+        </button>
+        <button id="btnPrintQuote" class="btn">Print</button>
+        <button id="btnClearQuote" class="btn danger">Clear</button>
+      </footer>
+    </aside>
+
+    <!-- Product detail dialog/drawer -->
+    <dialog id="productDialog" class="product-dialog" aria-labelledby="pdTitle">
+      <form method="dialog" class="pd-head">
+        <h3 id="pdTitle">Product title</h3>
+        <button value="close" class="icon-btn" aria-label="Close details">
+          ✕
+        </button>
+      </form>
+
+      <section class="pd-content">
+        <p id="pdTagline" class="pd-tagline"></p>
+
+        <!-- Spec chips -->
+        <ul id="pdChips" class="chips"></ul>
+
+        <!-- Tabs -->
+        <nav class="tabs" aria-label="Product sections">
+          <button class="tab is-active" data-tab="overview">Overview</button>
+          <button class="tab" data-tab="specs">Specs</button>
+          <button class="tab" data-tab="calculator">Calculator</button>
+          <button class="tab" data-tab="care">Care & FAQ</button>
+        </nav>
+
+        <!-- Panels -->
+        <section id="tab-overview" class="tab-panel is-active">
+          <p id="pdOverview"></p>
+          <div class="pair-with">
+            <h4>Pairs well with</h4>
+            <ul id="pdPairWith" class="link-list"></ul>
+          </div>
+        </section>
+
+        <section id="tab-specs" class="tab-panel">
+          <dl class="specs">
+            <!-- Filled dynamically: finish, base, interior/exterior, coverage, dry time, etc. -->
+          </dl>
+        </section>
+
+        <section id="tab-calculator" class="tab-panel">
+          <!-- Paint coverage or service estimator -->
+          <form id="calcForm" class="calc" onsubmit="return false;">
+            <div class="row">
+              <label for="calcArea">Area (m²)</label>
+              <input
+                id="calcArea"
+                name="area"
+                inputmode="decimal"
+                placeholder="e.g. 60"
+              />
+            </div>
+            <div class="row" id="rowCoats">
+              <label for="calcCoats">Coats</label>
+              <input
+                id="calcCoats"
+                name="coats"
+                type="number"
+                min="1"
+                max="3"
+                step="1"
+                value="2"
+              />
+            </div>
+            <p class="hint" id="calcHint"></p>
+            <div class="calc-out" id="calcOut">
+              <!-- JS will write litres, nearest cans and estimated price here -->
+            </div>
+            <button id="btnAddCalculated" class="btn primary">
+              Add to quote
+            </button>
+          </form>
+        </section>
+
+        <section id="tab-care" class="tab-panel">
+          <ul id="pdCare" class="bullets"></ul>
+        </section>
+      </section>
+
+      <footer class="pd-foot">
+        <div class="price">
+          <span class="per">Price</span>
+          <strong id="pdPrice">R0.00</strong>
+          <span id="pdUnit" class="unit">per 20 L</span>
+        </div>
+        <button id="btnAddToQuote" class="btn primary">Add to quote</button>
+      </footer>
+    </dialog>
+
+    <!-- Card template (cloned by JS for each item) -->
+    <template id="tplCard">
+      <article class="card" data-id="">
+        <div class="card-top">
+          <!-- Optional <img> goes here when you add images -->
+          <h3 class="card-title"></h3>
+          <p class="card-sub"></p>
+        </div>
+
+        <ul class="badges"></ul>
+
+        <div class="card-price">
+          <span class="label">Price</span>
+          <strong class="value">R0.00</strong>
+          <span class="unit">per unit</span>
+        </div>
+
+        <div class="card-actions">
+          <button class="btn ghost details">Details</button>
+          <button class="btn primary add">Add to quote</button>
+        </div>
+      </article>
+    </template>
+
+    <!-- Scripts: data first, then logic (both in /public/customer/) -->
+
+    <!-- Core theme helper (reads/writes app.theme + dispatches 'themechange') -->
+    <script type="module" src="../css/theme.js"></script>
+
+    <!-- Lottie (must come before the anime widget) -->
+    <script
+      src="https://unpkg.com/lottie-web/build/player/lottie.min.js"
+      defer
+    ></script>
+
+    <!-- Anime buddy widget (IIFE; reads app.anime* keys and mounts into #animeDock) -->
+    <script src="../css/anime-widget.js" defer></script>
+
+    <!-- Tiny tilt enhancer (optional). Uses .tilt + CSS vars; reduced-motion safe -->
+    <script>
+      (function () {
+        function shouldReduce() {
+          return (
+            document.documentElement.getAttribute("data-motion") ===
+              "reduced" ||
+            (window.matchMedia &&
+              window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+          );
+        }
+        if (shouldReduce()) return;
+
+        const MAX_DEG = 6; // softer tilt
+        const els = document.querySelectorAll(".tilt");
+        els.forEach((el) => {
+          el.addEventListener("pointermove", (e) => {
+            const r = el.getBoundingClientRect();
+            const cx = r.left + r.width / 2;
+            const cy = r.top + r.height / 2;
+            const dx = (e.clientX - cx) / (r.width / 2);
+            const dy = (e.clientY - cy) / (r.height / 2);
+            // invert Y for natural tilt
+            el.style.setProperty(
+              "--tilt-x",
+              (-dy * MAX_DEG).toFixed(2) + "deg"
+            );
+            el.style.setProperty("--tilt-y", (dx * MAX_DEG).toFixed(2) + "deg");
+          });
+          el.addEventListener("pointerleave", () => {
+            el.style.removeProperty("--tilt-x");
+            el.style.removeProperty("--tilt-y");
+          });
+        });
+
+        // Respect runtime motion changes
+        window.addEventListener("themechange", () => {
+          // nothing needed for tilt here; placeholder if you later theme-guard tilt
+        });
+      })();
+    </script>
+
+    <script src="./products-data.js" type="module"></script>
+    <script src="./products.js" type="module"></script>
+
+    <!-- Page footer -->
+    <footer class="site-footer">
+      <small>
+        Prices include VAT and may change without notice. Coverage and service
+        estimates are guides only. Final quotes confirmed after site inspection.
+      </small>
+    </footer>
+  </body>
+</html>
